@@ -493,15 +493,19 @@ const closeSidebar = document.getElementById("closeSidebar");
 
 menuBtn.addEventListener("click", () => {
     sidebar.classList.add("open");
+    menuBtn.style.display = "none"; // Esconde o botão
 });
 
 closeSidebar.addEventListener("click", () => {
     sidebar.classList.remove("open");
+    menuBtn.style.display = "block"; // Mostra o botão de volta
 });
 
+// Fecha se clicar fora do painel
 document.addEventListener("click", (e) => {
     if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && e.target !== menuBtn) {
         sidebar.classList.remove("open");
+        menuBtn.style.display = "block"; // Mostra o botão de volta
     }
 });
 </script>
