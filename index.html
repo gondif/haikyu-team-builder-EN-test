@@ -67,6 +67,8 @@
         font-size: 14px;
         color: #fff;
         text-align: center;
+        max-width: 150px;
+        word-wrap: break-word;
     }
 
     .bench-slot {
@@ -98,6 +100,22 @@
     }
 
     .add-slot-btn:hover {
+        background-color: #218838;
+    }
+
+    #saveTeamBtn {
+        background-color: #28a745;
+        border: none;
+        color: white;
+        padding: 6px 10px;
+        margin-right: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+        vertical-align: middle;
+    }
+
+    #saveTeamBtn:hover {
         background-color: #218838;
     }
 
@@ -221,40 +239,56 @@
         margin-top: 10px;
         padding-right: 5px;
     }
+
     .filtros {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 10px;
-}
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
 
-.filtros label {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 3px;
-}
+    .filtros label {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 3px;
+        display:block;
+        text-align:left;
+    }
 
-.filtros select {
-    width: 100%;
-    padding: 5px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-}
+    .filtros select {
+        width: 100%;
+        padding: 5px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: none;
+    }
 
-#limparFiltros {
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 6px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-}
+    #limparFiltros {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        padding: 6px;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        width:100%;
+    }
 
-#limparFiltros:hover {
-    background-color: #e60000;
-}
+    #limparFiltros:hover {
+        background-color: #e60000;
+    }
+
+    .saved-list button {
+        margin-left: 8px;
+        padding: 4px 8px;
+        font-size: 13px;
+        border-radius: 4px;
+        cursor: pointer;
+        border: none;
+    }
+    .saved-list .load-btn { background:#28a745; color:#fff; }
+    .saved-list .del-btn { background:#ff4d4d; color:#fff; }
+
 </style>
 </head>
 <body>
@@ -264,7 +298,8 @@
     <button class="close-btn" id="closeSidebar">×</button>
     <h2>Menu Lateral</h2>
     <ul>
-        <li><button class="menu-link" data-section="stats">📊 Estatísticas do time</button></li>
+        <!-- substituí Estatísticas por Save/Load -->
+        <li><button class="menu-link" data-section="save">💾 Salvar/Carregar Times</button></li>
         <li><button class="menu-link" data-section="characters">🔍 Personagens</button></li>
         <li><button class="menu-link" data-section="help">ℹ️ Ajuda</button></li>
     </ul>
@@ -287,11 +322,20 @@
         <div class="player-slot"><div class="hex" data-role="MB"></div><div class="player-info">MB</div></div>
         <div class="player-slot"><div class="hex" data-role="OP"></div><div class="player-info">OP</div></div>
     </div>
-    <div class="row" id="bench-row">
-        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
-        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
-        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
-        <button class="add-slot-btn" onclick="addBenchSlot()">+</button>
+
+    <!-- linha onde fica o botão SALVAR e os bench slots -->
+    <div class="row" id="bench-row-wrapper" style="align-items:center;">
+        <div style="display:flex; align-items:center;">
+            <!-- botão de salvar time (ícone download) -->
+            <button id="saveTeamBtn" title="Salvar Time" style="margin-right:8px;">⬇️</button>
+        </div>
+
+        <div class="row" id="bench-row" style="gap:10px;">
+            <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+            <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+            <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+            <button class="add-slot-btn" onclick="addBenchSlot()">+</button>
+        </div>
     </div>
 </div>
 
@@ -303,6 +347,7 @@
 </div>
 
 <script>
+/* ====== DADOS (mantidos) ====== */
 const personagens = [
 { nome: "Kageyama UR", funcao: "S", img: "img/kageyamaUR.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Karasuno Geniuses"] },
 { nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: ["nothing"] },
@@ -393,10 +438,9 @@ const descricoesSinergia = {
 "Top Spiker and Top Libero": "Sakusa UR increases his Power Attack. Komori UR increases his Receive. Increases allies’ Receive by 20%",
 };
 
-    
-
 let selecionados = [];
 
+/* ====== FUNÇÕES ORIGINAIS (mantidas) ====== */
 function addBenchSlot() {
     const benchRow = document.getElementById("bench-row");
     const slot = document.createElement("div");
@@ -415,6 +459,7 @@ function attachBenchEvents(slot) {
 }
 
 function mostrarMenu(role, slot) {
+    const scrollMenu = document.getElementById("scrollMenu");
     scrollMenu.innerHTML = '';
     let disponiveis;
 
@@ -429,7 +474,8 @@ function mostrarMenu(role, slot) {
         img.src = p.img;
         img.alt = p.nome;
         img.title = p.nome;
-        img.addEventListener('click', () => {
+        img.addEventListener('click', (e) => {
+            e.stopPropagation();
             setPersonagem(slot, p, role);
             scrollMenu.style.display = 'none';
         });
@@ -459,15 +505,18 @@ function respeitaLimiteBench(p, slot) {
 }
 
 function setPersonagem(slot, personagem, role) {
+    // se já tinha alguém nesse slot, remove dos selecionados
     if (slot.dataset.nome) {
         selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
     }
 
+    // monta imagem
     slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
     slot.dataset.nome = personagem.nome;
 
+    // atualiza texto de info (procura .player-info no mesmo player-slot)
     const infoDiv = slot.parentElement.querySelector('.player-info');
-    infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
+    if (infoDiv) infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
 
     selecionados.push(personagem);
     atualizarSinergias();
@@ -483,6 +532,7 @@ function removerPersonagem(slot) {
         if (slot.classList.contains("bench-slot")) {
             infoDiv.textContent = "Bench";
         } else {
+            // tenta recuperar role
             infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
         }
 
@@ -506,15 +556,15 @@ function atualizarSinergias() {
     });
 
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
-    if (slot.dataset.nome) {
-        const p = personagens.find(x => x.nome === slot.dataset.nome);
-        if (Array.isArray(p.vinculo)) {
-            p.vinculo.forEach(v => {
-                vinculosCount[v] = (vinculosCount[v] || 0) + 1;
-            });
-        } else if (p.vinculo) {
-            vinculosCount[p.vinculo] = (vinculosCount[p.vinculo] || 0) + 1;
-        }
+        if (slot.dataset.nome) {
+            const p = personagens.find(x => x.nome === slot.dataset.nome);
+            if (Array.isArray(p.vinculo)) {
+                p.vinculo.forEach(v => {
+                    vinculosCount[v] = (vinculosCount[v] || 0) + 1;
+                });
+            } else if (p.vinculo) {
+                vinculosCount[p.vinculo] = (vinculosCount[p.vinculo] || 0) + 1;
+            }
         }
     });
 
@@ -541,31 +591,38 @@ function atualizarSinergias() {
     }
 }
 
+/* ====== Eventos iniciais ====== */
 document.querySelectorAll(".hex").forEach(slot => {
-    slot.addEventListener("click", () => mostrarMenu(slot.dataset.role, slot));
+    slot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mostrarMenu(slot.dataset.role, slot);
+    });
     slot.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         removerPersonagem(slot);
     });
 });
 
-const sidebarContent = document.getElementById("sidebar-content");
+document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
 
+/* ====== SIDEBAR NAV ====== */
+const sidebarContent = document.getElementById("sidebar-content");
 document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const section = btn.dataset.section;
         if (section === "characters") {
             mostrarListaPersonagens();
-        } else if (section === "stats") {
-            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
+        } else if (section === "save") {
+            showSavedTeams();
         } else if (section === "help") {
             sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
         }
     });
 });
 
+/* ====== LISTA / FILTROS DE PERSONAGENS (mantida com stopPropagation nos clicks) ====== */
 function mostrarListaPersonagens() {
-    // Coletar valores únicos para montar os selects
     const funcoes = [...new Set(personagens.map(p => p.funcao))];
     const escolas = [...new Set(personagens.map(p => p.School))];
     const vinculos = [...new Set(personagens.flatMap(p => p.vinculo))];
@@ -597,10 +654,10 @@ function mostrarListaPersonagens() {
         <button id="limparFiltros">Limpar</button>
     </div>
     <div class='char-list' id="charList"></div>
-`;
+    `;
+
     sidebarContent.innerHTML = html;
 
-    // Função para renderizar a lista conforme filtros
     function renderLista() {
         const funcaoSel = document.getElementById("filtroFuncao").value;
         const escolaSel = document.getElementById("filtroEscola").value;
@@ -630,7 +687,6 @@ function mostrarListaPersonagens() {
         });
     }
 
-    // Eventos dos filtros
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
     document.getElementById("filtroVinculo").addEventListener("change", renderLista);
@@ -641,7 +697,6 @@ function mostrarListaPersonagens() {
         renderLista();
     });
 
-    // Render inicial
     renderLista();
 }
 
@@ -661,21 +716,157 @@ function mostrarDetalhesPersonagem(p) {
     });
 }
 
-// ====== ABRIR / FECHAR MENU ======
+/* ====== SALVAR / CARREGAR TIMES (localStorage) ====== */
+
+// pega composição atual por NOME do personagem (não por src)
+function getCurrentTeamByName() {
+    // titulares: procuramos .hex dentro de .player-slot (apenas as hex)
+    const mainHexes = Array.from(document.querySelectorAll(".hex"));
+    const main = mainHexes.map(h => h.dataset.nome || null);
+
+    // bench: cada .bench-slot
+    const benches = Array.from(document.querySelectorAll(".bench-slot"));
+    const benchNames = benches.map(b => b.dataset.nome || null);
+
+    return { main, bench: benchNames };
+}
+
+const saveTeamBtn = document.getElementById("saveTeamBtn");
+saveTeamBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const teamName = prompt("Digite o nome do time:");
+    if (!teamName) return;
+
+    let teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
+
+    if (teams[teamName]) {
+        if (!confirm(`O time "${teamName}" já existe. Deseja substituir?`)) {
+            return;
+        }
+    }
+
+    teams[teamName] = getCurrentTeamByName();
+    localStorage.setItem("savedTeams", JSON.stringify(teams));
+    alert(`Time "${teamName}" salvo com sucesso!`);
+});
+
+/* mostra lista de times salvos no painel lateral */
+function showSavedTeams() {
+    const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
+    let html = "<h3>Times Salvos</h3>";
+
+    if (Object.keys(teams).length === 0) {
+        html += "<p>Nenhum time salvo.</p>";
+    } else {
+        html += `<div class="saved-list">`;
+        for (const [name, team] of Object.entries(teams)) {
+            html += `
+                <div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="text-align:left;">
+                        <b>${name}</b>
+                    </div>
+                    <div>
+                        <button class="load-btn" data-name="${name}">Carregar</button>
+                        <button class="del-btn" data-name="${name}">Excluir</button>
+                    </div>
+                </div>
+            `;
+        }
+        html += `</div>`;
+    }
+
+    sidebarContent.innerHTML = html;
+
+    document.querySelectorAll(".load-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            loadTeam(name);
+        });
+    });
+
+    document.querySelectorAll(".del-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            if (confirm(`Excluir o time "${name}"?`)) {
+                deleteTeam(name);
+                showSavedTeams();
+            }
+        });
+    });
+}
+
+function deleteTeam(name) {
+    let teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
+    delete teams[name];
+    localStorage.setItem("savedTeams", JSON.stringify(teams));
+}
+
+/* Carrega time — monta usando setPersonagem (assim datas e selected array ficam corretos) */
+function loadTeam(name) {
+    const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
+    const team = teams[name];
+    if (!team) return;
+
+    // limpa seleção atual
+    selecionados = [];
+
+    // limpa todos os slots (hex e bench)
+    document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
+        slot.innerHTML = "";
+        delete slot.dataset.nome;
+        const infoDiv = slot.parentElement.querySelector('.player-info');
+        if (infoDiv) {
+            if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench";
+            else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+        }
+    });
+
+    // preencher titulares (assumimos que ordem das hex corresponde à ordem do array salvo)
+    const hexes = Array.from(document.querySelectorAll(".hex"));
+    team.main.forEach((nome, i) => {
+        if (!nome) return;
+        const personagem = personagens.find(p => p.nome === nome);
+        if (personagem && hexes[i]) {
+            setPersonagem(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
+        }
+    });
+
+    // preencher bench
+    const benches = Array.from(document.querySelectorAll(".bench-slot"));
+    team.bench.forEach((nome, i) => {
+        if (!nome) return;
+        const personagem = personagens.find(p => p.nome === nome);
+        if (personagem && benches[i]) {
+            setPersonagem(benches[i], personagem, 'bench');
+            // garantir attach events já existem
+            attachBenchEvents(benches[i]);
+        }
+    });
+
+    // atualizar sinergias após carregar
+    atualizarSinergias();
+}
+
+/* ====== ABRIR / FECHAR MENU ====== */
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const closeSidebar = document.getElementById("closeSidebar");
 
-menuBtn.addEventListener("click", () => {
+menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     sidebar.classList.add("open");
     menuBtn.style.display = "none";
 });
 
-closeSidebar.addEventListener("click", () => {
+closeSidebar.addEventListener("click", (e) => {
+    e.stopPropagation();
     sidebar.classList.remove("open");
     menuBtn.style.display = "block";
 });
 
+// Fecha se clicar fora do painel (ignora se clicar dentro)
 document.addEventListener("click", (e) => {
     const clicouDentroDoMenu = sidebar.contains(e.target) || e.target === menuBtn;
     if (!clicouDentroDoMenu && sidebar.classList.contains("open")) {
@@ -683,7 +874,7 @@ document.addEventListener("click", (e) => {
         menuBtn.style.display = "block";
     }
 });
-    
+
 </script>
 
 </body>
