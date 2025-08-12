@@ -69,7 +69,6 @@
         text-align: center;
     }
 
-    /* Bench de reservas */
     .bench-slot {
         width: 50px;
         height: 67px;
@@ -136,29 +135,29 @@
         border: 2px solid yellow;
     }
 
-    /* Painel lateral esquerdo */
+    /* Painel lateral */
     .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 300px;
-    height: 100%;
-    background-color: #333;
-    overflow-x: hidden;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform: translateX(-100%);
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
-    z-index: 999;
-    opacity: 0;
-    pointer-events: none;
-}
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 100%;
+        background-color: #333;
+        overflow-x: hidden;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        transform: translateX(-100%);
+        padding: 20px;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+    }
 
-.sidebar.open {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
-}
+    .sidebar.open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
 
     .sidebar h2 {
         color: #fff;
@@ -193,21 +192,40 @@
     #menuBtn:hover {
         background-color: #218838;
     }
+
+    /* Lista de personagens no menu */
+    .char-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .char-card {
+        width: 80px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .char-card img {
+        width: 100%;
+        border-radius: 5px;
+    }
 </style>
 </head>
 <body>
 
-<!-- Botão e Painel Lateral -->
 <button id="menuBtn">☰</button>
 <div class="sidebar" id="sidebar">
     <button class="close-btn" id="closeSidebar">×</button>
     <h2>Menu Lateral</h2>
-    <p>Aqui você pode colocar:</p>
     <ul>
-        <li>📊 Estatísticas do time</li>
-        <li>🔍 Busca de personagens</li>
-        <li>ℹ️ Ajuda</li>
+        <li><button class="menu-link" data-section="stats">📊 Estatísticas do time</button></li>
+        <li><button class="menu-link" data-section="characters">🔍 Personagens</button></li>
+        <li><button class="menu-link" data-section="help">ℹ️ Ajuda</button></li>
     </ul>
+    <div id="sidebar-content">
+        <p>Selecione uma opção acima.</p>
+    </div>
 </div>
 
 <h1>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</h1>
@@ -486,26 +504,215 @@ document.querySelectorAll(".hex").forEach(slot => {
     });
 });
 
-document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
-    const menuBtn = document.getElementById("menuBtn");
+const sidebarContent = document.getElementById("sidebar-content");
+
+document.querySelectorAll(".menu-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const section = btn.dataset.section;
+        if (section === "characters") {
+            mostrarListaPersonagens();
+        } else if (section === "stats") {
+            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
+        } else if (section === "help") {
+            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
+        }
+    });
+});
+
+function mostrarListaPersonagens() {
+    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
+    personagens.forEach(p => {
+        html += `
+            <div class="char-card" data-nome="${p.nome}">
+                <img src="${p.img}" alt="${p.nome}">
+                <p>${p.nome}</p>
+            </div>
+        `;
+    });
+    html += "</div>";
+    sidebarContent.innerHTML = html;
+
+    document.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+}
+
+function mostrarDetalhesPersonagem(p) {
+    sidebarContent.innerHTML = `
+        <h3>${p.nome}</h3>
+        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
+        <p><b>Função:</b> ${p.funcao}</p>
+        <p><b>Escola:</b> ${p.School}</p>
+        <p><b>Vínculos:</b> ${p.vinculo.join(", ")}</p>
+        <button id="backToList">← Voltar</button>
+    `;
+
+    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
+}
+
+const sidebarContent = document.getElementById("sidebar-content");
+
+document.querySelectorAll(".menu-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const section = btn.dataset.section;
+        if (section === "characters") {
+            mostrarListaPersonagens();
+        } else if (section === "stats") {
+            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
+        } else if (section === "help") {
+            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
+        }
+    });
+});
+
+function mostrarListaPersonagens() {
+    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
+    personagens.forEach(p => {
+        html += `
+            <div class="char-card" data-nome="${p.nome}">
+                <img src="${p.img}" alt="${p.nome}">
+                <p>${p.nome}</p>
+            </div>
+        `;
+    });
+    html += "</div>";
+    sidebarContent.innerHTML = html;
+
+    document.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+}
+
+function mostrarDetalhesPersonagem(p) {
+    sidebarContent.innerHTML = `
+        <h3>${p.nome}</h3>
+        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
+        <p><b>Função:</b> ${p.funcao}</p>
+        <p><b>Escola:</b> ${p.School}</p>
+        <p><b>Vínculos:</b> ${p.vinculo.join(", ")}</p>
+        <button id="backToList">← Voltar</button>
+    `;
+
+    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
+}
+
+    const sidebarContent = document.getElementById("sidebar-content");
+
+document.querySelectorAll(".menu-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const section = btn.dataset.section;
+        if (section === "characters") {
+            mostrarListaPersonagens();
+        } else if (section === "stats") {
+            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
+        } else if (section === "help") {
+            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
+        }
+    });
+});
+
+function mostrarListaPersonagens() {
+    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
+    personagens.forEach(p => {
+        html += `
+            <div class="char-card" data-nome="${p.nome}">
+                <img src="${p.img}" alt="${p.nome}">
+                <p>${p.nome}</p>
+            </div>
+        `;
+    });
+    html += "</div>";
+    sidebarContent.innerHTML = html;
+
+    document.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+}
+document.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+}
+    document.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+}
+    const sidebarContent = document.getElementById("sidebar-content");
+
+document.querySelectorAll(".menu-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const section = btn.dataset.section;
+        if (section === "characters") {
+            mostrarListaPersonagens();
+        } else if (section === "stats") {
+            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
+        } else if (section === "help") {
+            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
+        }
+    });
+});
+    function mostrarListaPersonagens() {
+    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
+    personagens.forEach(p => {
+        html += `
+            <div class="char-card" data-nome="${p.nome}">
+                <img src="${p.img}" alt="${p.nome}">
+                <p>${p.nome}</p>
+            </div>
+        `;
+    });
+    html += "</div>";
+    sidebarContent.innerHTML = html;
+function mostrarDetalhesPersonagem(p) {
+    sidebarContent.innerHTML = `
+        <h3>${p.nome}</h3>
+        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
+        <p><b>Função:</b> ${p.funcao}</p>
+        <p><b>Escola:</b> ${p.School}</p>
+        <p><b>Vínculos:</b> ${p.vinculo.join(", ")}</p>
+        <button id="backToList">← Voltar</button>
+    `;
+
+    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
+}
+// Abrir e fechar menu lateral
+const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const closeSidebar = document.getElementById("closeSidebar");
 
 menuBtn.addEventListener("click", () => {
     sidebar.classList.add("open");
-    menuBtn.style.display = "none"; // Esconde o botão
+    menuBtn.style.display = "none";
 });
 
 closeSidebar.addEventListener("click", () => {
     sidebar.classList.remove("open");
-    menuBtn.style.display = "block"; // Mostra o botão de volta
+    menuBtn.style.display = "block";
 });
 
-// Fecha se clicar fora do painel
 document.addEventListener("click", (e) => {
     if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && e.target !== menuBtn) {
         sidebar.classList.remove("open");
-        menuBtn.style.display = "block"; // Mostra o botão de volta
+        menuBtn.style.display = "block";
     }
 });
 </script>
