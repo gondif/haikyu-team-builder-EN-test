@@ -117,7 +117,9 @@
 
     #saveTeamBtn:hover {
         background-color: #218838;
-    }
+    } 
+    
+    
 
     #synergy-panel {
         margin-top: 50px;
@@ -328,6 +330,7 @@
         <div style="display:flex; align-items:center;">
             <!-- botão de salvar time (ícone download) -->
             <button id="saveTeamBtn" title="Salvar Time" style="margin-right:8px;">⬇️</button>
+            <button id="clearTeamBtn" title="Limpar Time" style="background-color:#ff4d4d; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
         </div>
 
         <div class="row" id="bench-row" style="gap:10px;">
@@ -842,6 +845,35 @@ function loadTeam(name) {
             setPersonagem(benches[i], personagem, 'bench');
             // garantir attach events já existem
             attachBenchEvents(benches[i]);
+        }
+    });
+
+    document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja remover todos os personagens e resetar o banco?")) return;
+
+    // limpa lista de selecionados
+    selecionados = [];
+
+    // limpa todos os slots principais
+    document.querySelectorAll(".hex").forEach(slot => {
+        slot.innerHTML = "";
+        delete slot.dataset.nome;
+        const infoDiv = slot.parentElement.querySelector('.player-info');
+        infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+    });
+
+    // limpa todos os bench slots e remove extras
+    const benchRow = document.getElementById("bench-row");
+    benchRow.querySelectorAll(".player-slot.bench").forEach((benchSlot, index) => {
+        if (index >= 3) {
+            benchSlot.remove(); // remove slots extras
+        } else {
+            const slot = benchSlot.querySelector(".bench-slot");
+            slot.innerHTML = "";
+            delete slot.dataset.nome;
+            const infoDiv = benchSlot.querySelector('.player-info');
+            infoDiv.textContent = "Bench";
         }
     });
 
