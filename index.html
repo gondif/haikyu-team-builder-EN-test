@@ -531,26 +531,78 @@ document.querySelectorAll(".menu-link").forEach(btn => {
 });
 
 function mostrarListaPersonagens() {
-    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
-    personagens.forEach(p => {
-        html += `
+    // Coletar valores únicos para montar os selects
+    const funcoes = [...new Set(personagens.map(p => p.funcao))];
+    const escolas = [...new Set(personagens.map(p => p.School))];
+    const vinculos = [...new Set(personagens.flatMap(p => p.vinculo))];
+
+    let html = `
+        <h3>Lista de Personagens</h3>
+        <div>
+            <label>Posição:</label>
+            <select id="filtroFuncao">
+                <option value="">Todos</option>
+                ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
+            </select>
+            <label>Escola:</label>
+            <select id="filtroEscola">
+                <option value="">Todos</option>
+                ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
+            </select>
+            <label>Vínculo:</label>
+            <select id="filtroVinculo">
+                <option value="">Todos</option>
+                ${vinculos.map(v => `<option value="${v}">${v}</option>`).join('')}
+            </select>
+            <button id="limparFiltros">Limpar</button>
+        </div>
+        <div class='char-list' id="charList"></div>
+    `;
+    sidebarContent.innerHTML = html;
+
+    // Função para renderizar a lista conforme filtros
+    function renderLista() {
+        const funcaoSel = document.getElementById("filtroFuncao").value;
+        const escolaSel = document.getElementById("filtroEscola").value;
+        const vinculoSel = document.getElementById("filtroVinculo").value;
+
+        const filtrados = personagens.filter(p => {
+            return (funcaoSel === "" || p.funcao === funcaoSel) &&
+                   (escolaSel === "" || p.School === escolaSel) &&
+                   (vinculoSel === "" || p.vinculo.includes(vinculoSel));
+        });
+
+        const listaEl = document.getElementById("charList");
+        listaEl.innerHTML = filtrados.map(p => `
             <div class="char-card" data-nome="${p.nome}">
                 <img src="${p.img}" alt="${p.nome}">
                 <p>${p.nome}</p>
             </div>
-        `;
-    });
-    html += "</div>";
-    sidebarContent.innerHTML = html;
+        `).join('');
 
-    document.querySelectorAll(".char-card").forEach(card => {
-    card.addEventListener("click", (e) => {
-        e.stopPropagation(); // impede que o clique feche o menu
-        const nome = card.dataset.nome;
-        const personagem = personagens.find(x => x.nome === nome);
-        mostrarDetalhesPersonagem(personagem);
+        listaEl.querySelectorAll(".char-card").forEach(card => {
+            card.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const nome = card.dataset.nome;
+                const personagem = personagens.find(x => x.nome === nome);
+                mostrarDetalhesPersonagem(personagem);
+            });
+        });
+    }
+
+    // Eventos dos filtros
+    document.getElementById("filtroFuncao").addEventListener("change", renderLista);
+    document.getElementById("filtroEscola").addEventListener("change", renderLista);
+    document.getElementById("filtroVinculo").addEventListener("change", renderLista);
+    document.getElementById("limparFiltros").addEventListener("click", () => {
+        document.getElementById("filtroFuncao").value = "";
+        document.getElementById("filtroEscola").value = "";
+        document.getElementById("filtroVinculo").value = "";
+        renderLista();
     });
-});
+
+    // Render inicial
+    renderLista();
 }
 
 function mostrarDetalhesPersonagem(p) {
@@ -564,9 +616,9 @@ function mostrarDetalhesPersonagem(p) {
     `;
 
     document.getElementById("backToList").addEventListener("click", (e) => {
-    e.stopPropagation(); // impede que o clique feche o menu
-    mostrarListaPersonagens();
-});
+        e.stopPropagation();
+        mostrarListaPersonagens();
+    });
 }
 
 // ====== ABRIR / FECHAR MENU ======
