@@ -544,12 +544,13 @@ function mostrarListaPersonagens() {
     sidebarContent.innerHTML = html;
 
     document.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
+    card.addEventListener("click", (e) => {
+        e.stopPropagation(); // impede que o clique feche o menu
+        const nome = card.dataset.nome;
+        const personagem = personagens.find(x => x.nome === nome);
+        mostrarDetalhesPersonagem(personagem);
     });
+});
 }
 
 function mostrarDetalhesPersonagem(p) {
@@ -562,8 +563,10 @@ function mostrarDetalhesPersonagem(p) {
         <button id="backToList">← Voltar</button>
     `;
 
-    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
-}
+    document.getElementById("backToList").addEventListener("click", (e) => {
+    e.stopPropagation(); // impede que o clique feche o menu
+    mostrarListaPersonagens();
+});
 
 // ====== ABRIR / FECHAR MENU ======
 const menuBtn = document.getElementById("menuBtn");
