@@ -537,27 +537,33 @@ function mostrarListaPersonagens() {
     const vinculos = [...new Set(personagens.flatMap(p => p.vinculo))];
 
     let html = `
-        <h3>Lista de Personagens</h3>
+    <h3>Lista de Personagens</h3>
+    <div class="filtros">
         <div>
             <label>Posição:</label>
             <select id="filtroFuncao">
                 <option value="">Todos</option>
                 ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
             </select>
+        </div>
+        <div>
             <label>Escola:</label>
             <select id="filtroEscola">
                 <option value="">Todos</option>
                 ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
             </select>
+        </div>
+        <div>
             <label>Vínculo:</label>
             <select id="filtroVinculo">
                 <option value="">Todos</option>
                 ${vinculos.map(v => `<option value="${v}">${v}</option>`).join('')}
             </select>
-            <button id="limparFiltros">Limpar</button>
         </div>
-        <div class='char-list' id="charList"></div>
-    `;
+        <button id="limparFiltros">Limpar</button>
+    </div>
+    <div class='char-list' id="charList"></div>
+`;
     sidebarContent.innerHTML = html;
 
     // Função para renderizar a lista conforme filtros
@@ -643,6 +649,40 @@ document.addEventListener("click", (e) => {
         menuBtn.style.display = "block";
     }
 });
+    .filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.filtros label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.filtros select {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+}
+
+#limparFiltros {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#limparFiltros:hover {
+    background-color: #e60000;
+}
 </script>
 
 </body>
