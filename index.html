@@ -135,10 +135,85 @@
     .scroll-menu img:hover {
         border: 2px solid yellow;
     }
+    /* Painel lateral esquerdo */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Escondido inicialmente */
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    overflow-x: hidden;
+    transition: left 0.3s ease;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.sidebar.open {
+    left: 0; /* Mostra o painel */
+}
+
+.sidebar h2 {
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.sidebar button.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+#menuBtn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+#menuBtn:hover {
+    background-color: #218838;
+}
+    <button id="menuBtn">☰ Menu</button>
+
+<div class="sidebar" id="sidebar">
+    <button class="close-btn" id="closeSidebar">×</button>
+    <h2>Menu Lateral</h2>
+    <p>Aqui você pode colocar:</p>
+    <ul>
+        <li>📊 Estatísticas do time</li>
+        <li>🔍 Busca de personagens</li>
+        <li>ℹ️ Ajuda</li>
+    </ul>
+</div>
 </style>
 </head>
 <body>
+<button id="menuBtn">☰ Menu</button>
 
+<div class="sidebar" id="sidebar">
+    <button class="close-btn" id="closeSidebar">×</button>
+    <h2>Menu Lateral</h2>
+    <p>Aqui você pode colocar:</p>
+    <ul>
+        <li>📊 Estatísticas do time</li>
+        <li>🔍 Busca de personagens</li>
+        <li>ℹ️ Ajuda</li>
+    </ul>
+</div>
 <h1>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</h1>
 
 <div class="team-grid">
