@@ -221,6 +221,40 @@
         margin-top: 10px;
         padding-right: 5px;
     }
+    .filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.filtros label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.filtros select {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+}
+
+#limparFiltros {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#limparFiltros:hover {
+    background-color: #e60000;
+}
 </style>
 </head>
 <body>
@@ -649,41 +683,7 @@ document.addEventListener("click", (e) => {
         menuBtn.style.display = "block";
     }
 });
-    .filtros {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.filtros label {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 3px;
-}
-
-.filtros select {
-    width: 100%;
-    padding: 5px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-}
-
-#limparFiltros {
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 6px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#limparFiltros:hover {
-    background-color: #e60000;
-}
-    };
+    
 </script>
 
 </body>
