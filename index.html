@@ -766,9 +766,10 @@ function mostrarDetalhesPersonagem(p) {
             `;
 
             // Voltar aos detalhes do personagem original
-            document.getElementById("backToChar").addEventListener("click", () => {
-                mostrarDetalhesPersonagem(p);
-            });
+            document.getElementById("backToChar").addEventListener("click", (e) => {
+    e.stopPropagation(); // Impede fechar o menu lateral
+    mostrarDetalhesPersonagem(p);
+});
 
             // Tornar cada card clicável para ir aos detalhes dele
             sidebarContent.querySelectorAll(".char-card").forEach(card => {
