@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</title>
+<style>
+    body {
+        background-color: #222;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 20px;
+    }
+
+    .team-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    .row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .top-row {
+        transform: translateX(6px);
+    }
+
+    .player-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hex {
+        position: relative;
+        width: 150px;
+        height: 210px;
+        background-color: #444;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.3s;
+        overflow: hidden;
+    }
+
+    .hex:hover {
+        background-color: #555;
+    }
+
+    .hex img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .player-info {
+        margin-top: 5px;
+        font-size: 14px;
+        color: #fff;
+        text-align: center;
+    }
+
+    /* Bench de reservas */
+    .bench-slot {
+        width: 50px;
+        height: 67px;
+        background-color: #444;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .bench-slot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .add-slot-btn {
+        background-color: #28a745;
+        border: none;
+        color: white;
+        padding: 5px 10px;
+        margin-left: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .add-slot-btn:hover {
+        background-color: #218838;
+    }
+
+    #synergy-panel {
+        margin-top: 50px;
+        background-color: #333;
+        padding: 15px;
+        border-radius: 10px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: left;
+    }
+
+    .scroll-menu {
+        display: none;
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: #333;
+        padding: 10px;
+        border-radius: 8px;
+        flex-wrap: wrap;
+    }
+
+    .scroll-menu img {
+        width: 80px;
+        height: auto;
+        cursor: grab;
+        margin: 5px;
+        border: 2px solid transparent;
+    }
+
+    .scroll-menu img:hover {
+        border: 2px solid yellow;
+    }
+</style>
+</head>
+<body>
+
+<h1>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</h1>
+
+<div class="team-grid">
+    <div class="row top-row">
+        <div class="player-slot"><div class="hex" data-role="S"></div><div class="player-info">S</div></div>
+        <div class="player-slot"><div class="hex" data-role="MB"></div><div class="player-info">MB</div></div>
+        <div class="player-slot"><div class="hex" data-role="WS"></div><div class="player-info">WS</div></div>
+    </div>
+    <div class="row">
+        <div class="player-slot"><div class="hex" data-role="L"></div><div class="player-info">L</div></div>
+        <div class="player-slot"><div class="hex" data-role="WS"></div><div class="player-info">WS</div></div>
+        <div class="player-slot"><div class="hex" data-role="MB"></div><div class="player-info">MB</div></div>
+        <div class="player-slot"><div class="hex" data-role="OP"></div><div class="player-info">OP</div></div>
+    </div>
+    <div class="row" id="bench-row">
+        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+        <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
+        <button class="add-slot-btn" onclick="addBenchSlot()">+</button>
+    </div>
+</div>
+
+<div class="scroll-menu" id="scrollMenu"></div>
+
+<div id="synergy-panel">
+    <h2>Synergies</h2>
+    <ul id="synergy-list"><li>Only Deployment Synergies are displayed.Synergies will only work when players are in court inside the game.</li></ul>
+</div>
+
+<script>
+const personagens = [
+{ nome: "Kageyama UR", funcao: "S", img: "img/kageyamaUR.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Karasuno Geniuses"] },
+{ nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: ["nothing"] },
+{ nome: "Hinata SP", funcao: "MB", img: "img/hinataSP.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Cherry Blossom Viewing" , "Sun vs Moon"] },
+{ nome: "Hinata SSR", funcao: "MB", img: "img/hinataSR.png", School: "Karasuno", vinculo: ["Eccentric Duo"] },
+{ nome: "Nishinoya SP", funcao: "L", img: "img/nishinoyaSP.png", School: "Karasuno", vinculo: ["Karasuno Geniuses", "After School"] },
+{ nome: "Nishinoya SSR", funcao: "L", img: "img/nishinoyaSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker" , "Kiyoko Squad"] },
+{ nome: "Tanaka SSR", funcao: "WS", img: "img/tanakaSR.png", School: "Karasuno", vinculo: ["Kiyoko Squad"] },
+{ nome: "Tsuki SP", funcao: "MB", img: "img/tsukiSP.png", School: "Karasuno", vinculo: ["Sun vs Moon"] },
+{ nome: "Tsuki SSR", funcao: "MB", img: "img/tsukiSR.png", School: "Karasuno", vinculo: ["nothing1"] },
+{ nome: "Daichi SSR", funcao: "OP", img: "img/daichiSR.png", School: "Karasuno", vinculo: ["nothing2"] },
+{ nome: "Azumane SSR", funcao: "WS", img: "img/azumaneSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker"] },
+{ nome: "Sugawara SP", funcao: "S", img: "img/sugawaraSP.png", School: "Karasuno", vinculo: ["After School"] },
+{ nome: "Kenma SP", funcao: "S", img: "img/kenmaSP.png", School: "Nekoma", vinculo: ["Cherry Blossom Viewing"] },
+{ nome: "Kenma SSR", funcao: "S", img: "img/kenmaSR.png", School: "Nekoma", vinculo: ["Brain and Commander"] },
+{ nome: "Yaku SSR", funcao: "L", img: "img/yakuSR.png", School: "Nekoma", vinculo: ["Educational Guidance"] },
+{ nome: "Kuro SSR", funcao: "MB", img: "img/kuroSR.png", School: "Nekoma", vinculo: ["nothing3"] },
+{ nome: "Kuro UR", funcao: "MB", img: "img/kuroUR.png", School: "Nekoma", vinculo: ["Brain and Commander"] },
+{ nome: "Lev SSR", funcao: "MB", img: "img/levSR.png", School: "Nekoma", vinculo: ["Educational Guidance"] },
+{ nome: "Aone SP", funcao: "MB", img: "img/aoneSP.png", School: "Dateko", vinculo: ["Swimming"] },
+{ nome: "Aone SSR", funcao: "MB", img: "img/aoneSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic"] },
+{ nome: "Futakuchi SSR", funcao: "WS", img: "img/futakuchiSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic" , "The New Captain and the Tall Rookie"] },
+{ nome: "Sasaya SSR", funcao: "OP", img: "img/sasayaSR.png", School: "Dateko", vinculo: ["nothing4"] },
+{ nome: "Koganegawa SSR", funcao: "S", img: "img/koganegawaSR.png", School: "Dateko", vinculo: ["The New Captain and the Tall Rookie"] }, 
+{ nome: "Oikawa UR", funcao: "S", img: "img/oikawaUR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony"] },
+{ nome: "Oikawa SSR", funcao: "S", img: "img/oikawaSR.png", School: "Aoba Johsai", vinculo: ["nothing5"] },
+{ nome: "Iwazumi SSR", funcao: "WS", img: "img/iwazumiSR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony", "The Pack"] },
+{ nome: "Kentaro MAD DOG SSR", funcao: "OP", img: "img/kentaroSR.png", School: "Aoba Johsai", vinculo: ["The Pack"] },
+{ nome: "Ushijima UR", funcao: "OP", img: "img/ushijimaUR.png", School: "Shiratorizawa", vinculo: ["Besties for Life", "Absolute Champion and Steady Setter"] },
+{ nome: "Tendo SSR", funcao: "MB", img: "img/tendoSR.png", School: "Shiratorizawa", vinculo: ["Besties for Life"] },
+{ nome: "Goshiki SSR", funcao: "WS", img: "img/goshikiSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"] },
+{ nome: "Shirabu SSR", funcao: "S", img: "img/shirabuSR.png", School: "Shiratorizawa", vinculo: ["Absolute Champion and Steady Setter"] },
+{ nome: "Semi SSR", funcao: "S", img: "img/semiSR.png", School: "Shiratorizawa", vinculo: ["nothing6"] },
+{ nome: "Ohira SSR", funcao: "WS", img: "img/ohiraSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"] },
+{ nome: "Yamagata SSR", funcao: "L", img: "img/yamagataSR.png", School: "Shiratorizawa", vinculo: ["nothing7"] },
+{ nome: "Bokuto UR", funcao: "WS", img: "img/bokutoUR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"] },
+{ nome: "Bokuto SP", funcao: "WS", img: "img/bokutoSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"] },
+{ nome: "Akaashi SP", funcao: "S", img: "img/akaashiSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"] },
+{ nome: "Akaashi SSR", funcao: "S", img: "img/akaashiSR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"] },
+{ nome: "Konoha SSR", funcao: "OP", img: "img/konohaSR.png", School: "Fukurodani", vinculo: ["nothing8"] },
+{ nome: "Haruki SSR", funcao: "L", img: "img/harukiSR.png", School: "Fukurodani", vinculo: ["nothing9"] },
+{ nome: "Tatsuo SSR", funcao: "MB", img: "img/tatsuoSR.png", School: "Fukurodani", vinculo: ["nothing10"] },
+{ nome: "Terushima SSR", funcao: "WS", img: "img/terushimaSR.png", School: "Jozenji", vinculo: ["nothing11"] },
+{ nome: "Atsumu UR", funcao: "S", img: "img/atsumuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"] },
+{ nome: "Osamu UR", funcao: "OP", img: "img/osamuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"] },
+{ nome: "Kita SSR", funcao: "WS", img: "img/kitaSR.png", School: "Inarizaki", vinculo: ["Twin Heads"] },
+{ nome: "Rintaro SSR", funcao: "MB", img: "img/rintaroSR.png", School: "Inarizaki", vinculo: ["nothing12"] },
+{ nome: "Oshiro SSR", funcao: "WS", img: "img/oshiroSR.png", School: "Inarizaki", vinculo: ["nothing13"] },
+{ nome: "Akagi SSR", funcao: "L", img: "img/akagiSR.png", School: "Inarizaki", vinculo: ["nothing14"] },
+{ nome: "Yui SSR", funcao: "WS", img: "img/yuiSR.png", School: "Inarizaki", vinculo: ["nothing15"] },
+{ nome: "Hoshiumi UR", funcao: "WS", img: "img/hoshiumiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"] },
+{ nome: "Hirugami UR", funcao: "MB", img: "img/hirugamiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"] },
+{ nome: "Hayaseiomi UR", funcao: "WS", img: "img/hayaseiomiUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"] },
+{ nome: "Komori UR", funcao: "L", img: "img/komoriUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"] },
+
+];
+
+const descricoesSinergia = {
+"Karasuno": "Increases ALL players’ Power Attack and Quick Attack stats by 10%",
+"Nekoma": "Increases ALL players’ Receive stat by 15%",
+"Dateko": "Increases ALL players’ Block stat by 15%",
+"Aoba Johsai": "Increases ALL players’ Power Attack stat by 15%",
+"Shiratorizawa": "Increases ALL players’ Awareness and Strength stats by 10%",
+"Fukurodani": "Team Morale will increase by 20",
+"Inarizaki": "Increases ALL players’ Strength and Defense stats by 5%",
+"Eccentric Duo": "Increases Hinata and Kageyama’s quick attack power and Awareness.",
+"Karasuno Geniuses": "Increases Nishinoya SP’s reflex and Receive. When Nishinoya uses his special move, Kageyama UR gains one stack of Competitive Spirit*. If his special is a perfect play, the power of the first spike (Power Attack or Quick Attack) after that play is increased by 20% of the attacker’s power",
+"Cherry Blossom Viewing": "Increases Kenma SP’s Awareness. Increases Hinata SP’s Quick Attack if it is a perfect play",
+"Sun vs Moon": "no info",
+"After School": "Increases Nishinoya SP’s reflex; when his stamina is low, increases it even more",
+"Guardian God and Wing Spiker": "When Nishinoya SSR or Azumane SSR use a skill, both increase their Attack Technique and Defense Technique",
+"Kiyoko Squad": "When scoring, increases Team Morale",
+"Brain and Commander": "When Kenma SSR makes a pass, Kuro UR performs a strengthened Quick Attack",
+"Educational Guidance": "Increases Yaku SSR’s Receive and Lev SSR’s Quick Attack",
+"Swimming": "(Activates with 3 players) Increases team morale. When team morale is active, increases allies’ reflex in double or triple blocks",
+"The Silent and the Sarcastic": "Allows Aone SSR and Futakuchi SSR to use the Double Block skill",
+"The New Captain and the Tall Rookie": "Increases the Block of players in the front row",
+"Perfect Harmony": "When Oikawa UR makes a pass, Iwaizumi SSR spikes with increased Power Attack. Gains 2 stacks of Attack Rhythm*, each stack increases the team’s Awareness by 1%. Maximum of 10 stacks.",
+"The Pack": "Increases Power Attack of Iwaizumi SSR and Kentaro SSR",
+"Besties for Life": "Increases Ushijima UR’s Power Attack and Tendo SSR’s Defense Technique",
+"Absolute Champion and Steady Setter": "When Shirabu SSR makes a pass, Ushijima UR spikes with 10% more power",
+"Shiratorizawa’s WS": "Increases Power Attack of ALL players present",
+"Miracle Ace and Caring Setter": "Bokuto UR comes out of depression. When Akaashi SSR makes a pass and Bokuto UR spikes, increases his Power Attack for that spike by 20% and raises team morale by 15",
+"Ace Miraculous and Caring Setter": "Increases Akaashi SP’s Passing. When team morale is active, increases Bokuto SP’s Power Attack by 18% and Akaashi SP’s Passing by 5%",
+"Twin Power": "When Atsumu UR makes a pass and Osamu UR makes a Minus Tempo Quick Attack, increases the Quick Attack of that play. Increases Attack Technique by 15%. The attack cannot be blocked.",
+"Twin Heads": "Increases Osamu UR’s Attack Technique. Increases Kita SSR’s stats. At the start of the match Atsumu gains 3 stacks of Perfect Hit*, each increasing his Passing by 2%. Max 10 stacks. Kita SSR gains a similar buff that increases his Receive. Max 3 stacks. The twins’ first Quick Attack per set is increased by Quick Attack × 12%",
+"Longtime Friends": "Increases Hoshiumi UR’s stats. Increases Block for front-row players. Hoshiumi UR and Hirugami UR gain a buff (no info)",
+"Top Spiker and Top Libero": "Sakusa UR increases his Power Attack. Komori UR increases his Receive. Increases allies’ Receive by 20%",
+};
+
+    
+
+let selecionados = [];
+
+function addBenchSlot() {
+    const benchRow = document.getElementById("bench-row");
+    const slot = document.createElement("div");
+    slot.className = "player-slot bench";
+    slot.innerHTML = `<div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div>`;
+    benchRow.insertBefore(slot, benchRow.querySelector(".add-slot-btn"));
+    attachBenchEvents(slot.querySelector(".bench-slot"));
+}
+
+function attachBenchEvents(slot) {
+    slot.addEventListener("click", () => mostrarMenu("bench", slot));
+    slot.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        removerPersonagem(slot);
+    });
+}
+
+function mostrarMenu(role, slot) {
+    scrollMenu.innerHTML = '';
+    let disponiveis;
+
+    if (role === "bench") {
+        disponiveis = personagens.filter(p => !selecionados.includes(p) && respeitaLimiteBench(p, slot));
+    } else {
+        disponiveis = personagens.filter(p => p.funcao === role && !selecionados.includes(p));
+    }
+
+    disponiveis.forEach(p => {
+        const img = document.createElement('img');
+        img.src = p.img;
+        img.alt = p.nome;
+        img.title = p.nome;
+        img.addEventListener('click', () => {
+            setPersonagem(slot, p, role);
+            scrollMenu.style.display = 'none';
+        });
+        scrollMenu.appendChild(img);
+    });
+
+    scrollMenu.style.display = 'flex';
+}
+
+function respeitaLimiteBench(p, slot) {
+    const Bench = Array.from(document.querySelectorAll(".bench-slot"))
+        .map(s => s.dataset.nome && personagens.find(x => x.nome === s.dataset.nome))
+        .filter(Boolean);
+
+    if (slot.dataset.nome === p.nome) return true;
+
+    const contagem = Bench.reduce((acc, cur) => {
+        acc[cur.funcao] = (acc[cur.funcao] || 0) + 1;
+        return acc;
+    }, {});
+
+    if (p.funcao === "MB" && contagem["MB"] >= 2) return false;
+    if (p.funcao === "WS" && contagem["WS"] >= 2) return false;
+    if (["S", "L", "OP"].includes(p.funcao) && contagem[p.funcao] >= 1) return false;
+
+    return true;
+}
+
+function setPersonagem(slot, personagem, role) {
+    if (slot.dataset.nome) {
+        selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
+    }
+
+    slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
+    slot.dataset.nome = personagem.nome;
+
+    const infoDiv = slot.parentElement.querySelector('.player-info');
+    infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
+
+    selecionados.push(personagem);
+    atualizarSinergias();
+}
+
+function removerPersonagem(slot) {
+    if (slot.dataset.nome) {
+        selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
+        slot.innerHTML = ""; 
+        delete slot.dataset.nome;
+
+        const infoDiv = slot.parentElement.querySelector('.player-info');
+        if (slot.classList.contains("bench-slot")) {
+            infoDiv.textContent = "Bench";
+        } else {
+            infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
+        }
+
+        atualizarSinergias();
+    }
+}
+
+function atualizarSinergias() {
+    const synergyListEl = document.getElementById("synergy-list");
+    synergyListEl.innerHTML = "";
+
+    const SchoolsCount = {};
+    const vinculosCount = {};
+
+    // Contagem de Schools (apenas titulares)
+    document.querySelectorAll(".hex").forEach(slot => {
+        if (slot.dataset.nome) {
+            const p = personagens.find(x => x.nome === slot.dataset.nome);
+            SchoolsCount[p.School] = (SchoolsCount[p.School] || 0) + 1;
+        }
+    });
+
+    document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
+    if (slot.dataset.nome) {
+        const p = personagens.find(x => x.nome === slot.dataset.nome);
+        if (Array.isArray(p.vinculo)) {
+            p.vinculo.forEach(v => {
+                vinculosCount[v] = (vinculosCount[v] || 0) + 1;
+            });
+        } else if (p.vinculo) {
+            vinculosCount[p.vinculo] = (vinculosCount[p.vinculo] || 0) + 1;
+        }
+        }
+    });
+
+    let algumaSinergia = false;
+
+    // Sinergia de School (4 ou mais)
+    for (const School in SchoolsCount) {
+        if (SchoolsCount[School] >= 4) {
+            synergyListEl.innerHTML += `<li>School: ${School} - ${descricoesSinergia[School] || ""}</li>`;
+            algumaSinergia = true;
+        }
+    }
+
+    // Sinergia de Bond (2 ou mais)
+    for (const vinculo in vinculosCount) {
+        if (vinculosCount[vinculo] >= 2) {
+            synergyListEl.innerHTML += `<li>Bond: ${vinculo} - ${descricoesSinergia[vinculo] || ""}</li>`;
+            algumaSinergia = true;
+        }
+    }
+
+    if (!algumaSinergia) {
+        synergyListEl.innerHTML = "<li>No active synergies</li>";
+    }
+}
+
+document.querySelectorAll(".hex").forEach(slot => {
+    slot.addEventListener("click", () => mostrarMenu(slot.dataset.role, slot));
+    slot.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        removerPersonagem(slot);
+    });
+});
+
+document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
+</script>
+
+</body>
+</html>
