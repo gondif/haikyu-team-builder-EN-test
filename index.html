@@ -328,10 +328,9 @@
     <!-- linha onde fica o botão SALVAR e os bench slots -->
     <div class="row" id="bench-row-wrapper" style="align-items:center;">
         <div style="display:flex; align-items:center;">
-            <!-- botão de salvar time (ícone download) -->
-            <button id="saveTeamBtn" title="Salvar Time" style="margin-right:8px;">⬇️</button>
-            <button id="clearTeamBtn" title="Limpar Time" style="background-color:#ff4d4d; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
-        </div>
+    <button id="saveTeamBtn" title="Salvar Time" style="background-color:#222222;margin-right:8px;">⬇️</button>
+    <button id="clearTeamBtn" title="Limpar Time" style="background-color:#222222; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
+</div>
 
         <div class="row" id="bench-row" style="gap:10px;">
             <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
@@ -848,35 +847,6 @@ function loadTeam(name) {
         }
     });
 
-    document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (!confirm("Tem certeza que deseja remover todos os personagens e resetar o banco?")) return;
-
-    // limpa lista de selecionados
-    selecionados = [];
-
-    // limpa todos os slots principais
-    document.querySelectorAll(".hex").forEach(slot => {
-        slot.innerHTML = "";
-        delete slot.dataset.nome;
-        const infoDiv = slot.parentElement.querySelector('.player-info');
-        infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
-    });
-
-    // limpa todos os bench slots e remove extras
-    const benchRow = document.getElementById("bench-row");
-    benchRow.querySelectorAll(".player-slot.bench").forEach((benchSlot, index) => {
-        if (index >= 3) {
-            benchSlot.remove(); // remove slots extras
-        } else {
-            const slot = benchSlot.querySelector(".bench-slot");
-            slot.innerHTML = "";
-            delete slot.dataset.nome;
-            const infoDiv = benchSlot.querySelector('.player-info');
-            infoDiv.textContent = "Bench";
-        }
-    });
-
     // atualizar sinergias após carregar
     atualizarSinergias();
 }
@@ -906,6 +876,39 @@ document.addEventListener("click", (e) => {
         menuBtn.style.display = "block";
     }
 });
+    // Botão para limpar todo o time e resetar o banco
+document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja remover todos os personagens e resetar o banco?")) return;
+
+    // Fecha o menu lateral se estiver aberto
+    sidebar.classList.remove("open");
+    menuBtn.style.display = "block";
+
+    // Limpa seleção
+    selecionados = [];
+
+    // Reseta todos os slots principais
+    document.querySelectorAll(".hex").forEach(slot => {
+        slot.innerHTML = "";
+        delete slot.dataset.nome;
+        const infoDiv = slot.parentElement.querySelector('.player-info');
+        infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+    });
+
+    // Reseta banco para 3 slots
+    const benchRow = document.getElementById("bench-row");
+    benchRow.querySelectorAll(".player-slot.bench").forEach((benchSlot, index) => {
+        if (index >= 3) {
+            benchSlot.remove();
+        } else {
+            const slot = benchSlot.querySelector(".bench-slot");
+            slot.innerHTML = "";
+            delete slot.dataset.nome;
+            const infoDiv = benchSlot.querySelector('.player-info');
+            infoDiv.textContent = "Bench";
+        }
+    });
 
 </script>
 
