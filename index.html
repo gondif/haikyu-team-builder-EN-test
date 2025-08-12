@@ -151,6 +151,8 @@
         z-index: 999;
         opacity: 0;
         pointer-events: none;
+        display: flex;
+        flex-direction: column;
     }
 
     .sidebar.open {
@@ -209,6 +211,15 @@
     .char-card img {
         width: 100%;
         border-radius: 5px;
+    }
+
+    /* Conteúdo do menu com rolagem */
+    #sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(100% - 150px);
+        margin-top: 10px;
+        padding-right: 5px;
     }
 </style>
 </head>
@@ -554,147 +565,7 @@ function mostrarDetalhesPersonagem(p) {
     document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
 }
 
-const sidebarContent = document.getElementById("sidebar-content");
-
-document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            mostrarListaPersonagens();
-        } else if (section === "stats") {
-            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
-        } else if (section === "help") {
-            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
-        }
-    });
-});
-
-function mostrarListaPersonagens() {
-    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
-    personagens.forEach(p => {
-        html += `
-            <div class="char-card" data-nome="${p.nome}">
-                <img src="${p.img}" alt="${p.nome}">
-                <p>${p.nome}</p>
-            </div>
-        `;
-    });
-    html += "</div>";
-    sidebarContent.innerHTML = html;
-
-    document.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
-    });
-}
-
-function mostrarDetalhesPersonagem(p) {
-    sidebarContent.innerHTML = `
-        <h3>${p.nome}</h3>
-        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
-        <p><b>Função:</b> ${p.funcao}</p>
-        <p><b>Escola:</b> ${p.School}</p>
-        <p><b>Vínculos:</b> ${p.vinculo.join(", ")}</p>
-        <button id="backToList">← Voltar</button>
-    `;
-
-    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
-}
-
-    const sidebarContent = document.getElementById("sidebar-content");
-
-document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            mostrarListaPersonagens();
-        } else if (section === "stats") {
-            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
-        } else if (section === "help") {
-            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
-        }
-    });
-});
-
-function mostrarListaPersonagens() {
-    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
-    personagens.forEach(p => {
-        html += `
-            <div class="char-card" data-nome="${p.nome}">
-                <img src="${p.img}" alt="${p.nome}">
-                <p>${p.nome}</p>
-            </div>
-        `;
-    });
-    html += "</div>";
-    sidebarContent.innerHTML = html;
-
-    document.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
-    });
-}
-document.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
-    });
-}
-    document.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
-    });
-}
-    const sidebarContent = document.getElementById("sidebar-content");
-
-document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            mostrarListaPersonagens();
-        } else if (section === "stats") {
-            sidebarContent.innerHTML = "<h3>Estatísticas do Time</h3><p>Em breve...</p>";
-        } else if (section === "help") {
-            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
-        }
-    });
-});
-    function mostrarListaPersonagens() {
-    let html = "<h3>Lista de Personagens</h3><div class='char-list'>";
-    personagens.forEach(p => {
-        html += `
-            <div class="char-card" data-nome="${p.nome}">
-                <img src="${p.img}" alt="${p.nome}">
-                <p>${p.nome}</p>
-            </div>
-        `;
-    });
-    html += "</div>";
-    sidebarContent.innerHTML = html;
-function mostrarDetalhesPersonagem(p) {
-    sidebarContent.innerHTML = `
-        <h3>${p.nome}</h3>
-        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
-        <p><b>Função:</b> ${p.funcao}</p>
-        <p><b>Escola:</b> ${p.School}</p>
-        <p><b>Vínculos:</b> ${p.vinculo.join(", ")}</p>
-        <button id="backToList">← Voltar</button>
-    `;
-
-    document.getElementById("backToList").addEventListener("click", mostrarListaPersonagens);
-}
-// Abrir e fechar menu lateral
+// ====== ABRIR / FECHAR MENU ======
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const closeSidebar = document.getElementById("closeSidebar");
