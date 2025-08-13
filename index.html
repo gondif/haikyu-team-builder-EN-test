@@ -245,6 +245,14 @@
     overflow-y: auto; /* ativa rolagem vertical */
     padding: 10px;
     box-sizing: border-box;
+
+        
+    /* Oculta a barra no Chrome, Edge, Safari */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE e Edge antigos */
+}
+    #sidebar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
 }
 
     .filtros {
