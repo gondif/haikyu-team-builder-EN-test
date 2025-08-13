@@ -682,7 +682,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
 function mostrarListaPersonagens() {
     const funcoes = [...new Set(personagens.map(p => p.funcao))];
     const escolas = [...new Set(personagens.map(p => p.School))];
-    const vinculos = [...new Set(personagens.flatMap(p => p.vinculo))];
+    const statusKeys = [...new Set(personagens.flatMap(p => Object.keys(p.status || {})))];
 
     let html = `
     <h3>Lista de Personagens</h3>
@@ -702,10 +702,10 @@ function mostrarListaPersonagens() {
             </select>
         </div>
         <div>
-            <label>Vínculo:</label>
-            <select id="filtroVinculo">
+            <label>Status:</label>
+            <select id="filtroStatus">
                 <option value="">Todos</option>
-                ${vinculos.map(v => `<option value="${v}">${v}</option>`).join('')}
+                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
         </div>
         <button id="limparFiltros">Limpar</button>
@@ -718,21 +718,33 @@ function mostrarListaPersonagens() {
     function renderLista() {
         const funcaoSel = document.getElementById("filtroFuncao").value;
         const escolaSel = document.getElementById("filtroEscola").value;
-        const vinculoSel = document.getElementById("filtroVinculo").value;
+         const statusSel = document.getElementById("filtroStatus").value;
 
-        const filtrados = personagens.filter(p => {
+          // filtra por função e escola (o status é só para ordenar)
+        let filtrados = personagens.filter(p => {
             return (funcaoSel === "" || p.funcao === funcaoSel) &&
-                   (escolaSel === "" || p.School === escolaSel) &&
-                   (vinculoSel === "" || p.vinculo.includes(vinculoSel));
+                   (escolaSel === "" || p.School === escolaSel);
         });
 
-        const listaEl = document.getElementById("charList");
-        listaEl.innerHTML = filtrados.map(p => `
-            <div class="char-card" data-nome="${p.nome}">
-                <img src="${p.img}" alt="${p.nome}">
-                <p>${p.nome}</p>
-            </div>
-        `).join('');
+        // ordena do MAIOR para o MENOR de acordo com o status escolhido
+        if (statusSel) {
+            filtrados.sort((a, b) => {
+                const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
+                const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
+                return bv - av;
+            });
+        }
+
+       const listaEl = document.getElementById("charList");
+        listaEl.innerHTML = filtrados.map(p => {
+            const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
+            return `
+                <div class="char-card" data-nome="${p.nome}">
+                    <img src="${p.img}" alt="${p.nome}">
+                    <p>${p.nome}${statusSel ? ` — ${statusSel}: ${v}` : ""}</p>
+                </div>
+            `;
+        }).join('');
 
         listaEl.querySelectorAll(".char-card").forEach(card => {
             card.addEventListener("click", (e) => {
@@ -746,11 +758,12 @@ function mostrarListaPersonagens() {
 
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
-    document.getElementById("filtroVinculo").addEventListener("change", renderLista);
+    document.getElementById("filtroStatus").addEventListener("change", renderLista);
+
     document.getElementById("limparFiltros").addEventListener("click", () => {
         document.getElementById("filtroFuncao").value = "";
         document.getElementById("filtroEscola").value = "";
-        document.getElementById("filtroVinculo").value = "";
+        document.getElementById("filtroStatus").value = "";
         renderLista();
     });
 
