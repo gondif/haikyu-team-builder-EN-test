@@ -1040,13 +1040,11 @@ function mostrarDetalhesPersonagem(p) {
     sidebarContent.innerHTML = `
         <h3>${p.nome}</h3>
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
-        if (p.symbols && p.symbols.length > 0) {
-    html += `<div class="person-symbols">`;
-    p.symbols.forEach(sym => {
-        html += `<img src="${sym}" class="symbol-icon">`;
-    });
-    html += `</div>`;
-}
+        ${p.symbols && p.symbols.length > 0 ? `
+            <div class="person-symbols">
+                ${p.symbols.map(sym => `<img src="${sym}" class="symbol-icon">`).join('')}
+            </div>
+        ` : ""}
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
 
