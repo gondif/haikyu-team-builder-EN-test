@@ -691,48 +691,49 @@ function atualizarSinergias() {
 
     // === Clique em School ===
     document.querySelectorAll(".school-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const schoolName = btn.dataset.school;
+
+        const relacionados = personagens.filter(pers => pers.School === schoolName);
+
+        sidebarContent.innerHTML = `
+            <h3>School: ${schoolName}</h3>
+            <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
+            <div class="char-list">
+                ${relacionados.map(r => `
+                    <div class="char-card" data-nome="${r.nome}">
+                        <img src="${r.img}" alt="${r.nome}">
+                        <p>${r.nome}</p>
+                    </div>
+                `).join('')}
+            </div>
+            <button id="backToSynergies">← Voltar</button>
+        `;
+
+        sidebar.classList.add("open");
+        menuBtn.style.display = "none";
+
+        document.getElementById("backToSynergies").addEventListener("click", (e) => {
             e.stopPropagation();
-            const schoolName = btn.dataset.school;
-
-            const relacionados = personagens.filter(pers => pers.School === schoolName);
-
-            sidebarContent.innerHTML = `
-                <h3>School: ${schoolName}</h3>
-                <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
-                <div class="char-list">
-                    ${relacionados.map(r => `
-                        <div class="char-card" data-nome="${r.nome}">
-                            <img src="${r.img}" alt="${r.nome}">
-                            <p>${r.nome}</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <button id="backToSynergies">← Voltar</button>
-            `;
-
+            atualizarSinergias();
             sidebar.classList.add("open");
             menuBtn.style.display = "none";
+        });
 
-            document.getElementById("backToSynergies").addEventListener("click", (e) => {
+        // 🔹 Aqui é onde precisamos aplicar a mesma lógica
+        sidebarContent.querySelectorAll(".char-card").forEach(card => {
+            card.addEventListener("click", (e) => {
                 e.stopPropagation();
-                atualizarSinergias();
-                sidebar.classList.add("open");
+                const nome = card.dataset.nome;
+                const personagem = personagens.find(x => x.nome === nome);
+                mostrarDetalhesPersonagem(personagem);
+                sidebar.classList.add("open"); // mantém o menu aberto
                 menuBtn.style.display = "none";
-            });
-
-            sidebarContent.querySelectorAll(".char-card").forEach(card => {
-    card.addEventListener("click", (e) => {
-        e.stopPropagation(); // impede que o clique seja capturado pelo listener global
-        const nome = card.dataset.nome;
-        const personagem = personagens.find(x => x.nome === nome);
-        mostrarDetalhesPersonagem(p);
-        sidebar.classList.add("open"); // garante que o menu continue aberto
-        menuBtn.style.display = "none";
-    });
             });
         });
     });
+});
 
     // === Clique em Bond ===
     document.querySelectorAll(".synergy-btn").forEach(btn => {
