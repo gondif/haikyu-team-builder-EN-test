@@ -311,6 +311,26 @@
     background-color: #888;
     transform: scale(0.98);
 }
+    .skill-btn {
+    background-color: #555;
+    color: white;
+    border: 1px solid #777;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.skill-btn:hover {
+    background-color: #777;
+    transform: scale(1.05);
+}
+
+.skill-btn:active {
+    background-color: #999;
+    transform: scale(0.98);
+}
 
 </style>
 </head>
@@ -372,59 +392,59 @@
 <script>
 /* ====== DADOS (mantidos) ====== */
 const personagens = [
-{ nome: "Kageyama UR", funcao: "S", img: "img/kageyamaUR.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Karasuno Geniuses"] },
-{ nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: ["nothing"] },
-{ nome: "Hinata SP", funcao: "MB", img: "img/hinataSP.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Cherry Blossom Viewing" , "Sun vs Moon"] },
-{ nome: "Hinata SSR", funcao: "MB", img: "img/hinataSR.png", School: "Karasuno", vinculo: ["Eccentric Duo"] },
-{ nome: "Nishinoya SP", funcao: "L", img: "img/nishinoyaSP.png", School: "Karasuno", vinculo: ["Karasuno Geniuses", "After School"] },
-{ nome: "Nishinoya SSR", funcao: "L", img: "img/nishinoyaSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker" , "Kiyoko Squad"] },
-{ nome: "Tanaka SSR", funcao: "WS", img: "img/tanakaSR.png", School: "Karasuno", vinculo: ["Kiyoko Squad"] },
-{ nome: "Tsuki SP", funcao: "MB", img: "img/tsukiSP.png", School: "Karasuno", vinculo: ["Sun vs Moon"] },
-{ nome: "Tsuki SSR", funcao: "MB", img: "img/tsukiSR.png", School: "Karasuno", vinculo: ["nothing1"] },
-{ nome: "Daichi SSR", funcao: "OP", img: "img/daichiSR.png", School: "Karasuno", vinculo: ["nothing2"] },
-{ nome: "Azumane SSR", funcao: "WS", img: "img/azumaneSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker"] },
-{ nome: "Sugawara SP", funcao: "S", img: "img/sugawaraSP.png", School: "Karasuno", vinculo: ["After School"] },
-{ nome: "Kenma SP", funcao: "S", img: "img/kenmaSP.png", School: "Nekoma", vinculo: ["Cherry Blossom Viewing"] },
-{ nome: "Kenma SSR", funcao: "S", img: "img/kenmaSR.png", School: "Nekoma", vinculo: ["Brain and Commander"] },
-{ nome: "Yaku SSR", funcao: "L", img: "img/yakuSR.png", School: "Nekoma", vinculo: ["Educational Guidance"] },
+{ nome: "Kageyama UR", funcao: "S", img: "img/kageyamaUR.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Karasuno Geniuses"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}]   },
+{ nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: ["nothing"],status:{Serve:2,Spike:2,Set:2,Receive:2,Block:2,Save:2},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
+{ nome: "Hinata SP", funcao: "MB", img: "img/hinataSP.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Cherry Blossom Viewing" , "Sun vs Moon"],status:{Serve:3,Spike:3,Set:3,Receive:3,Block:3,Save:3},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
+{ nome: "Hinata SSR", funcao: "MB", img: "img/hinataSR.png", School: "Karasuno", vinculo: ["Eccentric Duo"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
+{ nome: "Nishinoya SP", funcao: "L", img: "img/nishinoyaSP.png", School: "Karasuno", vinculo: ["Karasuno Geniuses", "After School"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
+{ nome: "Nishinoya SSR", funcao: "L", img: "img/nishinoyaSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker" , "Kiyoko Squad"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
+{ nome: "Tanaka SSR", funcao: "WS", img: "img/tanakaSR.png", School: "Karasuno", vinculo: ["Kiyoko Squad"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Tsuki SP", funcao: "MB", img: "img/tsukiSP.png", School: "Karasuno", vinculo: ["Sun vs Moon"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Tsuki SSR", funcao: "MB", img: "img/tsukiSR.png", School: "Karasuno", vinculo: ["nothing1"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Daichi SSR", funcao: "OP", img: "img/daichiSR.png", School: "Karasuno", vinculo: ["nothing2"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Azumane SSR", funcao: "WS", img: "img/azumaneSR.png", School: "Karasuno", vinculo: ["Guardian God and Wing Spiker"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Sugawara SP", funcao: "S", img: "img/sugawaraSP.png", School: "Karasuno", vinculo: ["After School"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Kenma SP", funcao: "S", img: "img/kenmaSP.png", School: "Nekoma", vinculo: ["Cherry Blossom Viewing"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Kenma SSR", funcao: "S", img: "img/kenmaSR.png", School: "Nekoma", vinculo: ["Brain and Commander"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Yaku SSR", funcao: "L", img: "img/yakuSR.png", School: "Nekoma", vinculo: ["Educational Guidance"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
 { nome: "Kuro SSR", funcao: "MB", img: "img/kuroSR.png", School: "Nekoma", vinculo: ["nothing3"] },
-{ nome: "Kuro UR", funcao: "MB", img: "img/kuroUR.png", School: "Nekoma", vinculo: ["Brain and Commander"] },
-{ nome: "Lev SSR", funcao: "MB", img: "img/levSR.png", School: "Nekoma", vinculo: ["Educational Guidance"] },
+{ nome: "Kuro UR", funcao: "MB", img: "img/kuroUR.png", School: "Nekoma", vinculo: ["Brain and Commander"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Lev SSR", funcao: "MB", img: "img/levSR.png", School: "Nekoma", vinculo: ["Educational Guidance"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
 { nome: "Aone SP", funcao: "MB", img: "img/aoneSP.png", School: "Dateko", vinculo: ["Swimming"] },
-{ nome: "Aone SSR", funcao: "MB", img: "img/aoneSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic"] },
-{ nome: "Futakuchi SSR", funcao: "WS", img: "img/futakuchiSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic" , "The New Captain and the Tall Rookie"] },
-{ nome: "Sasaya SSR", funcao: "OP", img: "img/sasayaSR.png", School: "Dateko", vinculo: ["nothing4"] },
-{ nome: "Koganegawa SSR", funcao: "S", img: "img/koganegawaSR.png", School: "Dateko", vinculo: ["The New Captain and the Tall Rookie"] }, 
-{ nome: "Oikawa UR", funcao: "S", img: "img/oikawaUR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony"] },
-{ nome: "Oikawa SSR", funcao: "S", img: "img/oikawaSR.png", School: "Aoba Johsai", vinculo: ["nothing5"] },
-{ nome: "Iwazumi SSR", funcao: "WS", img: "img/iwazumiSR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony", "The Pack"] },
-{ nome: "Kentaro MAD DOG SSR", funcao: "OP", img: "img/kentaroSR.png", School: "Aoba Johsai", vinculo: ["The Pack"] },
-{ nome: "Ushijima UR", funcao: "OP", img: "img/ushijimaUR.png", School: "Shiratorizawa", vinculo: ["Besties for Life", "Absolute Champion and Steady Setter"] },
-{ nome: "Tendo SSR", funcao: "MB", img: "img/tendoSR.png", School: "Shiratorizawa", vinculo: ["Besties for Life"] },
-{ nome: "Goshiki SSR", funcao: "WS", img: "img/goshikiSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"] },
-{ nome: "Shirabu SSR", funcao: "S", img: "img/shirabuSR.png", School: "Shiratorizawa", vinculo: ["Absolute Champion and Steady Setter"] },
-{ nome: "Semi SSR", funcao: "S", img: "img/semiSR.png", School: "Shiratorizawa", vinculo: ["nothing6"] },
-{ nome: "Ohira SSR", funcao: "WS", img: "img/ohiraSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"] },
-{ nome: "Yamagata SSR", funcao: "L", img: "img/yamagataSR.png", School: "Shiratorizawa", vinculo: ["nothing7"] },
-{ nome: "Bokuto UR", funcao: "WS", img: "img/bokutoUR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"] },
-{ nome: "Bokuto SP", funcao: "WS", img: "img/bokutoSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"] },
-{ nome: "Akaashi SP", funcao: "S", img: "img/akaashiSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"] },
-{ nome: "Akaashi SSR", funcao: "S", img: "img/akaashiSR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"] },
-{ nome: "Konoha SSR", funcao: "OP", img: "img/konohaSR.png", School: "Fukurodani", vinculo: ["nothing8"] },
-{ nome: "Haruki SSR", funcao: "L", img: "img/harukiSR.png", School: "Fukurodani", vinculo: ["nothing9"] },
-{ nome: "Tatsuo SSR", funcao: "MB", img: "img/tatsuoSR.png", School: "Fukurodani", vinculo: ["nothing10"] },
-{ nome: "Terushima SSR", funcao: "WS", img: "img/terushimaSR.png", School: "Jozenji", vinculo: ["nothing11"] },
-{ nome: "Atsumu UR", funcao: "S", img: "img/atsumuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"] },
-{ nome: "Osamu UR", funcao: "OP", img: "img/osamuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"] },
-{ nome: "Kita SSR", funcao: "WS", img: "img/kitaSR.png", School: "Inarizaki", vinculo: ["Twin Heads"] },
-{ nome: "Rintaro SSR", funcao: "MB", img: "img/rintaroSR.png", School: "Inarizaki", vinculo: ["nothing12"] },
-{ nome: "Oshiro SSR", funcao: "WS", img: "img/oshiroSR.png", School: "Inarizaki", vinculo: ["nothing13"] },
-{ nome: "Akagi SSR", funcao: "L", img: "img/akagiSR.png", School: "Inarizaki", vinculo: ["nothing14"] },
-{ nome: "Yui SSR", funcao: "WS", img: "img/yuiSR.png", School: "Inarizaki", vinculo: ["nothing15"] },
-{ nome: "Hoshiumi UR", funcao: "WS", img: "img/hoshiumiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"] },
-{ nome: "Hirugami UR", funcao: "MB", img: "img/hirugamiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"] },
-{ nome: "Hayaseiomi UR", funcao: "WS", img: "img/hayaseiomiUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"] },
-{ nome: "Komori UR", funcao: "L", img: "img/komoriUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"] },
+{ nome: "Aone SSR", funcao: "MB", img: "img/aoneSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Futakuchi SSR", funcao: "WS", img: "img/futakuchiSR.png", School: "Dateko", vinculo: ["The Silent and the Sarcastic" , "The New Captain and the Tall Rookie"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Sasaya SSR", funcao: "OP", img: "img/sasayaSR.png", School: "Dateko", vinculo: ["nothing4"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Koganegawa SSR", funcao: "S", img: "img/koganegawaSR.png", School: "Dateko", vinculo: ["The New Captain and the Tall Rookie"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} }, 
+{ nome: "Oikawa UR", funcao: "S", img: "img/oikawaUR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Oikawa SSR", funcao: "S", img: "img/oikawaSR.png", School: "Aoba Johsai", vinculo: ["nothing5"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Iwazumi SSR", funcao: "WS", img: "img/iwazumiSR.png", School: "Aoba Johsai", vinculo: ["Perfect Harmony", "The Pack"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Kentaro MAD DOG SSR", funcao: "OP", img: "img/kentaroSR.png", School: "Aoba Johsai", vinculo: ["The Pack"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Ushijima UR", funcao: "OP", img: "img/ushijimaUR.png", School: "Shiratorizawa", vinculo: ["Besties for Life", "Absolute Champion and Steady Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Tendo SSR", funcao: "MB", img: "img/tendoSR.png", School: "Shiratorizawa", vinculo: ["Besties for Life"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Goshiki SSR", funcao: "WS", img: "img/goshikiSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Shirabu SSR", funcao: "S", img: "img/shirabuSR.png", School: "Shiratorizawa", vinculo: ["Absolute Champion and Steady Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Semi SSR", funcao: "S", img: "img/semiSR.png", School: "Shiratorizawa", vinculo: ["nothing6"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Ohira SSR", funcao: "WS", img: "img/ohiraSR.png", School: "Shiratorizawa", vinculo: ["Shiratorizawa’s WS"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Yamagata SSR", funcao: "L", img: "img/yamagataSR.png", School: "Shiratorizawa", vinculo: ["nothing7"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Bokuto UR", funcao: "WS", img: "img/bokutoUR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Bokuto SP", funcao: "WS", img: "img/bokutoSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Akaashi SP", funcao: "S", img: "img/akaashiSP.png", School: "Fukurodani", vinculo: ["Swimming", "Ace Miraculous and Caring Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Akaashi SSR", funcao: "S", img: "img/akaashiSR.png", School: "Fukurodani", vinculo: ["Miracle Ace and Caring Setter"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Konoha SSR", funcao: "OP", img: "img/konohaSR.png", School: "Fukurodani", vinculo: ["nothing8"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Haruki SSR", funcao: "L", img: "img/harukiSR.png", School: "Fukurodani", vinculo: ["nothing9"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Tatsuo SSR", funcao: "MB", img: "img/tatsuoSR.png", School: "Fukurodani", vinculo: ["nothing10"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Terushima SSR", funcao: "WS", img: "img/terushimaSR.png", School: "Jozenji", vinculo: ["nothing11"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Atsumu UR", funcao: "S", img: "img/atsumuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Osamu UR", funcao: "OP", img: "img/osamuUR.png", School: "Inarizaki", vinculo: ["Twin Power", "Twin Heads"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Kita SSR", funcao: "WS", img: "img/kitaSR.png", School: "Inarizaki", vinculo: ["Twin Heads"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Rintaro SSR", funcao: "MB", img: "img/rintaroSR.png", School: "Inarizaki", vinculo: ["nothing12"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Oshiro SSR", funcao: "WS", img: "img/oshiroSR.png", School: "Inarizaki", vinculo: ["nothing13"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Akagi SSR", funcao: "L", img: "img/akagiSR.png", School: "Inarizaki", vinculo: ["nothing14"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Yui SSR", funcao: "WS", img: "img/yuiSR.png", School: "Inarizaki", vinculo: ["nothing15"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Hoshiumi UR", funcao: "WS", img: "img/hoshiumiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Hirugami UR", funcao: "MB", img: "img/hirugamiUR.png", School: "Kamomedai", vinculo: ["Longtime Friends"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Hayaseiomi UR", funcao: "WS", img: "img/hayaseiomiUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
+{ nome: "Komori UR", funcao: "L", img: "img/komoriUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1} },
 
 ];
 
@@ -729,6 +749,22 @@ function mostrarDetalhesPersonagem(p) {
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
+
+        <h4>Status</h4>
+        <ul>
+            <li><b>Serve:</b> ${p.status.serve}</li>
+            <li><b>Spike:</b> ${p.status.spike}</li>
+            <li><b>Set:</b> ${p.status.set}</li>
+            <li><b>Receive:</b> ${p.status.receive}</li>
+            <li><b>Block:</b> ${p.status.block}</li>
+            <li><b>Save:</b> ${p.status.save}</li>
+        </ul>
+
+        <h4>Habilidades</h4>
+        <ul>
+            ${p.habilidades.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
+        </ul>
+
         <p><b>Vínculos:</b></p>
         <ul>
             ${p.vinculo.map(v => `<li><button class="bond-btn" data-bond="${v}">${v}</button></li>`).join('')}
@@ -746,11 +782,7 @@ function mostrarDetalhesPersonagem(p) {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const bondName = btn.dataset.bond;
-
-            // Filtra personagens que possuem o vínculo
             const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
-
-            // Mostra lista de personagens e descrição
             sidebarContent.innerHTML = `
                 <h3>Vínculo: ${bondName}</h3>
                 <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
@@ -764,20 +796,35 @@ function mostrarDetalhesPersonagem(p) {
                 </div>
                 <button id="backToChar">← Voltar</button>
             `;
-
-            // Voltar aos detalhes do personagem original
             document.getElementById("backToChar").addEventListener("click", (e) => {
-    e.stopPropagation(); // Impede fechar o menu lateral
-    mostrarDetalhesPersonagem(p);
-});
-
-            // Tornar cada card clicável para ir aos detalhes dele
+                e.stopPropagation();
+                mostrarDetalhesPersonagem(p);
+            });
             sidebarContent.querySelectorAll(".char-card").forEach(card => {
                 card.addEventListener("click", () => {
                     const nome = card.dataset.nome;
                     const personagem = personagens.find(x => x.nome === nome);
                     mostrarDetalhesPersonagem(personagem);
                 });
+            });
+        });
+    });
+
+    // Evento das habilidades (igual vínculo, mas com descrição própria)
+    sidebarContent.querySelectorAll(".skill-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const skillName = btn.dataset.skill;
+            const habilidade = p.habilidades.find(h => h.nome === skillName);
+
+            sidebarContent.innerHTML = `
+                <h3>Habilidade: ${habilidade.nome}</h3>
+                <p>${habilidade.descricao}</p>
+                <button id="backToChar">← Voltar</button>
+            `;
+            document.getElementById("backToChar").addEventListener("click", (e) => {
+                e.stopPropagation();
+                mostrarDetalhesPersonagem(p);
             });
         });
     });
