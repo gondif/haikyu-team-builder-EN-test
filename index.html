@@ -1054,9 +1054,14 @@ function showSavedTeams() {
 
     document.querySelectorAll(".load-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const name = btn.dataset.name;
-            loadTeam(name);
+        e.stopPropagation();
+        const name = btn.dataset.name;
+        loadTeam(name);
+
+        // Atualiza sinergias e mantém menu aberto na lista
+        atualizarSinergias();
+        sidebar.classList.add("open");
+        menuBtn.style.display = "none";
         });
     });
 
@@ -1084,10 +1089,8 @@ function loadTeam(name) {
     const team = teams[name];
     if (!team) return;
 
-    // limpa seleção atual
     selecionados = [];
 
-    // limpa todos os slots (hex e bench)
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
         slot.innerHTML = "";
         delete slot.dataset.nome;
@@ -1098,7 +1101,6 @@ function loadTeam(name) {
         }
     });
 
-    // preencher titulares (assumimos que ordem das hex corresponde à ordem do array salvo)
     const hexes = Array.from(document.querySelectorAll(".hex"));
     team.main.forEach((nome, i) => {
         if (!nome) return;
@@ -1108,14 +1110,12 @@ function loadTeam(name) {
         }
     });
 
-    // preencher bench
     const benches = Array.from(document.querySelectorAll(".bench-slot"));
     team.bench.forEach((nome, i) => {
         if (!nome) return;
         const personagem = personagens.find(p => p.nome === nome);
         if (personagem && benches[i]) {
             setPersonagem(benches[i], personagem, 'bench');
-            // garantir attach events já existem
             attachBenchEvents(benches[i]);
         }
     });
