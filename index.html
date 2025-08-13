@@ -519,7 +519,44 @@ const descricoesSinergia = {
 
 let selecionados = [];
 
-/* ====== FUNÇÕES ORIGINAIS (mantidas) ====== */
+const sidebarHistory = [];
+
+function setSidebarContent(html) {
+    sidebarHistory.push(sidebarContent.innerHTML);
+    sidebarContent.innerHTML = html;
+}
+
+function goBackSidebar() {
+    if (sidebarHistory.length > 0) {
+        sidebarContent.innerHTML = sidebarHistory.pop();
+        reattachSidebarEvents();
+    }
+}
+
+function reattachSidebarEvents() {
+    sidebarContent.querySelectorAll(".bond-btn").forEach(btn => {
+        btn.addEventListener("click", bondClickHandler);
+    });
+    sidebarContent.querySelectorAll(".school-btn").forEach(btn => {
+        btn.addEventListener("click", schoolClickHandler);
+    });
+    sidebarContent.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
+        });
+    });
+    sidebarContent.querySelectorAll("#backToSynergies, #backToList, #backToChar").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            goBackSidebar();
+        });
+    });
+}
+
+/* ====== Eventos de Bench e Seleção ====== */
 function addBenchSlot() {
     const benchRow = document.getElementById("bench-row");
     const slot = document.createElement("div");
@@ -584,19 +621,13 @@ function respeitaLimiteBench(p, slot) {
 }
 
 function setPersonagem(slot, personagem, role) {
-    // se já tinha alguém nesse slot, remove dos selecionados
     if (slot.dataset.nome) {
         selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
     }
-
-    // monta imagem
     slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
     slot.dataset.nome = personagem.nome;
-
-    // atualiza texto de info (procura .player-info no mesmo player-slot)
     const infoDiv = slot.parentElement.querySelector('.player-info');
     if (infoDiv) infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
-
     selecionados.push(personagem);
     atualizarSinergias();
 }
@@ -606,19 +637,17 @@ function removerPersonagem(slot) {
         selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
         slot.innerHTML = ""; 
         delete slot.dataset.nome;
-
         const infoDiv = slot.parentElement.querySelector('.player-info');
         if (slot.classList.contains("bench-slot")) {
             infoDiv.textContent = "Bench";
         } else {
-            // tenta recuperar role
             infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
         }
-
         atualizarSinergias();
     }
 }
 
+/* ====== Funções de Sinergia ====== */
 function atualizarSinergias() {
     const synergyListEl = document.getElementById("synergy-list");
     synergyListEl.innerHTML = "";
@@ -626,7 +655,6 @@ function atualizarSinergias() {
     const SchoolsCount = {};
     const vinculosCount = {};
 
-    // Contagem de Schools (apenas titulares)
     document.querySelectorAll(".hex").forEach(slot => {
         if (slot.dataset.nome) {
             const p = personagens.find(x => x.nome === slot.dataset.nome);
@@ -634,7 +662,6 @@ function atualizarSinergias() {
         }
     });
 
-    // Contagem de vínculos (titulares + banco)
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
         if (slot.dataset.nome) {
             const p = personagens.find(x => x.nome === slot.dataset.nome);
@@ -650,359 +677,91 @@ function atualizarSinergias() {
 
     let algumaSinergia = false;
 
-    // === Sinergia de School (4 ou mais) ===
     for (const School in SchoolsCount) {
         if (SchoolsCount[School] >= 4) {
-            synergyListEl.innerHTML += `
-                <li>
-                    <button class="school-btn" data-school="${School}">
-                        School: ${School}
-                    </button>
-                </li>
-            `;
+            synergyListEl.innerHTML += `<li><button class="school-btn" data-school="${School}">School: ${School}</button></li>`;
             algumaSinergia = true;
         }
     }
 
-    // === Sinergia de Bond (2 ou mais) ===
     for (const vinculo in vinculosCount) {
         if (vinculosCount[vinculo] >= 2) {
-            synergyListEl.innerHTML += `
-                <li>
-                    <button class="synergy-btn" data-bond="${vinculo}">
-                        ${vinculo}
-                    </button>
-                </li>
-            `;
+            synergyListEl.innerHTML += `<li><button class="synergy-btn" data-bond="${vinculo}">${vinculo}</button></li>`;
             algumaSinergia = true;
         }
     }
-
-    // === Clique em School ===
-    document.querySelectorAll(".school-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const schoolName = btn.dataset.school;
-
-            const relacionados = personagens.filter(pers => pers.School === schoolName);
-
-            sidebarContent.innerHTML = `
-                <h3>School: ${schoolName}</h3>
-                <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
-                <div class="char-list">
-                    ${relacionados.map(r => `
-                        <div class="char-card" data-nome="${r.nome}">
-                            <img src="${r.img}" alt="${r.nome}">
-                            <p>${r.nome}</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <button id="backToSynergies">← Voltar</button>
-            `;
-
-            sidebar.classList.add("open");
-            menuBtn.style.display = "none";
-
-            document.getElementById("backToSynergies").addEventListener("click", (e) => {
-                e.stopPropagation();
-                atualizarSinergias();
-                sidebar.classList.add("open");
-                menuBtn.style.display = "none";
-            });
-
-            sidebarContent.querySelectorAll(".char-card").forEach(card => {
-                card.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const nome = card.dataset.nome;
-                    const personagem = personagens.find(x => x.nome === nome);
-                    mostrarDetalhesPersonagem(personagem);
-                });
-            });
-        });
-    });
-
-    // === Clique em Bond ===
-    document.querySelectorAll(".synergy-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const bondName = btn.dataset.bond;
-
-            const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
-
-            sidebarContent.innerHTML = `
-                <h3>Vínculo: ${bondName}</h3>
-                <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
-                <div class="char-list">
-                    ${relacionados.map(r => `
-                        <div class="char-card" data-nome="${r.nome}">
-                            <img src="${r.img}" alt="${r.nome}">
-                            <p>${r.nome}</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <button id="backToSynergies">← Voltar</button>
-            `;
-
-            sidebar.classList.add("open");
-            menuBtn.style.display = "none";
-
-            document.getElementById("backToSynergies").addEventListener("click", (e) => {
-                e.stopPropagation();
-                atualizarSinergias();
-                sidebar.classList.add("open");
-                menuBtn.style.display = "none";
-            });
-
-            sidebarContent.querySelectorAll(".char-card").forEach(card => {
-                card.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const nome = card.dataset.nome;
-                    const personagem = personagens.find(x => x.nome === nome);
-                    mostrarDetalhesPersonagem(personagem);
-                });
-            });
-        });
-    });
 
     if (!algumaSinergia) {
         synergyListEl.innerHTML = "<li>No active synergies</li>";
     }
+
+    document.querySelectorAll(".school-btn").forEach(btn => btn.addEventListener("click", schoolClickHandler));
+    document.querySelectorAll(".synergy-btn").forEach(btn => btn.addEventListener("click", bondClickHandler));
 }
 
-/* ====== Eventos iniciais ====== */
-document.querySelectorAll(".hex").forEach(slot => {
-    slot.addEventListener("click", (e) => {
-        e.stopPropagation();
-        mostrarMenu(slot.dataset.role, slot);
-    });
-    slot.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        removerPersonagem(slot);
-    });
-});
-
-document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
-
-/* ====== SIDEBAR NAV ====== */
-const sidebarContent = document.getElementById("sidebar-content");
-document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            mostrarListaPersonagens();
-        } else if (section === "save") {
-            showSavedTeams();
-        } else if (section === "help") {
-            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
-        }
-    });
-});
-
-/* ====== LISTA / FILTROS DE PERSONAGENS (mantida com stopPropagation nos clicks) ====== */
-function mostrarListaPersonagens() {
-    const funcoes = [...new Set(personagens.map(p => p.funcao))];
-    const escolas = [...new Set(personagens.map(p => p.School))];
-    const statusKeys = [...new Set(personagens.flatMap(p => Object.keys(p.status || {})))];
-
-    let html = `
-    <h3>Lista de Personagens</h3>
-    <div class="filtros">
-        <div>
-            <label>Posição:</label>
-            <select id="filtroFuncao">
-                <option value="">Todos</option>
-                ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
-            </select>
+function schoolClickHandler(e) {
+    e.stopPropagation();
+    const schoolName = e.currentTarget.dataset.school;
+    const relacionados = personagens.filter(pers => pers.School === schoolName);
+    setSidebarContent(`
+        <h3>School: ${schoolName}</h3>
+        <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
+        <div class="char-list">
+            ${relacionados.map(r => `<div class="char-card" data-nome="${r.nome}"><img src="${r.img}" alt="${r.nome}"><p>${r.nome}</p></div>`).join('')}
         </div>
-        <div>
-            <label>Escola:</label>
-            <select id="filtroEscola">
-                <option value="">Todos</option>
-                ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
-            </select>
-        </div>
-        <div>
-            <label>Status:</label>
-            <select id="filtroStatus">
-                <option value="">Todos</option>
-                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-        </div>
-        <button id="limparFiltros">Limpar</button>
-    </div>
-    <div class='char-list' id="charList"></div>
-    `;
-
-    sidebarContent.innerHTML = html;
-
-    function renderLista() {
-        const funcaoSel = document.getElementById("filtroFuncao").value;
-        const escolaSel = document.getElementById("filtroEscola").value;
-         const statusSel = document.getElementById("filtroStatus").value;
-
-          // filtra por função e escola (o status é só para ordenar)
-        let filtrados = personagens.filter(p => {
-            return (funcaoSel === "" || p.funcao === funcaoSel) &&
-                   (escolaSel === "" || p.School === escolaSel);
-        });
-
-        // ordena do MAIOR para o MENOR de acordo com o status escolhido
-        if (statusSel) {
-            filtrados.sort((a, b) => {
-                const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
-                const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
-                return bv - av;
-            });
-        }
-
-       const listaEl = document.getElementById("charList");
-        listaEl.innerHTML = filtrados.map(p => {
-    const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
-    return `
-        <div class="char-card" data-nome="${p.nome}">
-            <img src="${p.img}" alt="${p.nome}">
-            <div class="char-info">
-                <p class="char-name">${p.nome}</p>
-                ${statusSel ? `<p class="char-status">${statusSel}: <span>${v}</span></p>` : ""}
-            </div>
-        </div>
-    `;
-}).join('');
-
-        listaEl.querySelectorAll(".char-card").forEach(card => {
-            card.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const nome = card.dataset.nome;
-                const personagem = personagens.find(x => x.nome === nome);
-                mostrarDetalhesPersonagem(personagem);
-            });
-        });
-    }
-
-    document.getElementById("filtroFuncao").addEventListener("change", renderLista);
-    document.getElementById("filtroEscola").addEventListener("change", renderLista);
-    document.getElementById("filtroStatus").addEventListener("change", renderLista);
-
-    document.getElementById("limparFiltros").addEventListener("click", () => {
-        document.getElementById("filtroFuncao").value = "";
-        document.getElementById("filtroEscola").value = "";
-        document.getElementById("filtroStatus").value = "";
-        renderLista();
-    });
-
-    renderLista();
+        <button id="backToSynergies">← Voltar</button>
+    `);
+    reattachSidebarEvents();
 }
 
+function bondClickHandler(e) {
+    e.stopPropagation();
+    const bondName = e.currentTarget.dataset.bond;
+    const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
+    setSidebarContent(`
+        <h3>Vínculo: ${bondName}</h3>
+        <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
+        <div class="char-list">
+            ${relacionados.map(r => `<div class="char-card" data-nome="${r.nome}"><img src="${r.img}" alt="${r.nome}"><p>${r.nome}</p></div>`).join('')}
+        </div>
+        <button id="backToSynergies">← Voltar</button>
+    `);
+    reattachSidebarEvents();
+}
+
+/* ====== Mostrar Detalhes ====== */
 function mostrarDetalhesPersonagem(p) {
-    sidebarContent.innerHTML = `
+    setSidebarContent(`
         <h3>${p.nome}</h3>
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
-
         <h4>Status</h4>
         <ul>
-            <li><b>Serve:</b> ${p.status.serve}</li>
-            <li><b>Spike:</b> ${p.status.spike}</li>
-            <li><b>Set:</b> ${p.status.set}</li>
-            <li><b>Receive:</b> ${p.status.receive}</li>
-            <li><b>Block:</b> ${p.status.block}</li>
-            <li><b>Save:</b> ${p.status.save}</li>
+            <li><b>Serve:</b> ${p.status?.Serve ?? "-"}</li>
+            <li><b>Spike:</b> ${p.status?.Spike ?? "-"}</li>
+            <li><b>Set:</b> ${p.status?.Set ?? "-"}</li>
+            <li><b>Receive:</b> ${p.status?.Receive ?? "-"}</li>
+            <li><b>Block:</b> ${p.status?.Block ?? "-"}</li>
+            <li><b>Save:</b> ${p.status?.Save ?? "-"}</li>
         </ul>
-
         <h4>Habilidades</h4>
         <ul>
-            ${p.habilidades.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
+            ${p.habilidades?.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("") || ""}
         </ul>
-
         <p><b>Vínculos:</b></p>
         <ul>
             ${p.vinculo.map(v => `<li><button class="bond-btn" data-bond="${v}">${v}</button></li>`).join('')}
         </ul>
         <button id="backToList">← Voltar</button>
-    `;
-
-    document.getElementById("backToList").addEventListener("click", (e) => {
-        e.stopPropagation();
-        mostrarListaPersonagens();
-    });
-
-    // Eventos de clique para cada vínculo
-    sidebarContent.querySelectorAll(".bond-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const bondName = btn.dataset.bond;
-
-    const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
-
-    sidebarContent.innerHTML = `
-        <h3>Vínculo: ${bondName}</h3>
-        <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
-        <div class="char-list">
-            ${relacionados.map(r => `
-                <div class="char-card" data-nome="${r.nome}">
-                    <img src="${r.img}" alt="${r.nome}">
-                    <p>${r.nome}</p>
-                </div>
-            `).join('')}
-        </div>
-        <button id="backToSynergies">← Voltar</button>
-    `;
-
-    // ABRIR o menu lateral
-    sidebar.classList.add("open");
-    menuBtn.style.display = "none";
-
-    // Voltar para a lista de synergies
-    document.getElementById("backToSynergies").addEventListener("click", (e) => {
-        e.stopPropagation();
-        atualizarSinergias(); // recria lista
-    });
-
-    // Clique nos personagens
-    sidebarContent.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
-        });
-    });
-});
-    });
-
-    // Evento das habilidades (igual vínculo, mas com descrição própria)
-    sidebarContent.querySelectorAll(".skill-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const skillName = btn.dataset.skill;
-            const habilidade = p.habilidades.find(h => h.nome === skillName);
-
-            sidebarContent.innerHTML = `
-                <h3>Habilidade: ${habilidade.nome}</h3>
-                <p>${habilidade.descricao}</p>
-                <button id="backToChar">← Voltar</button>
-            `;
-            document.getElementById("backToChar").addEventListener("click", (e) => {
-                e.stopPropagation();
-                mostrarDetalhesPersonagem(p);
-            });
-        });
-    });
+    `);
+    reattachSidebarEvents();
 }
 
-/* ====== SALVAR / CARREGAR TIMES (localStorage) ====== */
-
-// pega composição atual por NOME do personagem (não por src)
+/* ====== SALVAR / CARREGAR TIMES ====== */
 function getCurrentTeamByName() {
-    // titulares: procuramos .hex dentro de .player-slot (apenas as hex)
-    const mainHexes = Array.from(document.querySelectorAll(".hex"));
-    const main = mainHexes.map(h => h.dataset.nome || null);
-
-    // bench: cada .bench-slot
-    const benches = Array.from(document.querySelectorAll(".bench-slot"));
-    const benchNames = benches.map(b => b.dataset.nome || null);
-
+    const main = Array.from(document.querySelectorAll(".hex")).map(h => h.dataset.nome || null);
+    const benchNames = Array.from(document.querySelectorAll(".bench-slot")).map(b => b.dataset.nome || null);
     return { main, bench: benchNames };
 }
 
@@ -1011,41 +770,27 @@ saveTeamBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const teamName = prompt("Digite o nome do time:");
     if (!teamName) return;
-
     let teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
-
-    if (teams[teamName]) {
-        if (!confirm(`O time "${teamName}" já existe. Deseja substituir?`)) {
-            return;
-        }
-    }
-
+    if (teams[teamName] && !confirm(`O time "${teamName}" já existe. Deseja substituir?`)) return;
     teams[teamName] = getCurrentTeamByName();
     localStorage.setItem("savedTeams", JSON.stringify(teams));
-
-    // Atualiza a lista de times salvos e abre o menu lateral
     showSavedTeams();
     sidebar.classList.add("open");
     menuBtn.style.display = "none";
-
     alert(`Time "${teamName}" salvo com sucesso!`);
 });
 
-/* mostra lista de times salvos no painel lateral */
 function showSavedTeams() {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
     let html = "<h3>Times Salvos</h3>";
-
     if (Object.keys(teams).length === 0) {
         html += "<p>Nenhum time salvo.</p>";
     } else {
         html += `<div class="saved-list">`;
-        for (const [name, team] of Object.entries(teams)) {
+        for (const [name] of Object.entries(teams)) {
             html += `
                 <div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                    <div style="text-align:left;">
-                        <b>${name}</b>
-                    </div>
+                    <div style="text-align:left;"><b>${name}</b></div>
                     <div>
                         <button class="load-btn" data-name="${name}">Carregar</button>
                         <button class="del-btn" data-name="${name}">Excluir</button>
@@ -1055,28 +800,21 @@ function showSavedTeams() {
         }
         html += `</div>`;
     }
-
     sidebarContent.innerHTML = html;
-
     document.querySelectorAll(".load-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const name = btn.dataset.name;
-        loadTeam(name);
-
-        // Atualiza sinergias e mantém menu aberto na lista
-        atualizarSinergias();
-        sidebar.classList.add("open");
-        menuBtn.style.display = "none";
+            e.stopPropagation();
+            loadTeam(btn.dataset.name);
+            atualizarSinergias();
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
         });
     });
-
     document.querySelectorAll(".del-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            const name = btn.dataset.name;
-            if (confirm(`Excluir o time "${name}"?`)) {
-                deleteTeam(name);
+            if (confirm(`Excluir o time "${btn.dataset.name}"?`)) {
+                deleteTeam(btn.dataset.name);
                 showSavedTeams();
             }
         });
@@ -1089,33 +827,23 @@ function deleteTeam(name) {
     localStorage.setItem("savedTeams", JSON.stringify(teams));
 }
 
-/* Carrega time — monta usando setPersonagem (assim datas e selected array ficam corretos) */
 function loadTeam(name) {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
     const team = teams[name];
     if (!team) return;
-
     selecionados = [];
-
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
         slot.innerHTML = "";
         delete slot.dataset.nome;
         const infoDiv = slot.parentElement.querySelector('.player-info');
-        if (infoDiv) {
-            if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench";
-            else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
-        }
+        if (infoDiv) infoDiv.textContent = slot.classList.contains("bench-slot") ? "Bench" : slot.dataset.role || slot.getAttribute("data-role") || "";
     });
-
     const hexes = Array.from(document.querySelectorAll(".hex"));
     team.main.forEach((nome, i) => {
         if (!nome) return;
         const personagem = personagens.find(p => p.nome === nome);
-        if (personagem && hexes[i]) {
-            setPersonagem(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
-        }
+        if (personagem && hexes[i]) setPersonagem(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
     });
-
     const benches = Array.from(document.querySelectorAll(".bench-slot"));
     team.bench.forEach((nome, i) => {
         if (!nome) return;
@@ -1125,8 +853,6 @@ function loadTeam(name) {
             attachBenchEvents(benches[i]);
         }
     });
-
-    // atualizar sinergias após carregar
     atualizarSinergias();
 }
 
@@ -1147,35 +873,25 @@ closeSidebar.addEventListener("click", (e) => {
     menuBtn.style.display = "block";
 });
 
-// Fecha se clicar fora do painel (ignora se clicar dentro)
 document.addEventListener("click", (e) => {
-    const clicouDentroDoMenu = sidebar.contains(e.target) || e.target === menuBtn;
-    if (!clicouDentroDoMenu && sidebar.classList.contains("open")) {
+    if (!sidebar.contains(e.target) && e.target !== menuBtn && sidebar.classList.contains("open")) {
         sidebar.classList.remove("open");
         menuBtn.style.display = "block";
     }
 });
-    // Botão para limpar todo o time e resetar o banco
+
+/* ====== Limpar Time ====== */
 document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
     if (!confirm("Tem certeza que deseja remover todos os personagens e resetar o banco?")) return;
-
-    // Fecha o menu lateral se estiver aberto
     sidebar.classList.remove("open");
     menuBtn.style.display = "block";
-
-    // Limpa seleção
     selecionados = [];
-
-    // Reseta todos os slots principais
     document.querySelectorAll(".hex").forEach(slot => {
         slot.innerHTML = "";
         delete slot.dataset.nome;
-        const infoDiv = slot.parentElement.querySelector('.player-info');
-        infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+        slot.parentElement.querySelector('.player-info').textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
     });
-
-    // Reseta banco para 3 slots
     const benchRow = document.getElementById("bench-row");
     benchRow.querySelectorAll(".player-slot.bench").forEach((benchSlot, index) => {
         if (index >= 3) {
@@ -1184,13 +900,11 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
             const slot = benchSlot.querySelector(".bench-slot");
             slot.innerHTML = "";
             delete slot.dataset.nome;
-            const infoDiv = benchSlot.querySelector('.player-info');
-            infoDiv.textContent = "Bench";
+            benchSlot.querySelector('.player-info').textContent = "Bench";
         }
     });
     atualizarSinergias();
-    });
-
+});
 </script>
 
 </body>
