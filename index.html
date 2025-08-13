@@ -1037,6 +1037,10 @@ saveTeamBtn.addEventListener("click", (e) => {
     teams[teamName] = getCurrentTeamByName();
     localStorage.setItem("savedTeams", JSON.stringify(teams));
     alert(`Time "${teamName}" salvo com sucesso!`);
+    
+    showSavedTeams();
+    sidebar.classList.add("open");
+    menuBtn.style.display = "none";
 });
 
 /* mostra lista de times salvos no painel lateral */
