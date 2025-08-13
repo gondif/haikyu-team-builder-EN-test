@@ -553,6 +553,19 @@ function reattachSidebarEvents() {
             e.stopPropagation();
             goBackSidebar();
         });
+        sidebarContent.querySelectorAll(".menu-link").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const section = btn.dataset.section;
+        if (section === "characters") {
+            mostrarListaPersonagens();
+        } else if (section === "save") {
+            showSavedTeams();
+        } else if (section === "help") {
+            setSidebarContent("<h3>Ajuda</h3><p>Instruções do jogo...</p>");
+            reattachSidebarEvents();
+        }
+    });
     });
 }
 
