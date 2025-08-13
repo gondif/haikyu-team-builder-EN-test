@@ -519,6 +519,8 @@ const descricoesSinergia = {
 
 let selecionados = [];
 
+
+const sidebarContent = document.getElementById("sidebar-content");
 const sidebarHistory = [];
 
 function setSidebarContent(html) {
@@ -534,12 +536,15 @@ function goBackSidebar() {
 }
 
 function reattachSidebarEvents() {
+    // Reanexa eventos para botões de vínculo e escola
     sidebarContent.querySelectorAll(".bond-btn").forEach(btn => {
         btn.addEventListener("click", bondClickHandler);
     });
     sidebarContent.querySelectorAll(".school-btn").forEach(btn => {
         btn.addEventListener("click", schoolClickHandler);
     });
+
+    // Reanexa eventos para cards de personagem
     sidebarContent.querySelectorAll(".char-card").forEach(card => {
         card.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -548,27 +553,16 @@ function reattachSidebarEvents() {
             mostrarDetalhesPersonagem(personagem);
         });
     });
+
+    // Botões genéricos de voltar
     sidebarContent.querySelectorAll("#backToSynergies, #backToList, #backToChar").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             goBackSidebar();
         });
-        sidebarContent.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            mostrarListaPersonagens();
-        } else if (section === "save") {
-            showSavedTeams();
-        } else if (section === "help") {
-            setSidebarContent("<h3>Ajuda</h3><p>Instruções do jogo...</p>");
-            reattachSidebarEvents();
-        }
-    });
     });
 
-    // Reanexa eventos para botões do menu principal
+    // Botões do menu lateral principal
     sidebarContent.querySelectorAll(".menu-link").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -584,7 +578,7 @@ function reattachSidebarEvents() {
         });
     });
 
-    // Reanexa eventos para botões de times salvos
+    // Botões da lista de times salvos
     sidebarContent.querySelectorAll(".load-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -594,7 +588,6 @@ function reattachSidebarEvents() {
             menuBtn.style.display = "none";
         });
     });
-
     sidebarContent.querySelectorAll(".del-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -604,6 +597,21 @@ function reattachSidebarEvents() {
             }
         });
     });
+
+    // Eventos para os slots do grid principal
+    document.querySelectorAll(".hex").forEach(slot => {
+        slot.addEventListener("click", (e) => {
+            e.stopPropagation();
+            mostrarMenu(slot.dataset.role, slot);
+        });
+        slot.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            removerPersonagem(slot);
+        });
+    });
+
+    // Eventos para os slots do banco
+    document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
 }
 
 /* ====== Eventos de Bench e Seleção ====== */
@@ -905,31 +913,6 @@ function loadTeam(name) {
     });
     atualizarSinergias();
 }
-
-/* ====== ABRIR / FECHAR MENU ====== */
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("closeSidebar");
-
-menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    sidebar.classList.add("open");
-    menuBtn.style.display = "none";
-});
-
-closeSidebar.addEventListener("click", (e) => {
-    e.stopPropagation();
-    sidebar.classList.remove("open");
-    menuBtn.style.display = "block";
-});
-
-document.addEventListener("click", (e) => {
-    if (!sidebar.contains(e.target) && e.target !== menuBtn && sidebar.classList.contains("open")) {
-        sidebar.classList.remove("open");
-        menuBtn.style.display = "block";
-    }
-});
-
 /* ====== Limpar Time ====== */
 document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -967,6 +950,29 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
 });
 
 document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
+    
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
+const closeSidebar = document.getElementById("closeSidebar");
+
+menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sidebar.classList.add("open");
+    menuBtn.style.display = "none";
+});
+
+closeSidebar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sidebar.classList.remove("open");
+    menuBtn.style.display = "block";
+});
+
+document.addEventListener("click", (e) => {
+    if (!sidebar.contains(e.target) && e.target !== menuBtn && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+        menuBtn.style.display = "block";
+    }
+});
 </script>
 
 </body>
