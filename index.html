@@ -819,35 +819,41 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         } else if (section === "help") {
     sidebarContent.innerHTML = `
         <h3>Ajuda</h3>
-        <button id="faqBtn" style="margin-bottom:8px;">📄 FAQ</button>
-        <button id="creditosBtn">👥 Créditos</button>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button id="faqBtn" class="bond-btn">📄 FAQ</button>
+            <button id="creditosBtn" class="bond-btn">👥 Créditos</button>
+        </div>
     `;
 
+    // Botão FAQ
     document.getElementById("faqBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>FAQ</h3>
             <p>Aqui vai o conteúdo do FAQ...</p>
-            <button id="backToHelp">← Voltar</button>
+            <button id="backToHelp" class="bond-btn">← Voltar</button>
         `;
-        document.getElementById("backToHelp").addEventListener("click", () => {
+        document.getElementById("backToHelp").addEventListener("click", (e) => {
+            e.stopPropagation();
             document.querySelector('.menu-link[data-section="help"]').click();
-            sidebar.classList.add("open"); // mantém aberto
-    menuBtn.style.display = "none";
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
         });
     });
 
+    // Botão Créditos
     document.getElementById("creditosBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>Créditos</h3>
             <p>Aqui você coloca os créditos do projeto...</p>
-            <button id="backToHelp">← Voltar</button>
+            <button id="backToHelp" class="bond-btn">← Voltar</button>
         `;
-        document.getElementById("backToHelp").addEventListener("click", () => {
+        document.getElementById("backToHelp").addEventListener("click", (e) => {
+            e.stopPropagation();
             document.querySelector('.menu-link[data-section="help"]').click();
-            sidebar.classList.add("open"); // mantém aberto
-    menuBtn.style.display = "none";
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
         });
     });
 }
