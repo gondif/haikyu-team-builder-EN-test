@@ -437,6 +437,18 @@
     flex-direction: column;
     gap: 10px; /* mesmo espaçamento da aba Ajuda */
 }
+    .sidebar > ul {
+    list-style: none;      /* remove bullets */
+    padding: 0;            /* elimina recuo padrão */
+    margin: 0 0 16px 0;    /* margem inferior opcional */
+    display: flex;         /* empilha verticalmente */
+    flex-direction: column;
+    gap: 10px;             /* espaçamento entre os itens */
+}
+
+.sidebar > ul > li {
+    margin: 0;             /* garante que não tenha margens extras */
+}
     
 </style>
 </head>
