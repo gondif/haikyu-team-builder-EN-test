@@ -388,6 +388,42 @@
 #sidebar-content li {
     margin-bottom: 4px;     /* espaço entre linhas */
 }
+    .filtros {
+    background-color: #333;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filtros label {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.filtros select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    background-color: #222;
+    color: white;
+}
+
+#limparFiltros {
+    background-color: #ff4d4d;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#limparFiltros:hover {
+    background-color: #e60000;
+}
 </style>
 </head>
 <body>
