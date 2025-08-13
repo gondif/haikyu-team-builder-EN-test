@@ -968,7 +968,7 @@ function mostrarDetalhesPersonagem(p) {
     // Voltar para a lista de synergies
     document.getElementById("backToSynergies").addEventListener("click", (e) => {
         e.stopPropagation();
-        atualizarSinergias(); // recria lista
+        mostrarDetalhesPersonagem(p);
     });
 
     // Clique nos personagens
