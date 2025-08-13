@@ -726,7 +726,7 @@ function atualizarSinergias() {
         e.stopPropagation(); // impede que o clique seja capturado pelo listener global
         const nome = card.dataset.nome;
         const personagem = personagens.find(x => x.nome === nome);
-        mostrarDetalhesPersonagem(personagem);
+        mostrarDetalhesPersonagem(p);
         sidebar.classList.add("open"); // garante que o menu continue aberto
         menuBtn.style.display = "none";
     });
