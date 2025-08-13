@@ -234,13 +234,18 @@
     }
 
     /* Conteúdo do menu com rolagem */
-    #sidebar-content {
-        flex: 1;
-        overflow-y: auto;
-        max-height: calc(100% - 150px);
-        margin-top: 10px;
-        padding-right: 5px;
-    }
+    #sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 300px; /* ajuste conforme seu layout */
+    height: 100vh; /* ocupa a tela inteira */
+    background-color: #222;
+    color: white;
+    overflow-y: auto; /* ativa rolagem vertical */
+    padding: 10px;
+    box-sizing: border-box;
+}
 
     .filtros {
         display: flex;
