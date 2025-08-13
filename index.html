@@ -367,6 +367,17 @@
     font-weight: bold;
     color: #ffcc00; /* cor destaque do valor */
 }
+    #scrollMenu {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE e Edge antigos */
+}
+
+#scrollMenu::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+    #scrollMenu {
+    overflow-y: auto; /* já está, mas reforçando */
+}
 
 </style>
 </head>
