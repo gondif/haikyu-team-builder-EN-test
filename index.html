@@ -650,15 +650,21 @@ function atualizarSinergias() {
 
     let algumaSinergia = false;
 
-    // Sinergia de School (4 ou mais)
+    // === Sinergia de School (4 ou mais) ===
     for (const School in SchoolsCount) {
         if (SchoolsCount[School] >= 4) {
-            synergyListEl.innerHTML += `<li>School: ${School} - ${descricoesSinergia[School] || ""}</li>`;
+            synergyListEl.innerHTML += `
+                <li>
+                    <button class="school-btn" data-school="${School}">
+                        School: ${School}
+                    </button>
+                </li>
+            `;
             algumaSinergia = true;
         }
     }
 
-    // Sinergia de Bond (2 ou mais)
+    // === Sinergia de Bond (2 ou mais) ===
     for (const vinculo in vinculosCount) {
         if (vinculosCount[vinculo] >= 2) {
             synergyListEl.innerHTML += `
@@ -672,16 +678,57 @@ function atualizarSinergias() {
         }
     }
 
-    // Eventos de clique para as synergies
+    // === Clique em School ===
+    document.querySelectorAll(".school-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const schoolName = btn.dataset.school;
+
+            const relacionados = personagens.filter(pers => pers.School === schoolName);
+
+            sidebarContent.innerHTML = `
+                <h3>School: ${schoolName}</h3>
+                <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
+                <div class="char-list">
+                    ${relacionados.map(r => `
+                        <div class="char-card" data-nome="${r.nome}">
+                            <img src="${r.img}" alt="${r.nome}">
+                            <p>${r.nome}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <button id="backToSynergies">← Voltar</button>
+            `;
+
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
+
+            document.getElementById("backToSynergies").addEventListener("click", (e) => {
+                e.stopPropagation();
+                atualizarSinergias();
+                sidebar.classList.add("open");
+                menuBtn.style.display = "none";
+            });
+
+            sidebarContent.querySelectorAll(".char-card").forEach(card => {
+                card.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const nome = card.dataset.nome;
+                    const personagem = personagens.find(x => x.nome === nome);
+                    mostrarDetalhesPersonagem(personagem);
+                });
+            });
+        });
+    });
+
+    // === Clique em Bond ===
     document.querySelectorAll(".synergy-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const bondName = btn.dataset.bond;
 
-            // Filtra personagens que possuem o vínculo
             const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
 
-            // Mostra no menu lateral
             sidebarContent.innerHTML = `
                 <h3>Vínculo: ${bondName}</h3>
                 <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
@@ -696,27 +743,24 @@ function atualizarSinergias() {
                 <button id="backToSynergies">← Voltar</button>
             `;
 
-            // Abre o menu lateral automaticamente
             sidebar.classList.add("open");
             menuBtn.style.display = "none";
 
-            // Botão voltar
             document.getElementById("backToSynergies").addEventListener("click", (e) => {
                 e.stopPropagation();
-                atualizarSinergias(); // Recria a lista de sinergias
-                sidebar.classList.add("open"); // Mantém aberto
+                atualizarSinergias();
+                sidebar.classList.add("open");
                 menuBtn.style.display = "none";
             });
 
-            // Clique nos personagens
             sidebarContent.querySelectorAll(".char-card").forEach(card => {
-    card.addEventListener("click", (e) => {
-        e.stopPropagation(); // impede o fechamento automático
-        const nome = card.dataset.nome;
-        const personagem = personagens.find(x => x.nome === nome);
-        mostrarDetalhesPersonagem(personagem);
-    });
-});
+                card.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const nome = card.dataset.nome;
+                    const personagem = personagens.find(x => x.nome === nome);
+                    mostrarDetalhesPersonagem(personagem);
+                });
+            });
         });
     });
 
