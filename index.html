@@ -424,14 +424,18 @@
 #limparFiltros:hover {
     background-color: #e60000;
 }
-    #sidebar-content ul {
-    list-style: none;     /* remove bullets */
-    padding-left: 0;      /* remove recuo */
-    margin-left: 0;
+    /* Remove bolinhas e aplica espaçamento no menu lateral */
+#sidebar-content ul,
+#sidebar-content li {
+    list-style: none !important;  /* força remover bullets */
+    padding-left: 0 !important;
+    margin-left: 0 !important;
 }
 
-#sidebar-content ul li {
-    margin-bottom: 10px;  /* espaçamento entre os itens */
+#sidebar-content ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* mesmo espaçamento da aba Ajuda */
 }
     
 </style>
