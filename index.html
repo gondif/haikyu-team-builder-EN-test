@@ -722,12 +722,14 @@ function atualizarSinergias() {
             });
 
             sidebarContent.querySelectorAll(".char-card").forEach(card => {
-                card.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const nome = card.dataset.nome;
-                    const personagem = personagens.find(x => x.nome === nome);
-                    mostrarDetalhesPersonagem(personagem);
-                });
+    card.addEventListener("click", (e) => {
+        e.stopPropagation(); // impede que o clique seja capturado pelo listener global
+        const nome = card.dataset.nome;
+        const personagem = personagens.find(x => x.nome === nome);
+        mostrarDetalhesPersonagem(personagem);
+        sidebar.classList.add("open"); // garante que o menu continue aberto
+        menuBtn.style.display = "none";
+    });
             });
         });
     });
