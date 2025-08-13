@@ -660,10 +660,56 @@ function atualizarSinergias() {
     // Sinergia de Bond (2 ou mais)
     for (const vinculo in vinculosCount) {
         if (vinculosCount[vinculo] >= 2) {
-            synergyListEl.innerHTML += `<li>Bond: ${vinculo} - ${descricoesSinergia[vinculo] || ""}</li>`;
+            synergyListEl.innerHTML += `
+    <li>
+        <button class="synergy-btn" data-bond="${vinculo}">
+            ${vinculo}
+        </button>
+    </li>
+`;
             algumaSinergia = true;
         }
     }
+    // Eventos de clique para as synergies (logo depois do for)
+document.querySelectorAll(".synergy-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const bondName = btn.dataset.bond;
+
+        // Filtra personagens que possuem o vínculo
+        const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
+
+        // Mostra no menu lateral
+        sidebarContent.innerHTML = `
+            <h3>Vínculo: ${bondName}</h3>
+            <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
+            <div class="char-list">
+                ${relacionados.map(r => `
+                    <div class="char-card" data-nome="${r.nome}">
+                        <img src="${r.img}" alt="${r.nome}">
+                        <p>${r.nome}</p>
+                    </div>
+                `).join('')}
+            </div>
+            <button id="backToSynergies">← Voltar</button>
+        `;
+
+        // Botão voltar
+        document.getElementById("backToSynergies").addEventListener("click", (e) => {
+            e.stopPropagation();
+            mostrarSynergies(); // função que recria a lista de synergies
+        });
+
+        // Clique nos personagens
+        sidebarContent.querySelectorAll(".char-card").forEach(card => {
+            card.addEventListener("click", () => {
+                const nome = card.dataset.nome;
+                const personagem = personagens.find(x => x.nome === nome);
+                mostrarDetalhesPersonagem(personagem);
+            });
+        });
+    });
+});
 
     if (!algumaSinergia) {
         synergyListEl.innerHTML = "<li>No active synergies</li>";
