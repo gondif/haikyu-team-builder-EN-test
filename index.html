@@ -567,6 +567,43 @@ function reattachSidebarEvents() {
         }
     });
     });
+
+    // Reanexa eventos para botões do menu principal
+    sidebarContent.querySelectorAll(".menu-link").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const section = btn.dataset.section;
+            if (section === "characters") {
+                mostrarListaPersonagens();
+            } else if (section === "save") {
+                showSavedTeams();
+            } else if (section === "help") {
+                setSidebarContent("<h3>Ajuda</h3><p>Instruções do jogo...</p>");
+                reattachSidebarEvents();
+            }
+        });
+    });
+
+    // Reanexa eventos para botões de times salvos
+    sidebarContent.querySelectorAll(".load-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            loadTeam(btn.dataset.name);
+            atualizarSinergias();
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
+        });
+    });
+
+    sidebarContent.querySelectorAll(".del-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (confirm(`Excluir o time "${btn.dataset.name}"?`)) {
+                deleteTeam(btn.dataset.name);
+                showSavedTeams();
+            }
+        });
+    });
 }
 
 /* ====== Eventos de Bench e Seleção ====== */
