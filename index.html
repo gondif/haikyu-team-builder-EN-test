@@ -1208,13 +1208,22 @@ closeSidebar.addEventListener("click", (e) => {
 
 // Fecha se clicar fora do painel (ignora se clicar dentro)
 document.addEventListener("click", (e) => {
-    // Se clicou dentro do sidebar ou no botão de abrir, não fecha
+    // Clique dentro do sidebar ou no botão de abrir → não fecha
     if (sidebar.contains(e.target) || e.target === menuBtn) {
         return;
     }
 
-    // Se o clique foi num elemento de personagem da synergy, não fecha
+    // Clique num personagem → não fecha
     if (e.target.closest(".char-card")) {
+        return;
+    }
+
+    // Clique em botões de voltar (FAQ, Créditos, Synergies, Detalhes) → não fecha
+    if (
+        e.target.closest("#backToHelp") ||
+        e.target.closest("#backToSynergies") ||
+        e.target.closest("#backToChar")
+    ) {
         return;
     }
 
