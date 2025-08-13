@@ -1156,8 +1156,18 @@ closeSidebar.addEventListener("click", (e) => {
 
 // Fecha se clicar fora do painel (ignora se clicar dentro)
 document.addEventListener("click", (e) => {
-    const clicouDentroDoMenu = sidebar.contains(e.target) || e.target === menuBtn;
-    if (!clicouDentroDoMenu && sidebar.classList.contains("open")) {
+    // Se clicou dentro do sidebar ou no botão de abrir, não fecha
+    if (sidebar.contains(e.target) || e.target === menuBtn) {
+        return;
+    }
+
+    // Se o clique foi num elemento de personagem da synergy, não fecha
+    if (e.target.closest(".char-card")) {
+        return;
+    }
+
+    // Fecha apenas se realmente foi fora
+    if (sidebar.classList.contains("open")) {
         sidebar.classList.remove("open");
         menuBtn.style.display = "block";
     }
