@@ -905,6 +905,18 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     });
     atualizarSinergias();
 });
+    document.querySelectorAll(".hex").forEach(slot => {
+    slot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mostrarMenu(slot.dataset.role, slot);
+    });
+    slot.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        removerPersonagem(slot);
+    });
+});
+
+document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot));
 </script>
 
 </body>
