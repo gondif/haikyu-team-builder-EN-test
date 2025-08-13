@@ -345,6 +345,28 @@
     background-color: #999;
     transform: scale(0.98);
 }
+    .char-info {
+    text-align: center;
+    margin-top: 4px;
+}
+
+.char-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+    margin: 0;
+}
+
+.char-status {
+    font-size: 12px;
+    color: #ccc;
+    margin: 0;
+}
+
+.char-status span {
+    font-weight: bold;
+    color: #ffcc00; /* cor destaque do valor */
+}
 
 </style>
 </head>
@@ -737,14 +759,17 @@ function mostrarListaPersonagens() {
 
        const listaEl = document.getElementById("charList");
         listaEl.innerHTML = filtrados.map(p => {
-            const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
-            return `
-                <div class="char-card" data-nome="${p.nome}">
-                    <img src="${p.img}" alt="${p.nome}">
-                    <p>${p.nome}${statusSel ? ` — ${statusSel}: ${v}` : ""}</p>
-                </div>
-            `;
-        }).join('');
+    const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
+    return `
+        <div class="char-card" data-nome="${p.nome}">
+            <img src="${p.img}" alt="${p.nome}">
+            <div class="char-info">
+                <p class="char-name">${p.nome}</p>
+                ${statusSel ? `<p class="char-status">${statusSel}: <span>${v}</span></p>` : ""}
+            </div>
+        </div>
+    `;
+}).join('');
 
         listaEl.querySelectorAll(".char-card").forEach(card => {
             card.addEventListener("click", (e) => {
