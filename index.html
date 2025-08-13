@@ -817,8 +817,36 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         } else if (section === "save") {
             showSavedTeams();
         } else if (section === "help") {
-            sidebarContent.innerHTML = "<h3>Ajuda</h3><p>Instruções do jogo...</p>";
-        }
+    sidebarContent.innerHTML = `
+        <h3>Ajuda</h3>
+        <button id="faqBtn" style="margin-bottom:8px;">📄 FAQ</button>
+        <button id="creditosBtn">👥 Créditos</button>
+    `;
+
+    document.getElementById("faqBtn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebarContent.innerHTML = `
+            <h3>FAQ</h3>
+            <p>Aqui vai o conteúdo do FAQ...</p>
+            <button id="backToHelp">← Voltar</button>
+        `;
+        document.getElementById("backToHelp").addEventListener("click", () => {
+            document.querySelector('.menu-link[data-section="help"]').click();
+        });
+    });
+
+    document.getElementById("creditosBtn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebarContent.innerHTML = `
+            <h3>Créditos</h3>
+            <p>Aqui você coloca os créditos do projeto...</p>
+            <button id="backToHelp">← Voltar</button>
+        `;
+        document.getElementById("backToHelp").addEventListener("click", () => {
+            document.querySelector('.menu-link[data-section="help"]').click();
+        });
+    });
+}
     });
 });
 
