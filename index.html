@@ -710,12 +710,13 @@ function atualizarSinergias() {
 
             // Clique nos personagens
             sidebarContent.querySelectorAll(".char-card").forEach(card => {
-                card.addEventListener("click", () => {
-                    const nome = card.dataset.nome;
-                    const personagem = personagens.find(x => x.nome === nome);
-                    mostrarDetalhesPersonagem(personagem);
-                });
-            });
+    card.addEventListener("click", (e) => {
+        e.stopPropagation(); // impede o fechamento automático
+        const nome = card.dataset.nome;
+        const personagem = personagens.find(x => x.nome === nome);
+        mostrarDetalhesPersonagem(personagem);
+    });
+});
         });
     });
 
