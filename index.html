@@ -449,6 +449,18 @@
 .sidebar > ul > li {
     margin: 0;             /* garante que não tenha margens extras */
 }
+    .person-symbols {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.symbol-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
     
 </style>
 </head>
@@ -517,7 +529,7 @@ const personagens = [
  vinculo: ["Eccentric Duo", "Karasuno Geniuses"],
  status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, 
  habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}]   },
- symbols: ["img/quicksymbol.png","img/servesymbol.png","img/settersymbol.png"]}
+ symbols: ["img/quicksymbol.png","img/servesymbol.png","img/settersymbol.png"] }
 { nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: ["nothing"],status:{Serve:2,Spike:2,Set:2,Receive:2,Block:2,Save:2},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
 { nome: "Hinata SP", funcao: "MB", img: "img/hinataSP.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Cherry Blossom Viewing" , "Sun vs Moon"],status:{Serve:3,Spike:3,Set:3,Receive:3,Block:3,Save:3},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
 { nome: "Hinata SSR", funcao: "MB", img: "img/hinataSR.png", School: "Karasuno", vinculo: ["Eccentric Duo"],status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1},habilidades:[ {nome: "Quick Set", descricao:"sei la poha"}, {nome: "Qxet", descricao:"sei la poha"},{nome: "Qt", descricao:"sei la poha"},{nome: "Q", descricao:"sei la poha"}] },
@@ -1028,6 +1040,13 @@ function mostrarDetalhesPersonagem(p) {
     sidebarContent.innerHTML = `
         <h3>${p.nome}</h3>
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
+        if (p.symbols && p.symbols.length > 0) {
+    html += `<div class="person-symbols">`;
+    p.symbols.forEach(sym => {
+        html += `<img src="${sym}" class="symbol-icon">`;
+    });
+    html += `</div>`;
+}
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
 
