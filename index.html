@@ -784,7 +784,7 @@ function atualizarSinergias() {
         if (SchoolsCount[School] >= 4) {
             synergyListEl.innerHTML += `
                 <li>
-                    <button class="school-btn" data-school="${School}">
+                    <button class="bond-btn school-btn" data-school="${School}">
                         School: ${School}
                     </button>
                 </li>
@@ -798,7 +798,7 @@ function atualizarSinergias() {
         if (vinculosCount[vinculo] >= 2) {
             synergyListEl.innerHTML += `
                 <li>
-                    <button class="synergy-btn" data-bond="${vinculo}">
+                    <button class="bond-btn synergy-btn" data-bond="${vinculo}">
                         ${vinculo}
                     </button>
                 </li>
@@ -826,7 +826,7 @@ function atualizarSinergias() {
                     </div>
                 `).join('')}
             </div>
-            <button id="backToSynergies">← Back</button>
+            <button id="backToSynergies" class="bond-btn">← Back</button>
         `;
 
         sidebar.classList.add("open");
@@ -872,7 +872,7 @@ function atualizarSinergias() {
                         </div>
                     `).join('')}
                 </div>
-                <button id="backToSynergies">← Back</button>
+                <button id="backToSynergies" class="bond-btn">← Back</button>
             `;
 
             sidebar.classList.add("open");
@@ -1159,7 +1159,7 @@ function mostrarDetalhesPersonagem(p) {
             <li><b>Save:</b> ${p.status.Save}</li>
         </ul>
 
-        <button id="backToList">← Back</button>
+        <button id="backToSynergies" class="bond-btn">← Back</button>
     `;
 
     document.getElementById("backToList").addEventListener("click", (e) => {
@@ -1186,7 +1186,7 @@ function mostrarDetalhesPersonagem(p) {
                 </div>
             `).join('')}
         </div>
-        <button id="backToSynergies">← Back</button>
+        <button id="backToSynergies" class="bond-btn">← Voltar</button>
     `;
 
     // ABRIR o menu lateral
@@ -1220,7 +1220,7 @@ function mostrarDetalhesPersonagem(p) {
             sidebarContent.innerHTML = `
                 <h3>Habilidade: ${habilidade.nome}</h3>
                 <p>${habilidade.descricao}</p>
-                <button id="backToChar">← Back</button>
+                <button id="backToSynergies" class="bond-btn">← Back</button>
             `;
             document.getElementById("backToChar").addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1271,10 +1271,10 @@ saveTeamBtn.addEventListener("click", (e) => {
 /* mostra lista de times salvos no painel lateral */
 function showSavedTeams() {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
-    let html = "<h3>Times Salvos</h3>";
+    let html = "<h3>Saved teams</h3>";
 
     if (Object.keys(teams).length === 0) {
-        html += "<p>Nenhum time salvo.</p>";
+        html += "<p>No saved teams</p>";
     } else {
         html += `<div class="saved-list">`;
         for (const [name, team] of Object.entries(teams)) {
