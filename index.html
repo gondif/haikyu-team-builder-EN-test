@@ -989,19 +989,20 @@ function mostrarListaPersonagens() {
     function renderLista() {
     const filtroNome = document.getElementById("filtroNome").value.toLowerCase();
     const filtroFuncao = document.getElementById("filtroFuncao").value;
+    const filtroEscola = document.getElementById("filtroEscola").value;
     const statusSel = document.getElementById("filtroStatus").value;
     const ordemDataEl = document.getElementById("filtroData");
     const ordemData = ordemDataEl ? ordemDataEl.value : "";
 
-    // Filtragem
     let listaFiltrada = personagens.filter(p => {
         const nomeMatch = p.nome.toLowerCase().includes(filtroNome);
         const funcaoMatch = !filtroFuncao || p.funcao === filtroFuncao;
+        const escolaMatch = !filtroEscola || p.escola === filtroEscola;
 
         if (statusSel) {
-            return nomeMatch && funcaoMatch && p.status === statusSel;
+            return nomeMatch && funcaoMatch && escolaMatch && p.status === statusSel;
         } else {
-            return nomeMatch && funcaoMatch;
+            return nomeMatch && funcaoMatch && escolaMatch;
         }
     });
 
@@ -1014,39 +1015,28 @@ function mostrarListaPersonagens() {
         });
     }
 
-    // Renderização
+    // Renderização no container
     const listaElement = document.getElementById("listaPersonagens");
-    listaElement.innerHTML = "";
-    listaFiltrada.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = p.nome;
-        listaElement.appendChild(li);
-    });
-}
-
-       const listaEl = document.getElementById("listaPersonagens");
-        listaEl.innerHTML = filtrados.map(p => {
-    const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
-    return `
+    listaElement.innerHTML = listaFiltrada.map(p => `
         <div class="char-card" data-nome="${p.nome}">
             <img src="${p.img}" alt="${p.nome}">
             <div class="char-info">
                 <p class="char-name">${p.nome}</p>
-                ${statusSel ? `<p class="char-status">${statusSel}: <span>${v}</span></p>` : ""}
+                ${p.status ? `<p class="char-status">${p.status}</p>` : ""}
             </div>
         </div>
-    `;
-}).join('');
+    `).join("");
 
-        listaEl.querySelectorAll(".char-card").forEach(card => {
-            card.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const nome = card.dataset.nome;
-                const personagem = personagens.find(x => x.nome === nome);
-                mostrarDetalhesPersonagem(personagem);
-            });
+    // Reaplicar eventos de clique para abrir personagem
+    listaElement.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const nome = card.dataset.nome;
+            const personagem = personagens.find(x => x.nome === nome);
+            mostrarDetalhesPersonagem(personagem);
         });
-    }
+    });
+}
 
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
