@@ -966,30 +966,53 @@ function mostrarListaPersonagens() {
         </div>
         <button id="limparFiltros">Limpar</button>
     </div>
+    <div>
+  <label>Data (ordem):</label>
+  <select id="filtroDataOrdem" title="Ordenar pela data (ignora quem não tem data)">
+    <option value="">Ignorar</option>
+    <option value="asc">Crescente (MM/DD/YY)</option>
+    <option value="desc">Decrescente (MM/DD/YY)</option>
+  </select>
+</div>
     <div class='char-list' id="charList"></div>
     `;
 
     sidebarContent.innerHTML = html;
 
     function renderLista() {
-        const funcaoSel = document.getElementById("filtroFuncao").value;
-        const escolaSel = document.getElementById("filtroEscola").value;
-         const statusSel = document.getElementById("filtroStatus").value;
+  const funcaoSel = document.getElementById("filtroFuncao").value;
+  const escolaSel = document.getElementById("filtroEscola").value;
+  const statusSel = document.getElementById("filtroStatus").value;
+  const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim(); // NOVO
 
-          // filtra por função e escola (o status é só para ordenar)
-        let filtrados = personagens.filter(p => {
-            return (funcaoSel === "" || p.funcao === funcaoSel) &&
-                   (escolaSel === "" || p.School === escolaSel);
-        });
+  // 1) Filtro base (como já existe)
+  let filtrados = personagens.filter(p =>
+    (funcaoSel === "" || p.funcao === funcaoSel) &&
+    (escolaSel === "" || p.School === escolaSel)
+  );
 
-        // ordena do MAIOR para o MENOR de acordo com o status escolhido
-        if (statusSel) {
-            filtrados.sort((a, b) => {
-                const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
-                const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
-                return bv - av;
-            });
-        }
+  // 2) (NOVO) Se usuário escolheu ordem por data, DESCARTE quem não tem data válida e ordene
+  if (dataOrdem === "asc" || dataOrdem === "desc") {
+    filtrados = filtrados
+      .filter(hasValidDate) // ignora quem não tem `data`
+      .sort((a, b) => {
+        const da = parseDateMMDDYY(a.data);
+        const db = parseDateMMDDYY(b.data);
+        return dataOrdem === "asc" ? (da - db) : (db - da);
+      });
+  }
+
+  // 3) Ordenação por Status (mantida). Observação: se quiser que o status
+  // sempre prevaleça sobre a data quando ambos forem usados, aplique ESTE sort
+  // depois do sort de data (como abaixo). Caso queira que a data prevaleça,
+  // mova este bloco para cima do sort de data.
+  if (statusSel) {
+    filtrados.sort((a, b) => {
+      const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
+      const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
+      return bv - av;
+    });
+  }
 
        const listaEl = document.getElementById("charList");
         listaEl.innerHTML = filtrados.map(p => {
@@ -1018,13 +1041,16 @@ function mostrarListaPersonagens() {
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
     document.getElementById("filtroStatus").addEventListener("change", renderLista);
+    document.getElementById("filtroDataOrdem").addEventListener("change", renderLista); // NOVO
 
     document.getElementById("limparFiltros").addEventListener("click", () => {
-        document.getElementById("filtroFuncao").value = "";
-        document.getElementById("filtroEscola").value = "";
-        document.getElementById("filtroStatus").value = "";
-        renderLista();
-    });
+  document.getElementById("filtroFuncao").value = "";
+  document.getElementById("filtroEscola").value = "";
+  document.getElementById("filtroStatus").value = "";
+  const selData = document.getElementById("filtroDataOrdem"); // NOVO
+  if (selData) selData.value = "";                             // NOVO
+  renderLista();
+});
 
     renderLista();
 }
