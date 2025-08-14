@@ -1096,26 +1096,31 @@ function getStatusSafe(p, key) {
   });
 }
 
-    document.getElementById("filtroFuncao").addEventListener("change", renderLista);
-    document.getElementById("filtroEscola").addEventListener("change", renderLista);
-    document.getElementById("filtroStatus").addEventListener("change", renderLista);
-    document.getElementById("filtroDataOrdem").addEventListener("change", renderLista); // NOVO
+    // listeners dos filtros
+document.getElementById("filtroFuncao").addEventListener("change", renderLista);
+document.getElementById("filtroEscola").addEventListener("change", renderLista);
+document.getElementById("filtroStatus").addEventListener("change", renderLista);
+document.getElementById("filtroDataOrdem").addEventListener("change", renderLista);
 
-    document.getElementById("limparFiltros").addEventListener("click", () => {
+// botão Limpar
+document.getElementById("limparFiltros").addEventListener("click", () => {
   document.getElementById("filtroFuncao").value = "";
   document.getElementById("filtroEscola").value = "";
   document.getElementById("filtroStatus").value = "";
-  const selData = document.getElementById("filtroDataOrdem"); // NOVO
-  if (selData) selData.value = ""; // NOVO
-    const listaEl = document.getElementById("charList");
+  const selData = document.getElementById("filtroDataOrdem");
+  if (selData) selData.value = "";
+  renderLista();
+});
+
+// ⬇️ AQUI (fora do botão, depois dos listeners)
+const listaEl = document.getElementById("charList");
 if (listaEl && !listaEl.dataset.stopCloseBound) {
   listaEl.addEventListener("click", (ev) => ev.stopPropagation());
   listaEl.dataset.stopCloseBound = "1";
 }
-  renderLista();
-});
 
-    renderLista();
+// primeira renderização
+renderLista();
 }
 
 function mostrarDetalhesPersonagem(p) {
