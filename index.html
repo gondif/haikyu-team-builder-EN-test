@@ -170,7 +170,6 @@
         box-shadow: 2px 0 5px rgba(0,0,0,0.5);
         z-index: 999;
         opacity: 0;
-        pointer-events: none;
         display: flex;
         flex-direction: column;
         pointer-events: none;
@@ -235,25 +234,7 @@
         border-radius: 5px;
     }
 
-    /* Conteúdo do menu com rolagem */
-    #sidebar {
-    scroll-behavior: smooth;    
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 300px; /* ajuste conforme seu layout */
-    height: 100vh; /* ocupa a tela inteira */
-    background-color: #222;
-    color: white;
-    overflow-y: auto; /* ativa rolagem vertical */
-    padding: 10px;
-    box-sizing: border-box;
-
-        
-    /* Oculta a barra no Chrome, Edge, Safari */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE e Edge antigos */
-}
+   
     #sidebar::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Edge */
 }
@@ -1377,5 +1358,4 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
 </body>
 </html>
 
-</body>
-</html>
+
