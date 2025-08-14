@@ -507,9 +507,9 @@
     <h2>Menu Lateral</h2>
     <ul>
         <!-- substituí Estatísticas por Save/Load -->
-        <li><button class="menu-link bond-btn" data-section="save">💾 Salvar/Carregar Times</button></li>
-        <li><button class="menu-link bond-btn" data-section="characters">🔍 Personagens</button></li>
-        <li><button class="menu-link bond-btn" data-section="help">ℹ️ Ajuda</button></li>
+        <li><button class="menu-link bond-btn" data-section="save">💾 Save & Load Teams</button></li>
+        <li><button class="menu-link bond-btn" data-section="characters">🔍 Characters</button></li>
+        <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
     </ul>
     <div id="sidebar-content">
         <p>Selecione uma opção acima.</p>
@@ -826,7 +826,7 @@ function atualizarSinergias() {
                     </div>
                 `).join('')}
             </div>
-            <button id="backToSynergies">← Voltar</button>
+            <button id="backToSynergies">← Back</button>
         `;
 
         sidebar.classList.add("open");
@@ -872,7 +872,7 @@ function atualizarSinergias() {
                         </div>
                     `).join('')}
                 </div>
-                <button id="backToSynergies">← Voltar</button>
+                <button id="backToSynergies">← Back</button>
             `;
 
             sidebar.classList.add("open");
@@ -940,7 +940,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         sidebarContent.innerHTML = `
             <h3>FAQ</h3>
             <p>Aqui vai o conteúdo do FAQ...</p>
-            <button id="backToHelp" class="bond-btn">← Voltar</button>
+            <button id="backToHelp" class="bond-btn">← Back</button>
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
             e.stopPropagation();
@@ -956,7 +956,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         sidebarContent.innerHTML = `
             <h3>Créditos</h3>
             <p>Aqui você coloca os créditos do projeto...</p>
-            <button id="backToHelp" class="bond-btn">← Voltar</button>
+            <button id="backToHelp" class="bond-btn">← Back</button>
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
             e.stopPropagation();
@@ -981,33 +981,33 @@ function mostrarListaPersonagens() {
         <div>
             <label>Posição:</label>
             <select id="filtroFuncao">
-                <option value="">Todos</option>
+                <option value="">All</option>
                 ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
             </select>
         </div>
         <div>
             <label>Escola:</label>
             <select id="filtroEscola">
-                <option value="">Todos</option>
+                <option value="">All</option>
                 ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
             </select>
         </div>
         <div>
             <label>Status:</label>
             <select id="filtroStatus">
-                <option value="">Todos</option>
+                <option value="">All</option>
                 ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
         </div>
                 <div>
             <label>Data (ordem):</label>
             <select id="filtroDataOrdem" title="Ordenar pela data (ignora quem não tem data)">
-                <option value="">Ignorar</option>
-                <option value="asc">Crescente (MM/DD/YY)</option>
-                <option value="desc">Decrescente (MM/DD/YY)</option>
+                <option value="">Ignore</option>
+                <option value="asc">Ascending (MM/DD/YY)</option>
+                <option value="desc">Descending (MM/DD/YY)</option>
             </select>
         </div>
-<button id="limparFiltros">Limpar</button>
+<button id="limparFiltros">Clear</button>
     </div>
 <div class='char-list' id="charList"></div>
     `;
@@ -1133,10 +1133,23 @@ function mostrarDetalhesPersonagem(p) {
             </div>
         ` : ""}
         ${p.data ? `<p><b>EDD:</b> ${p.data}</p>` : ""}
-        <p><b>Função:</b> ${p.funcao}</p>
-        <p><b>Escola:</b> ${p.School}</p>
+        <p><b>Position:</b> ${p.funcao}</p>
+        <p><b>School:</b> ${p.School}</p>
 
-        <h4>Status</h4>
+        <p><b>Bonds:</b></p>
+        <ul>
+            ${p.vinculo.map(v => `<li><button class="bond-btn" data-bond="${v}">${v}</button></li>`).join('')}
+        </ul>
+
+
+        <h4>Skills</h4>
+        <ul>
+            ${p.habilidades.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
+        </ul>
+
+        <p><b>Bonds:</b></p>
+
+        <h4>Stats</h4>
         <ul>
             <li><b>Serve:</b> ${p.status.Serve}</li>
             <li><b>Spike:</b> ${p.status.Spike}</li>
@@ -1146,16 +1159,7 @@ function mostrarDetalhesPersonagem(p) {
             <li><b>Save:</b> ${p.status.Save}</li>
         </ul>
 
-        <h4>Habilidades</h4>
-        <ul>
-            ${p.habilidades.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
-        </ul>
-
-        <p><b>Vínculos:</b></p>
-        <ul>
-            ${p.vinculo.map(v => `<li><button class="bond-btn" data-bond="${v}">${v}</button></li>`).join('')}
-        </ul>
-        <button id="backToList">← Voltar</button>
+        <button id="backToList">← Back</button>
     `;
 
     document.getElementById("backToList").addEventListener("click", (e) => {
@@ -1182,7 +1186,7 @@ function mostrarDetalhesPersonagem(p) {
                 </div>
             `).join('')}
         </div>
-        <button id="backToSynergies">← Voltar</button>
+        <button id="backToSynergies">← Back</button>
     `;
 
     // ABRIR o menu lateral
@@ -1216,7 +1220,7 @@ function mostrarDetalhesPersonagem(p) {
             sidebarContent.innerHTML = `
                 <h3>Habilidade: ${habilidade.nome}</h3>
                 <p>${habilidade.descricao}</p>
-                <button id="backToChar">← Voltar</button>
+                <button id="backToChar">← Back</button>
             `;
             document.getElementById("backToChar").addEventListener("click", (e) => {
                 e.stopPropagation();
