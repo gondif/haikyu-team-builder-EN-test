@@ -1004,33 +1004,33 @@ function getStatusSafe(p, key) {
 
 
     function renderLista() {
-  const funcaoSel = document.getElementById("filtroFuncao").value;
-  const escolaSel = document.getElementById("filtroEscola").value;
-  const statusSel = document.getElementById("filtroStatus").value;
-  const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim(); // NOVO
+  const listaEl   = document.getElementById("charList");
 
-  // 1) Filtro base (como já existe)
+  const funcaoSel = (document.getElementById("filtroFuncao").value || "").trim();
+  const escolaSel = (document.getElementById("filtroEscola").value || "").trim();
+  let   statusSel = (document.getElementById("filtroStatus").value || "").trim();
+  const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim();
+
+  // normaliza "Todos" -> ""
+  if (statusSel.toLowerCase() === "todos") statusSel = "";
+
+  // 1) filtro base (posição/escola)
   let filtrados = personagens.filter(p =>
     (funcaoSel === "" || p.funcao === funcaoSel) &&
     (escolaSel === "" || p.School === escolaSel)
   );
 
-  // 2) (NOVO) Se usuário escolheu ordem por data, DESCARTE quem não tem data válida e ordene
+  // 2) data (se asc/desc): ignora sem data válida + ordena
   if (dataOrdem === "asc" || dataOrdem === "desc") {
     filtrados = filtrados
-      .filter(hasValidDate) // ignora quem não tem `data`
+      .filter(hasValidDate) // usa seu helper existente
       .sort((a, b) => {
         const da = parseDateMMDDYY(a.data);
         const db = parseDateMMDDYY(b.data);
         return dataOrdem === "asc" ? (da - db) : (db - da);
       });
-  }
-
-  // 3) Ordenação por Status (mantida). Observação: se quiser que o status
-  // sempre prevaleça sobre a data quando ambos forem usados, aplique ESTE sort
-  // depois do sort de data (como abaixo). Caso queira que a data prevaleça,
-  // mova este bloco para cima do sort de data.
-  if (statusSel) {
+  } else if (statusSel) {
+    // 3) status (só quando data está "Ignorar")
     filtrados.sort((a, b) => {
       const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
       const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
@@ -1038,29 +1038,33 @@ function getStatusSafe(p, key) {
     });
   }
 
-       const listaEl = document.getElementById("charList");
-        listaEl.innerHTML = filtrados.map(p => {
-    const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
-    return `
-        <div class="char-card" data-nome="${p.nome}">
-            <img src="${p.img}" alt="${p.nome}">
-            <div class="char-info">
-                <p class="char-name">${p.nome}</p>
-                ${statusSel ? `<p class="char-status">${statusSel}: <span>${v}</span></p>` : ""}
-            </div>
-        </div>
-    `;
-}).join('');
+  // 4) renderiza cards (mostrando metaLine logo abaixo do nome)
+  const html = filtrados.map((p, i) => {
+    const metaLine =
+      (dataOrdem === "asc" || dataOrdem === "desc")
+        ? (hasValidDate(p) ? `<div class="card-sub">EDD: ${p.data}</div>` : "")
+        : (statusSel ? `<div class="card-sub">${statusSel}: ${getStatusSafe(p, statusSel)}</div>` : "");
 
-        listaEl.querySelectorAll(".char-card").forEach(card => {
-            card.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const nome = card.dataset.nome;
-                const personagem = personagens.find(x => x.nome === nome);
-                mostrarDetalhesPersonagem(personagem);
-            });
-        });
-    }
+    return `
+      <div class="person-card" data-idx="${i}">
+        <img src="${p.img}" alt="${p.nome}">
+        <div class="card-name">${p.nome}</div>
+        ${metaLine}
+      </div>
+    `;
+  }).join("");
+
+  listaEl.innerHTML = html;
+
+  // 5) eventos de clique para abrir detalhes
+  listaEl.querySelectorAll(".person-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const idx = +card.getAttribute("data-idx");
+      const person = filtrados[idx];
+      if (person) mostrarDetalhesPersonagem(person);
+    });
+  });
+}
 
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
