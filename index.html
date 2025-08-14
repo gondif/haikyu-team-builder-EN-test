@@ -970,6 +970,15 @@ function mostrarListaPersonagens() {
                 ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
         </div>
+        <div>
+            <label>EDD:</label>
+            <select id="filtroData">
+                <option value="">Nenhum</option>
+                <option value="asc">Mais antigo primeiro</option>
+                <option value="desc">Mais recente primeiro</option>
+                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
+            </select>
+        </div>
         <button id="limparFiltros">Limpar</button>
     </div>
     <div class='char-list' id="listaPersonagens"></div>
@@ -1042,11 +1051,12 @@ function mostrarListaPersonagens() {
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
     document.getElementById("filtroStatus").addEventListener("change", renderLista);
-
+    document.getElementById("filtroData").addEventListener("change", renderLista);
     document.getElementById("limparFiltros").addEventListener("click", () => {
         document.getElementById("filtroFuncao").value = "";
         document.getElementById("filtroEscola").value = "";
         document.getElementById("filtroStatus").value = "";
+        document.getElementById("filtroData").value = "";
         renderLista();
     });
 
