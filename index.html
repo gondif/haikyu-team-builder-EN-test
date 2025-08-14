@@ -943,48 +943,44 @@ document.querySelectorAll(".menu-link").forEach(btn => {
 /* ====== LISTA / FILTROS DE PERSONAGENS (mantida com stopPropagation nos clicks) ====== */
 function mostrarListaPersonagens() {
     const funcoes = [...new Set(personagens.map(p => p.funcao))];
-    const escolas = [...new Set(personagens.map(p => p.School))];
-    const statusKeys = [...new Set(personagens.flatMap(p => Object.keys(p.status || {})))];
+    const escolas = [...new Set(personagens.map(p => p.school))];
+    const statusKeys = [...new Set(personagens.flatMap(p => Object.keys(p.status) || {}))];
+
+    // Ordena datas, mantendo "0/0/0" no final
+    const datasOrdenadas = [...new Set(personagens.map(p => p.data))].sort((a, b) => {
+        if (a === "0/0/0") return 1; // a vai pro final
+        if (b === "0/0/0") return -1; // b vai pro final
+        const [da, ma, aa] = a.split("/").map(Number);
+        const [db, mb, ab] = b.split("/").map(Number);
+        return new Date(2000 + aa, ma - 1, da) - new Date(2000 + ab, mb - 1, db);
+    });
 
     let html = `
-    <h3>Lista de Personagens</h3>
-    <div class="filtros">
-        <div>
-            <label>Posição:</label>
-            <select id="filtroFuncao">
-                <option value="">Todos</option>
-                ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
-            </select>
+        <h3>Lista de Personagens</h3>
+        <div class="filtros">
+            <div>
+                <label>Posição:</label>
+                <select id="filtroFuncao">
+                    <option value="">Todos</option>
+                    ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
+                </select>
+            </div>
+
+            <div>
+                <label>Data:</label>
+                <select id="filtroData">
+                    <option value="">Todas</option>
+                    ${datasOrdenadas
+                        .filter(d => d) // ignora undefined
+                        .map(d => `<option value="${d}">${d}</option>`)
+                        .join('')}
+                </select>
+            </div>
         </div>
-        <div>
-            <label>Escola:</label>
-            <select id="filtroEscola">
-                <option value="">Todos</option>
-                ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
-            </select>
-        </div>
-        <div>
-            <label>Status:</label>
-            <select id="filtroStatus">
-                <option value="">Todos</option>
-                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-        </div>
-        <div>
-            <label>EDD:</label>
-            <select id="filtroData">
-                <option value="">Nenhum</option>
-                <option value="asc">Mais antigo primeiro</option>
-                <option value="desc">Mais recente primeiro</option>
-                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-        </div>
-        <button id="limparFiltros">Limpar</button>
-    </div>
-    <div class='char-list' id="listaPersonagens"></div>
     `;
 
-    sidebarContent.innerHTML = html;
+    document.getElementById("sidebar-content").innerHTML = html;
+}
 
     function renderLista() {
     const filtroNome = document.getElementById("filtroNome").value.toLowerCase();
