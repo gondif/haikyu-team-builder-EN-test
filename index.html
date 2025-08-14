@@ -1088,6 +1088,7 @@ function getStatusSafe(p, key) {
   // 5) clique abre detalhes
   listaEl.querySelectorAll(".person-card").forEach(card => {
     card.addEventListener("click", () => {
+      ev.stopPropagation();  
       const idx = +card.getAttribute("data-idx");
       const person = filtrados[idx];
       if (person) mostrarDetalhesPersonagem(person);
@@ -1105,7 +1106,12 @@ function getStatusSafe(p, key) {
   document.getElementById("filtroEscola").value = "";
   document.getElementById("filtroStatus").value = "";
   const selData = document.getElementById("filtroDataOrdem"); // NOVO
-  if (selData) selData.value = "";                             // NOVO
+  if (selData) selData.value = ""; // NOVO
+    const listaEl = document.getElementById("charList");
+if (listaEl && !listaEl.dataset.stopCloseBound) {
+  listaEl.addEventListener("click", (ev) => ev.stopPropagation());
+  listaEl.dataset.stopCloseBound = "1";
+}
   renderLista();
 });
 
