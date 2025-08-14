@@ -466,25 +466,29 @@
   opacity: 0.85;
   margin-top: 2px;
 }
-   /* Container da lista -> grid responsivo */
+   
+/* GRID responsivo do contêiner */
 #charList{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* ~3–4 colunas em telas comuns */
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
-  align-items: start;
+  padding: 0;          /* remove recuo de UL */
+  margin: 0;           /* remove margens de UL */
+  list-style: none;    /* remove bullets */
 }
 
 /* Card */
 #charList .person-card{
   display: flex;
   flex-direction: column;
-  background: #1e1e1e;       /* opcional, combine com seu tema */
-  border-radius: 3px;        /* opcional */
-  padding: 2px;               /* opcional */
+  width: auto !important;   /* evita width:100% herdado */
+  max-width: 100%;
+  background: transparent;  /* ajuste se quiser */
+  border-radius: 10px;
+  padding: 8px;
   cursor: pointer;
 }
 
-/* Imagem e textos dentro do card */
 #charList .person-card img{ width:100%; display:block; border-radius:8px; }
 #charList .card-name{ margin-top:6px; font-weight:600; text-align:center; }
 #charList .card-sub{ font-size:12px; opacity:.85; margin-top:2px; text-align:center; }
@@ -1025,7 +1029,7 @@ function getStatusSafe(p, key) {
 }
 
 
-    function renderLista() {
+   function renderLista() {
   const listaEl   = document.getElementById("charList");
 
   const funcaoSel = (document.getElementById("filtroFuncao").value || "").trim();
@@ -1033,26 +1037,25 @@ function getStatusSafe(p, key) {
   let   statusSel = (document.getElementById("filtroStatus").value || "").trim();
   const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim();
 
-  // normaliza "Todos" -> ""
   if (statusSel.toLowerCase() === "todos") statusSel = "";
 
-  // 1) filtro base (posição/escola)
+  // 1) filtro base
   let filtrados = personagens.filter(p =>
     (funcaoSel === "" || p.funcao === funcaoSel) &&
     (escolaSel === "" || p.School === escolaSel)
   );
 
-  // 2) data (se asc/desc): ignora sem data válida + ordena
+  // 2) ordenar por data quando escolhido (e ignorar sem data)
   if (dataOrdem === "asc" || dataOrdem === "desc") {
     filtrados = filtrados
-      .filter(hasValidDate) // usa seu helper existente
+      .filter(hasValidDate)
       .sort((a, b) => {
         const da = parseDateMMDDYY(a.data);
         const db = parseDateMMDDYY(b.data);
         return dataOrdem === "asc" ? (da - db) : (db - da);
       });
   } else if (statusSel) {
-    // 3) status (só quando data está "Ignorar")
+    // 3) ordenar por status quando data está em "Ignorar"
     filtrados.sort((a, b) => {
       const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
       const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
@@ -1060,7 +1063,7 @@ function getStatusSafe(p, key) {
     });
   }
 
-  // 4) renderiza cards (mostrando metaLine logo abaixo do nome)
+  // 4) render (agora em <li>)
   const html = filtrados.map((p, i) => {
     const metaLine =
       (dataOrdem === "asc" || dataOrdem === "desc")
@@ -1068,17 +1071,17 @@ function getStatusSafe(p, key) {
         : (statusSel ? `<div class="card-sub">${statusSel}: ${getStatusSafe(p, statusSel)}</div>` : "");
 
     return `
-      <div class="person-card" data-idx="${i}">
+      <li class="person-card" data-idx="${i}">
         <img src="${p.img}" alt="${p.nome}">
         <div class="card-name">${p.nome}</div>
         ${metaLine}
-      </div>
+      </li>
     `;
   }).join("");
 
   listaEl.innerHTML = html;
 
-  // 5) eventos de clique para abrir detalhes
+  // 5) clique abre detalhes
   listaEl.querySelectorAll(".person-card").forEach(card => {
     card.addEventListener("click", () => {
       const idx = +card.getAttribute("data-idx");
