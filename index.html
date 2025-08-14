@@ -467,31 +467,35 @@
   margin-top: 2px;
 }
    
-/* GRID responsivo do contêiner */
+/* === LISTA NO MENU LATERAL === */
 #charList{
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-  padding: 0;          /* remove recuo de UL */
-  margin: 0;           /* remove margens de UL */
-  list-style: none;    /* remove bullets */
+  grid-template-columns: repeat(2, minmax(110px, 1fr)); /* 2 colunas no menu */
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-/* Card */
-#charList .person-card{
-  display: flex;
-  flex-direction: column;
-  width: auto !important;   /* evita width:100% herdado */
-  max-width: 100%;
-  background: transparent;  /* ajuste se quiser */
-  border-radius: 10px;
-  padding: 8px;
-  cursor: pointer;
+/* escalar a imagem ao tamanho da coluna */
+#charList .person-card img{
+  width: 100%;
+  height: auto;          /* mantém proporção */
+  display: block;
+  border-radius: 8px;
 }
 
-#charList .person-card img{ width:100%; display:block; border-radius:8px; }
+/* texto */
 #charList .card-name{ margin-top:6px; font-weight:600; text-align:center; }
-#charList .card-sub{ font-size:12px; opacity:.85; margin-top:2px; text-align:center; }
+#charList .card-sub{  font-size:12px; opacity:.85; margin-top:2px; text-align:center; }
+
+/* quando houver mais espaço, aumente o nº de colunas */
+@media (min-width: 420px){
+  #charList{ grid-template-columns: repeat(3, minmax(110px, 1fr)); }
+}
+@media (min-width: 560px){
+  #charList{ grid-template-columns: repeat(4, minmax(110px, 1fr)); }
+}
     
 </style>
 </head>
