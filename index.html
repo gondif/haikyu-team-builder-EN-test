@@ -424,7 +424,7 @@
 #limparFiltros:hover {
     background-color: #e60000;
 }
-    /* Remove bolinhas e aplica espaçamento no menu lateral */
+    /* Remove bolinhas e aplica espaçamento no Side Menu */
 #sidebar-content ul,
 #sidebar-content li {
     list-style: none !important;  /* força remover bullets */
@@ -435,7 +435,7 @@
 #sidebar-content ul {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* mesmo espaçamento da aba Ajuda */
+    gap: 10px; /* mesmo espaçamento da aba Info */
 }
     .sidebar > ul {
     list-style: none;      /* remove bullets */
@@ -467,7 +467,7 @@
   margin-top: 2px;
 }
    
-/* === LISTA NO MENU LATERAL === */
+/* === LISTA NO Side Menu === */
 #charList{
   display: grid !important;
   grid-template-columns: repeat(2, minmax(90px, 1fr)); /* 2 colunas no menu */
@@ -504,7 +504,7 @@
 <button id="menuBtn">☰</button>
 <div class="sidebar" id="sidebar">
     <button class="close-btn" id="closeSidebar">×</button>
-    <h2>Menu Lateral</h2>
+    <h2>Side Menu</h2>
     <ul>
         <!-- substituí Estatísticas por Save/Load -->
         <li><button class="menu-link bond-btn" data-section="save">💾 Save & Load Teams</button></li>
@@ -512,7 +512,7 @@
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
     </ul>
     <div id="sidebar-content">
-        <p>Selecione uma opção acima.</p>
+        <p>Select an option above.</p>
     </div>
 </div>
 
@@ -927,7 +927,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
             showSavedTeams();
         } else if (section === "help") {
     sidebarContent.innerHTML = `
-        <h3>Ajuda</h3>
+        <h3>Info</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="faqBtn" class="bond-btn">📄 FAQ</button>
             <button id="creditosBtn" class="bond-btn">👥 Créditos</button>
@@ -1189,7 +1189,7 @@ function showCharacterDetails(p) {
         <button id="backToSynergies" class="bond-btn">← Voltar</button>
     `;
 
-    // ABRIR o menu lateral
+    // ABRIR o Side Menu
     sidebar.classList.add("open");
     menuBtn.style.display = "none";
 
@@ -1230,7 +1230,7 @@ function showCharacterDetails(p) {
     });
 }
 
-/* ====== SALVAR / CARREGAR TIMES (localStorage) ====== */
+/* ====== SALVAR / Load TIMES (localStorage) ====== */
 
 // pega composição atual por NOME do personagem (não por src)
 function getCurrentTeamByName() {
@@ -1284,8 +1284,8 @@ function showSavedTeams() {
                         <b>${name}</b>
                     </div>
                     <div>
-                        <button class="load-btn" data-name="${name}">Carregar</button>
-                        <button class="del-btn" data-name="${name}">Excluir</button>
+                        <button class="load-btn" data-name="${name}">Load</button>
+                        <button class="del-btn" data-name="${name}">Delete</button>
                     </div>
                 </div>
             `;
@@ -1312,7 +1312,7 @@ function showSavedTeams() {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const name = btn.dataset.name;
-            if (confirm(`Excluir o time "${name}"?`)) {
+            if (confirm(`Delete o time "${name}"?`)) {
                 deleteTeam(name);
                 showSavedTeams();
             }
@@ -1363,7 +1363,7 @@ function loadTeam(name) {
         }
     });
 
-    // atualizar sinergias após carregar
+    // atualizar sinergias após Load
     updateSynergies();
 }
 
@@ -1416,7 +1416,7 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
     if (!confirm("Tem certeza que deseja remover todos os characters e resetar o banco?")) return;
 
-    // Fecha o menu lateral se estiver aberto
+    // Fecha o Side Menu se estiver aberto
     sidebar.classList.remove("open");
     menuBtn.style.display = "block";
 
