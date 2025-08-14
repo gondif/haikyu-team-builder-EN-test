@@ -466,8 +466,28 @@
   opacity: 0.85;
   margin-top: 2px;
 }
-    #charList{ display:flex; flex-wrap:wrap; gap:14px; }
-#charList .person-card{ flex: 1 1 22%; min-width: 220px; max-width: 24%; }
+   /* Container da lista -> grid responsivo */
+#charList{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* ~3–4 colunas em telas comuns */
+  gap: 14px;
+  align-items: start;
+}
+
+/* Card */
+#charList .person-card{
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;       /* opcional, combine com seu tema */
+  border-radius: 10px;        /* opcional */
+  padding: 8px;               /* opcional */
+  cursor: pointer;
+}
+
+/* Imagem e textos dentro do card */
+#charList .person-card img{ width:100%; display:block; border-radius:8px; }
+#charList .card-name{ margin-top:6px; font-weight:600; text-align:center; }
+#charList .card-sub{ font-size:12px; opacity:.85; margin-top:2px; text-align:center; }
     
 </style>
 </head>
