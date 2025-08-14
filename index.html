@@ -1248,20 +1248,20 @@ function getCurrentTeamByName() {
 const saveTeamBtn = document.getElementById("saveTeamBtn");
 saveTeamBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const teamName = prompt("Digite o nome do time:");
+    const teamName = prompt("Type team name:");
     if (!teamName) return;
 
     let teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
 
     if (teams[teamName]) {
-        if (!confirm(`O time "${teamName}" já existe. Deseja substituir?`)) {
+        if (!confirm(`Team "${teamName}" is already saved. Do you want to replace?`)) {
             return;
         }
     }
 
     teams[teamName] = getCurrentTeamByName();
     localStorage.setItem("savedTeams", JSON.stringify(teams));
-    alert(`Time "${teamName}" salvo com sucesso!`);
+    alert(`Team "${teamName}" saved!`);
     
     showSavedTeams();
     sidebar.classList.add("open");
