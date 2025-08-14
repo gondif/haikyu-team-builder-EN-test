@@ -1058,9 +1058,11 @@ function mostrarDetalhesPersonagem(p) {
                 ${p.symbols.map(sym => `<img src="${sym}" class="symbol-icon">`).join('')}
             </div>
         ` : ""}
+        
+        ${p.data && p.data !== "0/0/0" ? `<p><b>Data:</b> ${p.data}</p>` : ""}
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
-
+        
         <h4>Status</h4>
         <ul>
             <li><b>Serve:</b> ${p.status.Serve}</li>
