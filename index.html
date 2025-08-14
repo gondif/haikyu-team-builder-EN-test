@@ -981,7 +981,7 @@ function mostrarListaPersonagens() {
         const funcaoSel = document.getElementById("filtroFuncao").value;
         const escolaSel = document.getElementById("filtroEscola").value;
          const statusSel = document.getElementById("filtroStatus").value;
-         const ordemData = document.getElementById("filtroData").value;
+         const dataSel = document.getElementById("filtroData").value;
           // filtra por função e escola (o status é só para ordenar)
         let filtrados = personagens.filter(p => {
             return (funcaoSel === "" || p.funcao === funcaoSel) &&
@@ -996,7 +996,7 @@ function mostrarListaPersonagens() {
                 return bv - av;
             });
 
-         if (ordemData) {
+         if (dataSel) {
         listaFiltrada.sort((a, b) => {
             const dataA = parseData(a.data);
             const dataB = parseData(b.data);
