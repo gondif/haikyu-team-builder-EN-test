@@ -461,6 +461,11 @@
     height: 40px;
     object-fit: contain;
 }
+    .card-sub{
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
     
 </style>
 </head>
@@ -991,6 +996,11 @@ function mostrarListaPersonagens() {
     function hasValidDate(p) {
         return !!parseDateMMDDYY(p?.data);
     }
+
+function getStatusSafe(p, key) {
+  const v = p?.status?.[key];
+  return (typeof v === "number") ? v : "-";
+}
 
 
     function renderLista() {
