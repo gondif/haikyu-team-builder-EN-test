@@ -215,7 +215,7 @@
         background-color: #218838;
     }
 
-    /* Lista de personagens no menu */
+    /* Lista de characters no menu */
     .char-list {
         display: flex;
         flex-wrap: wrap;
@@ -556,7 +556,7 @@
 
 <script>
 /* ====== DADOS (mantidos) ====== */
-const personagens = [
+const characters = [
 /* ==missing stats== */{ nome: "Kageyama UR",data: "01/12/26", funcao: "S", img: "img/kageyamaUR.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Karasuno Geniuses"], status:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, habilidades:[{nome:"Genius Setter",descricao:"Kageyama Tobio sets with a power of [Set] x 120/135/150%. When he sets, the [Quick Attack] of the member who spikes is increased by his [Set] x 15%. This effect lasts until the ball goes over the net."},{nome:"Murder Serve",descricao:"Kageyama Tobio performs a powerful jump serve with a power of 130/145/160% of his [Serve]. If this play is a perfect serve, his teammates’ [Attack Technique] is increased by 10%. This effect lasts until the ball has crossed the net 6 times."},{nome:"Silent King",descricao:"Increases Kageyama Tobio’s [Attack Technique] by 8/10/12%. When he is on the court and the opponent’s Serve, Quick Attack, or Spike is a nice play, he gains 1 stack of the [Competitive Spirit] effect. Up to 5 stacks. When he is on the court and an ally Serves, Quick Attacks, or Spikes, 1 stack of [Competitive Spirit] effect is consumed, and the [Awareness] of the member performing the Serve, Quick Attack, or Spike is increased by 20/25/30%. This effect lasts until the ball goes over the net twice. At the start of a rally, he will gain one stack of the [Competitive Spirit] effect."},{nome:"Dominate the Game",descricao:"Kageyama Tobio performs a Quick Attack with a power equal to 240/255/270/285/300% of the set. The Quick Attack cannot be blocked. The cooldown of the opponent’s frontline block skill during the cooldown increases by 4 times the number of times the ball goes over the net."}], symbols: [ "img/quicksymbol.png", "img/servesymbol.png", "img/settersymbol.png" ] },
 { nome: "Kageyama SSR", funcao: "S", img: "img/kageyamaSR.png", School: "Karasuno", vinculo: [],status:{Serve:1314,Spike:1246,Set:1378,Receive:1115,Block:1246,Save:1047},habilidades:[{nome:"Manipulate the Moment",descricao:"When Hinata Shoyo (Flower Viewing) is on the court, the [Defensive Technique] of all front line players is increased by 10/13/16%. When Hinata Shoyo makes a nice play, his [Offensive Technique] is increased by 3/3.5/4%. Up to 4 stacks."},{nome:"Stepping Stone",descricao:"Hinata Shoyo (Flower Viewing) receives a ball with 140/160/180% of his receive stat, and allies’ base stats increase by 12%. This effect for 6 net crossings."},{nome:"Counterattack",descricao:"When Hinata Shoyo (Flower Viewing) is in the back row, the [Defensive Technique] of allied back row players is increased by 10/13/16%. When Hinata Shoyo (Flower Viewing) is on the court and the team’s receive result is not BAD, his [Quick Attack] stat is increased by 12/16/20% for the next two net crossings. If the teammate’s receive is a PERFECT play, Hinata Shoyo’s (Flower Viewing) quick attack after this play occurs is increased by 100%."},{nome:"Jump High",descricao:"Hinata Shoyo (Flower Viewing) performs a quick attack with 260/275/290% of [Quick Attack] as power. If this play is a nice play, the power increases by an additional [Quick Attack] x 40/45/50%."}], symbols: [ "img/quicksymbol.png", "img/servesymbol.png", "img/settersymbol.png" ] },
 { nome: "Hinata SP",data: "01/27/26", funcao: "MB", img: "img/hinataSP.png", School: "Karasuno", vinculo: ["Eccentric Duo", "Cherry Blossom Viewing" , "Sun vs Moon"],status: { Serve:1500, Spike:1950, Set:1500, Receive:1700, Block:1500, Save:1500 },habilidades:[{nome:"Manipulate the Moment",descricao:"When Hinata Shoyo (Hanami) is on the court, the [Defensive Technique] of all front line players is increased by 10/13/16%. When Hinata Shoyo's play result is Perfect, his [Offensive Technique] is increased by 3/3.5/4% with a maximum of 4 stacks."},{nome:"A Foot Hold (such a sick reference to his receive)",descricao:"Hinata Shoyo (Hanami) receives a ball with 140/160/180% of [Receive] as power, and your team's base stats increase by 12%. This effect for 6 net crossings."},{nome:"Counterattack",descricao:"When Hinata Shoyo (Hanami) is in the back row, the [Defensive Technique] of allied back row players is increased by 10/13/16%. When Hinata Shoyo (Hanami) is on the court and the team's receive result is not BAD, his [Quick Attack] stat is increased by 12/16/20% for the next two net crossings. If the teammate's receive is a PERFECT play, Hinata Shoyo's (Hanami) quick attack after this play occurs is increased by 100%."},{nome:"High Jump",descricao:"Hinata Shoyo (Hanami) performs a quick attack with 260/275/290% of [Quick Attack] as power. If this play is Perfect, the power increases by an additional 40/45/50% of [Quick Attack]."}], symbols: [ "img/quicksymbol.png", "img/receivesymbol.png" ] },
@@ -659,22 +659,22 @@ function addBenchSlot() {
 }
 
 function attachBenchEvents(slot) {
-    slot.addEventListener("click", () => mostrarMenu("bench", slot));
+    slot.addEventListener("click", () => showMenu("bench", slot));
     slot.addEventListener("contextmenu", (e) => {
         e.preventDefault();
-        removerPersonagem(slot);
+        removeCharacter(slot);
     });
 }
 
-function mostrarMenu(role, slot) {
+function showMenu(role, slot) {
     const scrollMenu = document.getElementById("scrollMenu");
     scrollMenu.innerHTML = '';
     let disponiveis;
 
     if (role === "bench") {
-        disponiveis = personagens.filter(p => !selecionados.includes(p) && respeitaLimiteBench(p, slot));
+        disponiveis = characters.filter(p => !selecionados.includes(p) && respeitaLimiteBench(p, slot));
     } else {
-        disponiveis = personagens.filter(p => p.funcao === role && !selecionados.includes(p));
+        disponiveis = characters.filter(p => p.funcao === role && !selecionados.includes(p));
     }
 
     disponiveis.forEach(p => {
@@ -684,7 +684,7 @@ function mostrarMenu(role, slot) {
         img.title = p.nome;
         img.addEventListener('click', (e) => {
             e.stopPropagation();
-            setPersonagem(slot, p, role);
+            setCharacter(slot, p, role);
             scrollMenu.style.display = 'none';
         });
         scrollMenu.appendChild(img);
@@ -695,7 +695,7 @@ function mostrarMenu(role, slot) {
 
 function respeitaLimiteBench(p, slot) {
     const Bench = Array.from(document.querySelectorAll(".bench-slot"))
-        .map(s => s.dataset.nome && personagens.find(x => x.nome === s.dataset.nome))
+        .map(s => s.dataset.nome && characters.find(x => x.nome === s.dataset.nome))
         .filter(Boolean);
 
     if (slot.dataset.nome === p.nome) return true;
@@ -712,7 +712,7 @@ function respeitaLimiteBench(p, slot) {
     return true;
 }
 
-function setPersonagem(slot, personagem, role) {
+function setCharacter(slot, personagem, role) {
     // se já tinha alguém nesse slot, remove dos selecionados
     if (slot.dataset.nome) {
         selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
@@ -727,10 +727,10 @@ function setPersonagem(slot, personagem, role) {
     if (infoDiv) infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
 
     selecionados.push(personagem);
-    atualizarSinergias();
+    updateSynergies();
 }
 
-function removerPersonagem(slot) {
+function removeCharacter(slot) {
     if (slot.dataset.nome) {
         selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
         slot.innerHTML = ""; 
@@ -744,11 +744,11 @@ function removerPersonagem(slot) {
             infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
         }
 
-        atualizarSinergias();
+        updateSynergies();
     }
 }
 
-function atualizarSinergias() {
+function updateSynergies() {
     const synergyListEl = document.getElementById("synergy-list");
     synergyListEl.innerHTML = "";
 
@@ -758,7 +758,7 @@ function atualizarSinergias() {
     // Contagem de Schools (apenas titulares)
     document.querySelectorAll(".hex").forEach(slot => {
         if (slot.dataset.nome) {
-            const p = personagens.find(x => x.nome === slot.dataset.nome);
+            const p = characters.find(x => x.nome === slot.dataset.nome);
             SchoolsCount[p.School] = (SchoolsCount[p.School] || 0) + 1;
         }
     });
@@ -766,7 +766,7 @@ function atualizarSinergias() {
     // Contagem de vínculos (titulares + banco)
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
         if (slot.dataset.nome) {
-            const p = personagens.find(x => x.nome === slot.dataset.nome);
+            const p = characters.find(x => x.nome === slot.dataset.nome);
             if (Array.isArray(p.vinculo)) {
                 p.vinculo.forEach(v => {
                     vinculosCount[v] = (vinculosCount[v] || 0) + 1;
@@ -813,7 +813,7 @@ function atualizarSinergias() {
         e.stopPropagation();
         const schoolName = btn.dataset.school;
 
-        const relacionados = personagens.filter(pers => pers.School === schoolName);
+        const relacionados = characters.filter(pers => pers.School === schoolName);
 
         sidebarContent.innerHTML = `
             <h3>School: ${schoolName}</h3>
@@ -834,7 +834,7 @@ function atualizarSinergias() {
 
         document.getElementById("backToSynergies").addEventListener("click", (e) => {
             e.stopPropagation();
-            atualizarSinergias();
+            updateSynergies();
             sidebar.classList.add("open");
             menuBtn.style.display = "none";
         });
@@ -844,8 +844,8 @@ function atualizarSinergias() {
             card.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const nome = card.dataset.nome;
-                const personagem = personagens.find(x => x.nome === nome);
-                mostrarDetalhesPersonagem(personagem);
+                const personagem = characters.find(x => x.nome === nome);
+                showCharacterDetails(personagem);
                 sidebar.classList.add("open"); // mantém o menu aberto
                 menuBtn.style.display = "none";
             });
@@ -859,7 +859,7 @@ function atualizarSinergias() {
             e.stopPropagation();
             const bondName = btn.dataset.bond;
 
-            const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
+            const relacionados = characters.filter(pers => pers.vinculo.includes(bondName));
 
             sidebarContent.innerHTML = `
                 <h3>Vínculo: ${bondName}</h3>
@@ -880,7 +880,7 @@ function atualizarSinergias() {
 
             document.getElementById("backToSynergies").addEventListener("click", (e) => {
                 e.stopPropagation();
-                atualizarSinergias();
+                updateSynergies();
                 sidebar.classList.add("open");
                 menuBtn.style.display = "none";
             });
@@ -889,8 +889,8 @@ function atualizarSinergias() {
                 card.addEventListener("click", (e) => {
                     e.stopPropagation();
                     const nome = card.dataset.nome;
-                    const personagem = personagens.find(x => x.nome === nome);
-                    mostrarDetalhesPersonagem(personagem);
+                    const personagem = characters.find(x => x.nome === nome);
+                    showCharacterDetails(personagem);
                 });
             });
         });
@@ -905,11 +905,11 @@ function atualizarSinergias() {
 document.querySelectorAll(".hex").forEach(slot => {
     slot.addEventListener("click", (e) => {
         e.stopPropagation();
-        mostrarMenu(slot.dataset.role, slot);
+        showMenu(slot.dataset.role, slot);
     });
     slot.addEventListener("contextmenu", (e) => {
         e.preventDefault();
-        removerPersonagem(slot);
+        removeCharacter(slot);
     });
 });
 
@@ -922,7 +922,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         e.stopPropagation();
         const section = btn.dataset.section;
         if (section === "characters") {
-            mostrarListaPersonagens();
+            showCharacterList();
         } else if (section === "save") {
             showSavedTeams();
         } else if (section === "help") {
@@ -969,14 +969,14 @@ document.querySelectorAll(".menu-link").forEach(btn => {
     });
 });
 
-/* ====== LISTA / FILTROS DE PERSONAGENS (mantida com stopPropagation nos clicks) ====== */
-function mostrarListaPersonagens() {
-    const funcoes = [...new Set(personagens.map(p => p.funcao))];
-    const escolas = [...new Set(personagens.map(p => p.School))];
-    const statusKeys = [...new Set(personagens.flatMap(p => Object.keys(p.status || {})))];
+/* ====== LISTA / FILTROS DE characters (mantida com stopPropagation nos clicks) ====== */
+function showCharacterList() {
+    const funcoes = [...new Set(characters.map(p => p.funcao))];
+    const escolas = [...new Set(characters.map(p => p.School))];
+    const statusKeys = [...new Set(characters.flatMap(p => Object.keys(p.status || {})))];
 
     let html = `
-    <h3>Lista de Personagens</h3>
+    <h3>Lista de characters</h3>
     <div class="filtros">
         <div>
             <label>Posição:</label>
@@ -1044,7 +1044,7 @@ function getStatusSafe(p, key) {
   if (statusSel.toLowerCase() === "todos") statusSel = "";
 
   // 1) filtro base
-  let filtrados = personagens.filter(p =>
+  let filtrados = characters.filter(p =>
     (funcaoSel === "" || p.funcao === funcaoSel) &&
     (escolaSel === "" || p.School === escolaSel)
   );
@@ -1091,7 +1091,7 @@ function getStatusSafe(p, key) {
       ev.stopPropagation();  
       const idx = +card.getAttribute("data-idx");
       const person = filtrados[idx];
-      if (person) mostrarDetalhesPersonagem(person);
+      if (person) showCharacterDetails(person);
     });
   });
 }
@@ -1123,7 +1123,7 @@ if (listaEl && !listaEl.dataset.stopCloseBound) {
 renderLista();
 }
 
-function mostrarDetalhesPersonagem(p) {
+function showCharacterDetails(p) {
     sidebarContent.innerHTML = `
         <h3>${p.nome}</h3>
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
@@ -1164,7 +1164,7 @@ function mostrarDetalhesPersonagem(p) {
 
     document.getElementById("backToList").addEventListener("click", (e) => {
         e.stopPropagation();
-        mostrarListaPersonagens();
+        showCharacterList();
     });
 
     // Eventos de clique para cada vínculo
@@ -1173,7 +1173,7 @@ function mostrarDetalhesPersonagem(p) {
     e.stopPropagation();
     const bondName = btn.dataset.bond;
 
-    const relacionados = personagens.filter(pers => pers.vinculo.includes(bondName));
+    const relacionados = characters.filter(pers => pers.vinculo.includes(bondName));
 
     sidebarContent.innerHTML = `
         <h3>Vínculo: ${bondName}</h3>
@@ -1196,15 +1196,15 @@ function mostrarDetalhesPersonagem(p) {
     // Voltar para a lista de synergies
     document.getElementById("backToSynergies").addEventListener("click", (e) => {
         e.stopPropagation();
-        mostrarDetalhesPersonagem(p);
+        showCharacterDetails(p);
     });
 
-    // Clique nos personagens
+    // Clique nos characters
     sidebarContent.querySelectorAll(".char-card").forEach(card => {
         card.addEventListener("click", () => {
             const nome = card.dataset.nome;
-            const personagem = personagens.find(x => x.nome === nome);
-            mostrarDetalhesPersonagem(personagem);
+            const personagem = characters.find(x => x.nome === nome);
+            showCharacterDetails(personagem);
         });
     });
 });
@@ -1224,7 +1224,7 @@ function mostrarDetalhesPersonagem(p) {
             `;
             document.getElementById("backToChar").addEventListener("click", (e) => {
                 e.stopPropagation();
-                mostrarDetalhesPersonagem(p);
+                showCharacterDetails(p);
             });
         });
     });
@@ -1302,7 +1302,7 @@ function showSavedTeams() {
         loadTeam(name);
 
         // Atualiza sinergias e mantém menu aberto na lista
-        atualizarSinergias();
+        updateSynergies();
         sidebar.classList.add("open");
         menuBtn.style.display = "none";
         });
@@ -1326,7 +1326,7 @@ function deleteTeam(name) {
     localStorage.setItem("savedTeams", JSON.stringify(teams));
 }
 
-/* Carrega time — monta usando setPersonagem (assim datas e selected array ficam corretos) */
+/* Carrega time — monta usando setCharacter (assim datas e selected array ficam corretos) */
 function loadTeam(name) {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
     const team = teams[name];
@@ -1347,24 +1347,24 @@ function loadTeam(name) {
     const hexes = Array.from(document.querySelectorAll(".hex"));
     team.main.forEach((nome, i) => {
         if (!nome) return;
-        const personagem = personagens.find(p => p.nome === nome);
+        const personagem = characters.find(p => p.nome === nome);
         if (personagem && hexes[i]) {
-            setPersonagem(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
+            setCharacter(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
         }
     });
 
     const benches = Array.from(document.querySelectorAll(".bench-slot"));
     team.bench.forEach((nome, i) => {
         if (!nome) return;
-        const personagem = personagens.find(p => p.nome === nome);
+        const personagem = characters.find(p => p.nome === nome);
         if (personagem && benches[i]) {
-            setPersonagem(benches[i], personagem, 'bench');
+            setCharacter(benches[i], personagem, 'bench');
             attachBenchEvents(benches[i]);
         }
     });
 
     // atualizar sinergias após carregar
-    atualizarSinergias();
+    updateSynergies();
 }
 
 /* ====== ABRIR / FECHAR MENU ====== */
@@ -1414,7 +1414,7 @@ document.addEventListener("click", (e) => {
     // Botão para limpar todo o time e resetar o banco
 document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
-    if (!confirm("Tem certeza que deseja remover todos os personagens e resetar o banco?")) return;
+    if (!confirm("Tem certeza que deseja remover todos os characters e resetar o banco?")) return;
 
     // Fecha o menu lateral se estiver aberto
     sidebar.classList.remove("open");
@@ -1444,7 +1444,7 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
             infoDiv.textContent = "Bench";
         }
     });
-    atualizarSinergias();
+    updateSynergies();
     });
 
 </script>
