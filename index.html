@@ -972,40 +972,50 @@ function mostrarListaPersonagens() {
         </div>
         <button id="limparFiltros">Limpar</button>
     </div>
-    <div class='char-list' id="charList"></div>
+    <div class='char-list' id="listaPersonagens"></div>
     `;
 
     sidebarContent.innerHTML = html;
 
     function renderLista() {
-        const funcaoSel = document.getElementById("filtroFuncao").value;
-        const escolaSel = document.getElementById("filtroEscola").value;
-         const statusSel = document.getElementById("filtroStatus").value;
-         const dataSel = document.getElementById("filtroData").value;
-          // filtra por função e escola (o status é só para ordenar)
-        let filtrados = personagens.filter(p => {
-            return (funcaoSel === "" || p.funcao === funcaoSel) &&
-                   (escolaSel === "" || p.School === escolaSel);
-        });
+    const filtroNome = document.getElementById("filtroNome").value.toLowerCase();
+    const filtroFuncao = document.getElementById("filtroFuncao").value;
+    const statusSel = document.getElementById("filtroStatus").value;
+    const ordemDataEl = document.getElementById("filtroData");
+    const ordemData = ordemDataEl ? ordemDataEl.value : "";
 
-        // ordena do MAIOR para o MENOR de acordo com o status escolhido
+    // Filtragem
+    let listaFiltrada = personagens.filter(p => {
+        const nomeMatch = p.nome.toLowerCase().includes(filtroNome);
+        const funcaoMatch = !filtroFuncao || p.funcao === filtroFuncao;
+
         if (statusSel) {
-            filtrados.sort((a, b) => {
-                const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
-                const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
-                return bv - av;
-            });
+            return nomeMatch && funcaoMatch && p.status === statusSel;
+        } else {
+            return nomeMatch && funcaoMatch;
+        }
+    });
 
-         if (dataSel) {
+    // Ordenação por data
+    if (ordemData) {
         listaFiltrada.sort((a, b) => {
             const dataA = parseData(a.data);
             const dataB = parseData(b.data);
             return ordemData === "asc" ? dataA - dataB : dataB - dataA;
         });
-         }
-        }
+    }
 
-       const listaEl = document.getElementById("charList");
+    // Renderização
+    const listaElement = document.getElementById("listaPersonagens");
+    listaElement.innerHTML = "";
+    listaFiltrada.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.nome;
+        listaElement.appendChild(li);
+    });
+}
+
+       const listaEl = document.getElementById("listaPersonagens");
         listaEl.innerHTML = filtrados.map(p => {
     const v = statusSel ? (p.status?.[statusSel] ?? "-") : "";
     return `
