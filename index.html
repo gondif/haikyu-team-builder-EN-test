@@ -613,6 +613,12 @@ const descricoesSinergia = {
 
 let selecionados = [];
 
+function parseData(dataStr) {
+    if (!dataStr) return new Date(0); // sem data => 01/01/1970
+    const [mes, dia, ano] = dataStr.split("/").map(Number);
+    return new Date(2000 + ano, mes - 1, dia); // converte para Date real
+}
+
 /* ====== FUNÇÕES ORIGINAIS (mantidas) ====== */
 function addBenchSlot() {
     const benchRow = document.getElementById("bench-row");
@@ -964,12 +970,6 @@ function mostrarListaPersonagens() {
                 ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
         </div>
-        <label for="filtroData">Ordenar por Data:</label>
-<select id="filtroData">
-    <option value="">Nenhum</option>
-    <option value="asc">Mais antigo primeiro</option>
-    <option value="desc">Mais recente primeiro</option>
-</select>
         <button id="limparFiltros">Limpar</button>
     </div>
     <div class='char-list' id="charList"></div>
@@ -981,8 +981,7 @@ function mostrarListaPersonagens() {
         const funcaoSel = document.getElementById("filtroFuncao").value;
         const escolaSel = document.getElementById("filtroEscola").value;
          const statusSel = document.getElementById("filtroStatus").value;
-        const dataSel = document.getElementById("filtroData").value;
-
+         const ordemData = document.getElementById("filtroData").value;
           // filtra por função e escola (o status é só para ordenar)
         let filtrados = personagens.filter(p => {
             return (funcaoSel === "" || p.funcao === funcaoSel) &&
@@ -997,15 +996,13 @@ function mostrarListaPersonagens() {
                 return bv - av;
             });
 
-        // Ordenação por data se selecionado
-    if (ordemData) {
+         if (ordemData) {
         listaFiltrada.sort((a, b) => {
             const dataA = parseData(a.data);
             const dataB = parseData(b.data);
             return ordemData === "asc" ? dataA - dataB : dataB - dataA;
         });
-        
-            
+    }
         }
 
        const listaEl = document.getElementById("charList");
@@ -1035,13 +1032,11 @@ function mostrarListaPersonagens() {
     document.getElementById("filtroFuncao").addEventListener("change", renderLista);
     document.getElementById("filtroEscola").addEventListener("change", renderLista);
     document.getElementById("filtroStatus").addEventListener("change", renderLista);
-    document.getElementById("filtrodata").addEventListener("change", renderLista);
 
     document.getElementById("limparFiltros").addEventListener("click", () => {
         document.getElementById("filtroFuncao").value = "";
         document.getElementById("filtroEscola").value = "";
         document.getElementById("filtroStatus").value = "";
-        document.getElementById("filtrodata").value = "";
         renderLista();
     });
 
@@ -1049,11 +1044,6 @@ function mostrarListaPersonagens() {
 }
 
 function mostrarDetalhesPersonagem(p) {
-    function formatarDataParaInput(dataString) {
-        if (!dataString) return "";
-        const [mes, dia, ano] = dataString.split("/");
-        return `20${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
-    }
     sidebarContent.innerHTML = `
         <h3>${p.nome}</h3>
         <img src="${p.img}" alt="${p.nome}" style="width:100%;">
@@ -1064,7 +1054,6 @@ function mostrarDetalhesPersonagem(p) {
         ` : ""}
         <p><b>Função:</b> ${p.funcao}</p>
         <p><b>Escola:</b> ${p.School}</p>
-        <p><b>Data:</b> ${p.data || "Already in Global"}</p>
 
         <h4>Status</h4>
         <ul>
@@ -1374,6 +1363,9 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     });
 
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
