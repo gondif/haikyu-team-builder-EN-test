@@ -993,7 +993,7 @@ function showCharacterList() {
     const statusKeys = [...new Set(characters.flatMap(p => Object.keys(p.status || {})))];
 
     let html = `
-    <h3>Lista de characters</h3>
+    <h3>Characters</h3>
     <div class="filtros">
         <div>
             <label>Position:</label>
@@ -1329,7 +1329,7 @@ function showSavedTeams() {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const name = btn.dataset.name;
-            if (confirm(`Delete o time "${name}"?`)) {
+            if (confirm(`Delete team "${name}"?`)) {
                 deleteTeam(name);
                 showSavedTeams();
             }
@@ -1431,7 +1431,7 @@ document.addEventListener("click", (e) => {
     // Botão para limpar todo o time e resetar o banco
 document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
-    if (!confirm("Tem certeza que deseja remover todos os characters e resetar o banco?")) return;
+    if (!confirm("Are you sure you want to reset court and bench?")) return;
 
     // Fecha o Side Menu se estiver aberto
     sidebar.classList.remove("open");
