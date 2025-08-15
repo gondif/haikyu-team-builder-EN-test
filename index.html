@@ -731,7 +731,7 @@ function setCharacter(slot, personagem, role) {
     if (infoDiv) infoDiv.textContent = `${personagem.nome} - ${personagem.funcao}`;
 
     selecionados.push(personagem);
-    upSynergies();
+    updateSynergies();
 }
 
 function removeCharacter(slot) {
@@ -748,7 +748,7 @@ function removeCharacter(slot) {
             infoDiv.textContent = slot.dataset.role || slot.getAttribute("date-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
         }
 
-        upSynergies();
+        updateSynergies();
     }
 }
 
@@ -852,7 +852,7 @@ function upSynergies() {
 
             document.getElementById("backToSynergies").addEventListener("click", (e) => {
                 e.stopPropagation();
-                upSynergies();
+                updateSynergies();
                 sidebar.classList.add("open");
                 menuBtn.style.display = "none";
             });
@@ -900,7 +900,7 @@ function upSynergies() {
 
             document.getElementById("backToSynergies").addEventListener("click", (e) => {
                 e.stopPropagation();
-                upSynergies();
+                updateSynergies();
                 sidebar.classList.add("open");
                 menuBtn.style.display = "none";
             });
