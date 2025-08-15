@@ -357,13 +357,13 @@
     margin: 0;
 }
 
-.char-status {
+.char-stats {
     font-size: 12px;
     color: #ccc;
     margin: 0;
 }
 
-.char-status span {
+.char-stats span {
     font-weight: bold;
     color: #ffcc00; /* cor destaque do valor */
 }
@@ -990,7 +990,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
 function showCharacterList() {
     const funcoes = [...new Set(characters.map(p => p.funcao))];
     const escolas = [...new Set(characters.map(p => p.School))];
-    const statusKeys = [...new Set(characters.flatMap(p => Object.keys(p.status || {})))];
+    const statsKeys = [...new Set(characters.flatMap(p => Object.keys(p.stats || {})))];
 
     let html = `
     <h3>Characters</h3>
@@ -1011,9 +1011,9 @@ function showCharacterList() {
         </div>
         <div>
             <label>Stats:</label>
-            <select id="filtroStatus">
+            <select id="filtrostats">
                 <option value="">All</option>
-                ${statusKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
+                ${statsKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
         </div>
                 <div>
@@ -1044,8 +1044,8 @@ function showCharacterList() {
         return !!parseDateMMDDYY(p?.data);
     }
 
-function getStatusSafe(p, key) {
-  const v = p?.status?.[key];
+function getstatsSafe(p, key) {
+  const v = p?.stats?.[key];
   return (typeof v === "number") ? v : "-";
 }
 
@@ -1055,10 +1055,10 @@ function getStatusSafe(p, key) {
 
   const funcaoSel = (document.getElementById("filtroFuncao").value || "").trim();
   const escolaSel = (document.getElementById("filtroEscola").value || "").trim();
-  let   statusSel = (document.getElementById("filtroStatus").value || "").trim();
+  let   statsSel = (document.getElementById("filtrostats").value || "").trim();
   const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim();
 
-  if (statusSel.toLowerCase() === "todos") statusSel = "";
+  if (statsSel.toLowerCase() === "todos") statsSel = "";
 
   // 1) filtro base
   let filtrados = characters.filter(p =>
@@ -1075,11 +1075,11 @@ function getStatusSafe(p, key) {
         const db = parseDateMMDDYY(b.data);
         return dataOrdem === "asc" ? (da - db) : (db - da);
       });
-  } else if (statusSel) {
-    // 3) ordenar por status quando data está em "Ignorar"
+  } else if (statsSel) {
+    // 3) ordenar por stats quando data está em "Ignorar"
     filtrados.sort((a, b) => {
-      const bv = (b.status && typeof b.status[statusSel] === "number") ? b.status[statusSel] : -Infinity;
-      const av = (a.status && typeof a.status[statusSel] === "number") ? a.status[statusSel] : -Infinity;
+      const bv = (b.stats && typeof b.stats[statsSel] === "number") ? b.stats[statsSel] : -Infinity;
+      const av = (a.stats && typeof a.stats[statsSel] === "number") ? a.stats[statsSel] : -Infinity;
       return bv - av;
     });
   }
@@ -1089,7 +1089,7 @@ function getStatusSafe(p, key) {
     const metaLine =
       (dataOrdem === "asc" || dataOrdem === "desc")
         ? (hasValidDate(p) ? `<div class="card-sub">Expected Release Date: ${p.data}</div>` : "")
-        : (statusSel ? `<div class="card-sub">${statusSel}: ${getStatusSafe(p, statusSel)}</div>` : "");
+        : (statsSel ? `<div class="card-sub">${statsSel}: ${getstatsSafe(p, statsSel)}</div>` : "");
 
     return `
       <li class="person-card" data-idx="${i}">
@@ -1116,14 +1116,14 @@ function getStatusSafe(p, key) {
     // listeners dos filtros
 document.getElementById("filtroFuncao").addEventListener("change", renderLista);
 document.getElementById("filtroEscola").addEventListener("change", renderLista);
-document.getElementById("filtroStatus").addEventListener("change", renderLista);
+document.getElementById("filtrostats").addEventListener("change", renderLista);
 document.getElementById("filtroDataOrdem").addEventListener("change", renderLista);
 
 // botão Limpar
 document.getElementById("limparFiltros").addEventListener("click", () => {
   document.getElementById("filtroFuncao").value = "";
   document.getElementById("filtroEscola").value = "";
-  document.getElementById("filtroStatus").value = "";
+  document.getElementById("filtrostats").value = "";
   const selData = document.getElementById("filtroDataOrdem");
   if (selData) selData.value = "";
   renderLista();
@@ -1146,7 +1146,8 @@ function showCharacterDetails(p) {
                 : (p?.vinculo ? [p.vinculo] : []);
   const skills  = Array.isArray(p?.habilidades) ? p.habilidades : [];
   const symbols = Array.isArray(p?.symbols) ? p.symbols : [];
-
+  const stats  = Array.isArray(p?.stats) ? p.stats : [];
+    
   sidebarContent.innerHTML = `
     <h3>${p.nome}</h3>
     <img src="${p.img}" alt="${p.nome}" style="width:100%;">
@@ -1173,6 +1174,14 @@ function showCharacterDetails(p) {
       </ul>` : ""}
 
     ${p.descricao ? `<p style="margin-top:8px;">${p.descricao}</p>` : ""}
+    <ul>
+            <li><b>Serve:</b> ${p.stats.Serve}</li>
+            <li><b>Spike:</b> ${p.stats.Spike}</li>
+            <li><b>Set:</b> ${p.stats.Set}</li>
+            <li><b>Receive:</b> ${p.stats.Receive}</li>
+            <li><b>Block:</b> ${p.stats.Block}</li>
+            <li><b>Save:</b> ${p.stats.Save}</li>
+        </ul>
 
     <button id="backToList" class="bond-btn">← Back</button>
   `;
