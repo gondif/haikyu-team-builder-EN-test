@@ -997,7 +997,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
             e.stopPropagation();
-            document.querySelector('.menu-link[data-section="patch"]').click();
+            document.querySelector('.menu-link[data-section="help"]').click();
             sidebar.classList.add("open");
             menuBtn.style.display = "none";
         });
