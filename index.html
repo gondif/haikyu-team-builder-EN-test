@@ -947,7 +947,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         <h3>Info</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="faqBtn" class="bond-btn">📄 FAQ</button>
-            <button id="creditosBtn" class="bond-btn">👥 Créditos</button>
+            <button id="creditosBtn" class="bond-btn">👥 Credits</button>
         </div>
     `;
 
@@ -967,12 +967,12 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         });
     });
 
-    // Botão Créditos
+    // Botão Credits
     document.getElementById("creditosBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
-            <h3>Créditos</h3>
-            <p>Aqui você coloca os créditos do projeto...</p>
+            <h3>Credits</h3>
+            <p>Aqui você coloca os Credits do projeto...</p>
             <button id="backToHelp" class="bond-btn">← Back</button>
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
@@ -1413,7 +1413,7 @@ document.addEventListener("click", (e) => {
   return;
 }
 
-    // Clique em botões de voltar (FAQ, Créditos, Synergies, Detalhes) → não fecha
+    // Clique em botões de voltar (FAQ, Credits, Synergies, Detalhes) → não fecha
     if (
         e.target.closest("#backToHelp") ||
         e.target.closest("#backToSynergies") ||
