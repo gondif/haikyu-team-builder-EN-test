@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</title>
+<title>Haikyu Fly High - Team Builder by goN6</title>
 <style>
     body {
         background-color: #222;
@@ -516,7 +516,7 @@ object-fit: Save;
     </div>
 </div>
 
-<h1>Haikyu Fly High - Team Builder (Credits: goN6 on discord)</h1>
+<h1>Haikyu Fly High - Team Builder by goN6</h1>
 
 <div class="team-grid">
     <div class="row top-row">
@@ -952,6 +952,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="faqBtn" class="bond-btn">📄 FAQ</button>
             <button id="creditosBtn" class="bond-btn">👥 Credits</button>
+            <button id="patchBtn" class="patch-btn">🔄 Patch</button>
         </div>
     `;
 
@@ -960,11 +961,13 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>FAQ</h3>
-            <p>do you know if player bonds work if one is benched?</p>
+            <p>Player bonds work if one is benched?</p>
             <p>It doesn't, only gonna be applied in game when the bond players are in court</p>
             <p>"X" bond doesn't show, why?</p>
             <p>This version only shows DEPLOYMENT bonds, since "normal" bonds requirements are just to have the characters on the account, meaning they don't have to be in court to activate</p>
             <button id="backToHelp" class="bond-btn">← Back</button>
+            <p>How can i help with team maker?</p>
+            <p>Contact goN6 on discord, to send ideas, fixes to erros, new information, etc.</p>
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
             e.stopPropagation();
@@ -975,13 +978,38 @@ document.querySelectorAll(".menu-link").forEach(btn => {
     });
 
     // Botão Credits
+    document.getElementById("patchBtn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebarContent.innerHTML = `
+            <h3>Patch notes</h3>
+            <p>Fixed:</p>
+            <p>Some synergies that required 3 players were not being displayed correctly</p>
+            <p>Some bench rules were not working correctly, EX: couldnt add more than 2 MB's on bench</p>
+            <p>Added:</p>
+            <p>Side menu</p>
+            <p>Save and Load teams</p>
+            <p>Clear all button</p>
+            <p>Filter characters on side menu</p>
+            <p>Character Skills description</p>
+            <p>Character Stats</p>
+            <p>Expected release date</p>
+            <button id="backToHelp" class="bond-btn">← Back</button>
+        `;
+        document.getElementById("backToHelp").addEventListener("click", (e) => {
+            e.stopPropagation();
+            document.querySelector('.menu-link[data-section="patch"]').click();
+            sidebar.classList.add("open");
+            menuBtn.style.display = "none";
+        });
+    });
+               // Botão FAQ
     document.getElementById("creditosBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>Credits</h3>
-            <p>goN6 on discord / goNdif on github</p>
+            <p>goN6 on discord, goNdif on github</p>
             <p>Translation by KRILL group https://discord.gg/EEBqSKvAsp</p>
-            <button id="backToHelp" class="bond-btn">← Back</button>
+            
         `;
         document.getElementById("backToHelp").addEventListener("click", (e) => {
             e.stopPropagation();
