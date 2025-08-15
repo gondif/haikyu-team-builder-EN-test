@@ -951,7 +951,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         <h3>Info</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="faqBtn" class="bond-btn">📄 FAQ</button>
-            <button id="creditosBtn" class="bond-btn">👥 Credits</button>
+            <button id="creditsBtn" class="bond-btn">👥 Credits</button>
             <button id="patchBtn" class="bond-btn">🔄 Patch</button>
         </div>
     `;
@@ -1003,7 +1003,7 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         });
     });
                // Botão FAQ
-    document.getElementById("creditosBtn").addEventListener("click", (e) => {
+    document.getElementById("creditsBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>Credits</h3>
