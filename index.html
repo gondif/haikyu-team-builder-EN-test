@@ -1141,110 +1141,117 @@ renderLista();
 }
 
 function showCharacterDetails(p) {
-    sidebarContent.innerHTML = `
-        <h3>${p.nome}</h3>
-        <img src="${p.img}" alt="${p.nome}" style="width:100%;">
-        ${p.symbols && p.symbols.length > 0 ? `
-            <div class="person-symbols">
-                ${p.symbols.map(sym => `<img src="${sym}" class="symbol-icon">`).join('')}
-            </div>
-        ` : ""}
-        ${p.data ? `<p><b>Expected Release Date:</b> ${p.data}</p>` : ""}
-        <p><b>Position:</b> ${p.funcao}</p>
-        <p><b>School:</b> ${p.School}</p>
+  // Normalize fields so we can safely render
+  const bonds   = Array.isArray(p?.vinculo) ? p.vinculo.filter(Boolean)
+                : (p?.vinculo ? [p.vinculo] : []);
+  const skills  = Array.isArray(p?.habilidades) ? p.habilidades : [];
+  const symbols = Array.isArray(p?.symbols) ? p.symbols : [];
 
-        <p><b>Bonds:</b></p>
-        <ul>
-            ${p.vinculo.map(v => `<li><button class="bond-btn" data-bond="${v}">${v}</button></li>`).join('')}
-        </ul>
+  sidebarContent.innerHTML = `
+    <h3>${p.nome}</h3>
+    <img src="${p.img}" alt="${p.nome}" style="width:100%;">
 
+    ${symbols.length ? `
+      <div class="person-symbols">
+        ${symbols.map(sym => `<img src="${sym}" class="symbol-icon">`).join("")}
+      </div>` : ""}
 
-        <h4>Skills</h4>
-        <ul>
-            ${p.habilidades.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
-        </ul>
+    ${p.data ? `<p><b>Expected Release Date:</b> ${p.data}</p>` : ""}
+    <p><b>Position:</b> ${p.funcao || "-"}</p>
+    <p><b>School:</b> ${p.School || "-"}</p>
 
-        <p><b>Bonds:</b></p>
+    ${bonds.length ? `
+      <p><b>Bonds:</b></p>
+      <ul>
+        ${bonds.map(v => `<li><button class="bond-btn bond-link" data-bond="${v}">${v}</button></li>`).join("")}
+      </ul>` : `<p><b>Bonds:</b> <i>None</i></p>`}
 
-        <h4>Stats</h4>
-        <ul>
-            <li><b>Serve:</b> ${p.status.Serve}</li>
-            <li><b>Spike:</b> ${p.status.Spike}</li>
-            <li><b>Set:</b> ${p.status.Set}</li>
-            <li><b>Receive:</b> ${p.status.Receive}</li>
-            <li><b>Block:</b> ${p.status.Block}</li>
-            <li><b>Save:</b> ${p.status.Save}</li>
-        </ul>
+    ${skills.length ? `
+      <h4>Skills</h4>
+      <ul>
+        ${skills.map(h => `<li><button class="skill-btn" data-skill="${h.nome}">${h.nome}</button></li>`).join("")}
+      </ul>` : ""}
 
-        <button id="backToSynergies" class="bond-btn">← Back</button>
-    `;
+    ${p.descricao ? `<p style="margin-top:8px;">${p.descricao}</p>` : ""}
 
-    document.getElementById("backToList").addEventListener("click", (e) => {
-        e.stopPropagation();
-        showCharacterList();
-    });
+    <button id="backToList" class="bond-btn">← Back</button>
+  `;
 
-    // Eventos de clique para cada vínculo
-    sidebarContent.querySelectorAll(".bond-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
+  // Keep sidebar open
+  sidebar.classList.add("open");
+  menuBtn.style.display = "none";
+
+  // Back to character list
+  document.getElementById("backToList").addEventListener("click", (e) => {
     e.stopPropagation();
-    const bondName = btn.dataset.bond;
+    showCharacterList();
+  });
 
-    const relacionados = characters.filter(pers => pers.vinculo.includes(bondName));
+  // Open a Bond page
+  sidebarContent.querySelectorAll(".bond-link").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const bondName = btn.dataset.bond;
 
-    sidebarContent.innerHTML = `
-        <h3>Vínculo: ${bondName}</h3>
+      const relacionados = characters.filter(pers =>
+        Array.isArray(pers.vinculo) ? pers.vinculo.includes(bondName)
+                                    : pers.vinculo === bondName
+      );
+
+      sidebarContent.innerHTML = `
+        <h3>Bond: ${bondName}</h3>
         <p>${descricoesSinergia[bondName] || "Sem descrição disponível"}</p>
         <div class="char-list">
-            ${relacionados.map(r => `
-                <div class="char-card" data-nome="${r.nome}">
-                    <img src="${r.img}" alt="${r.nome}">
-                    <p>${r.nome}</p>
-                </div>
-            `).join('')}
+          ${relacionados.map(r => `
+            <div class="char-card" data-nome="${r.nome}">
+              <img src="${r.img}" alt="${r.nome}">
+              <p>${r.nome}</p>
+            </div>
+          `).join("")}
         </div>
-        <button id="backToSynergies" class="bond-btn">← Voltar</button>
-    `;
+        <button id="backToChar" class="bond-btn">← Back</button>
+      `;
 
-    // ABRIR o Side Menu
-    sidebar.classList.add("open");
-    menuBtn.style.display = "none";
+      sidebar.classList.add("open");
+      menuBtn.style.display = "none";
 
-    // Voltar para a lista de synergies
-    document.getElementById("backToSynergies").addEventListener("click", (e) => {
+      // Back to THIS character's details
+      document.getElementById("backToChar").addEventListener("click", (e) => {
         e.stopPropagation();
         showCharacterDetails(p);
-    });
+      });
 
-    // Clique nos characters
-    sidebarContent.querySelectorAll(".char-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const nome = card.dataset.nome;
-            const personagem = characters.find(x => x.nome === nome);
-            showCharacterDetails(personagem);
+      // Jump from bond list to another character
+      sidebarContent.querySelectorAll(".char-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const nome = card.dataset.nome;
+          const personagem = characters.find(x => x.nome === nome);
+          if (personagem) showCharacterDetails(personagem);
         });
+      });
     });
-});
-    });
+  });
 
-    // Evento das habilidades (igual vínculo, mas com descrição própria)
-    sidebarContent.querySelectorAll(".skill-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const skillName = btn.dataset.skill;
-            const habilidade = p.habilidades.find(h => h.nome === skillName);
+  // Open a Skill page
+  sidebarContent.querySelectorAll(".skill-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const skillName = btn.dataset.skill;
+      const habilidade = skills.find(h => h.nome === skillName);
+      if (!habilidade) return;
 
-            sidebarContent.innerHTML = `
-                <h3>Habilidade: ${habilidade.nome}</h3>
-                <p>${habilidade.descricao}</p>
-                <button id="backToSynergies" class="bond-btn">← Back</button>
-            `;
-            document.getElementById("backToChar").addEventListener("click", (e) => {
-                e.stopPropagation();
-                showCharacterDetails(p);
-            });
-        });
+      sidebarContent.innerHTML = `
+        <h3>Skill: ${habilidade.nome}</h3>
+        <p>${habilidade.descricao || ""}</p>
+        <button id="backToChar" class="bond-btn">← Back</button>
+      `;
+      document.getElementById("backToChar").addEventListener("click", (e) => {
+        e.stopPropagation();
+        showCharacterDetails(p);
+      });
     });
+  });
 }
 
 /* ====== SALVAR / Load TIMES (localStorage) ====== */
