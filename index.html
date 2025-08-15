@@ -709,8 +709,8 @@ function respeitaLimiteBench(p, slot) {
         return acc;
     }, {});
 
-    if (p.funcao === "MB" && contagem["MB"] >= 2) return false;
-    if (p.funcao === "WS" && contagem["WS"] >= 2) return false;
+    if (p.funcao === "MB" && contagem["MB"] >= 6) return false;
+    if (p.funcao === "WS" && contagem["WS"] >= 6) return false;
     if (["S", "L", "OP"].includes(p.funcao) && contagem[p.funcao] >= 1) return false;
 
     return true;
