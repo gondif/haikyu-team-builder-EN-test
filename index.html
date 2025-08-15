@@ -214,6 +214,28 @@ object-fit: Save;
     #menuBtn:hover {
         background-color: #218838;
     }
+    /* Aumenta o botão no mobile / telas touch */
+@media (max-width: 768px), (pointer: coarse) {
+  #menuBtn {
+    /* alvo de toque grande (recomendado 48–64px) */
+    width: 64px;
+    height: 64px;
+
+    /* centraliza o ícone ☰ dentro do quadrado */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* o ícone fica maior */
+    font-size: 32px;
+
+    /* remove o padding para não “esticar” além do width/height */
+    padding: 0;
+
+    /* arredondamento um pouco maior (opcional) */
+    border-radius: 12px;
+  }
+}
 
     /* Lista de characters no menu */
     .char-list {
