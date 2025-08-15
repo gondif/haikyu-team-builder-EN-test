@@ -752,21 +752,34 @@ function updateSynergies() {
     const synergyListEl = document.getElementById("synergy-list");
     synergyListEl.innerHTML = "";
 
+    // === CONFIG: which bonds need 3 to activate ===
+    // Put the EXACT vinculo names here (case-sensitive).
+    const bondsRequire3 = new Set([
+        // "Example Bond 1",
+        // "Example Bond 2",
+    ]);
+
+    const DEFAULT_BOND_MIN = 2; // all bonds default to 2 unless listed above
+    const SCHOOL_MIN = 4;       // school synergy rule stays the same
+
     const SchoolsCount = {};
     const vinculosCount = {};
 
-    // Contagem de Schools (apenas titulares)
+    // --- Count Schools (starters only) ---
     document.querySelectorAll(".hex").forEach(slot => {
         if (slot.dataset.nome) {
             const p = characters.find(x => x.nome === slot.dataset.nome);
+            if (!p) return;
             SchoolsCount[p.School] = (SchoolsCount[p.School] || 0) + 1;
         }
     });
 
-    // Contagem de vínculos (titulares + banco)
+    // --- Count Bonds (starters + bench) ---
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
         if (slot.dataset.nome) {
             const p = characters.find(x => x.nome === slot.dataset.nome);
+            if (!p) return;
+
             if (Array.isArray(p.vinculo)) {
                 p.vinculo.forEach(v => {
                     vinculosCount[v] = (vinculosCount[v] || 0) + 1;
@@ -779,13 +792,13 @@ function updateSynergies() {
 
     let algumaSinergia = false;
 
-    // === Sinergia de School (4 ou mais) ===
-    for (const School in SchoolsCount) {
-        if (SchoolsCount[School] >= 4) {
+    // --- School synergies (>= 4) ---
+    for (const school in SchoolsCount) {
+        if (SchoolsCount[school] >= SCHOOL_MIN) {
             synergyListEl.innerHTML += `
                 <li>
-                    <button class="bond-btn school-btn" data-school="${School}">
-                        School: ${School}
+                    <button class="bond-btn school-btn" data-school="${school}">
+                        School: ${school}
                     </button>
                 </li>
             `;
@@ -793,9 +806,10 @@ function updateSynergies() {
         }
     }
 
-    // === Sinergia de Bond (2 ou mais) ===
+    // --- Bond synergies (>= per-bond threshold) ---
     for (const vinculo in vinculosCount) {
-        if (vinculosCount[vinculo] >= 2) {
+        const required = bondsRequire3.has(vinculo) ? 3 : DEFAULT_BOND_MIN;
+        if (vinculosCount[vinculo] >= required) {
             synergyListEl.innerHTML += `
                 <li>
                     <button class="bond-btn synergy-btn" data-bond="${vinculo}">
@@ -807,59 +821,61 @@ function updateSynergies() {
         }
     }
 
-    // === Clique em School ===
+    // === Click: School ===
     document.querySelectorAll(".school-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const schoolName = btn.dataset.school;
-
-        const relacionados = characters.filter(pers => pers.School === schoolName);
-
-        sidebarContent.innerHTML = `
-            <h3>School: ${schoolName}</h3>
-            <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
-            <div class="char-list">
-                ${relacionados.map(r => `
-                    <div class="char-card" data-nome="${r.nome}">
-                        <img src="${r.img}" alt="${r.nome}">
-                        <p>${r.nome}</p>
-                    </div>
-                `).join('')}
-            </div>
-            <button id="backToSynergies" class="bond-btn">← Back</button>
-        `;
-
-        sidebar.classList.add("open");
-        menuBtn.style.display = "none";
-
-        document.getElementById("backToSynergies").addEventListener("click", (e) => {
+        btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            updateSynergies();
+            const schoolName = btn.dataset.school;
+
+            const relacionados = characters.filter(pers => pers.School === schoolName);
+
+            sidebarContent.innerHTML = `
+                <h3>School: ${schoolName}</h3>
+                <p>${descricoesSinergia[schoolName] || "Sem descrição disponível"}</p>
+                <div class="char-list">
+                    ${relacionados.map(r => `
+                        <div class="char-card" data-nome="${r.nome}">
+                            <img src="${r.img}" alt="${r.nome}">
+                            <p>${r.nome}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <button id="backToSynergies" class="bond-btn">← Back</button>
+            `;
+
             sidebar.classList.add("open");
             menuBtn.style.display = "none";
-        });
 
-        // 🔹 Aqui é onde precisamos aplicar a mesma lógica
-        sidebarContent.querySelectorAll(".char-card").forEach(card => {
-            card.addEventListener("click", (e) => {
+            document.getElementById("backToSynergies").addEventListener("click", (e) => {
                 e.stopPropagation();
-                const nome = card.dataset.nome;
-                const personagem = characters.find(x => x.nome === nome);
-                showCharacterDetails(personagem);
-                sidebar.classList.add("open"); // mantém o menu aberto
+                updateSynergies();
+                sidebar.classList.add("open");
                 menuBtn.style.display = "none";
+            });
+
+            sidebarContent.querySelectorAll(".char-card").forEach(card => {
+                card.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const nome = card.dataset.nome;
+                    const personagem = characters.find(x => x.nome === nome);
+                    showCharacterDetails(personagem);
+                    sidebar.classList.add("open");
+                    menuBtn.style.display = "none";
+                });
             });
         });
     });
-});
 
-    // === Clique em Bond ===
+    // === Click: Bond ===
     document.querySelectorAll(".synergy-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const bondName = btn.dataset.bond;
 
-            const relacionados = characters.filter(pers => pers.vinculo.includes(bondName));
+            const relacionados = characters.filter(pers => {
+                if (Array.isArray(pers.vinculo)) return pers.vinculo.includes(bondName);
+                return pers.vinculo === bondName;
+            });
 
             sidebarContent.innerHTML = `
                 <h3>Vínculo: ${bondName}</h3>
@@ -891,6 +907,8 @@ function updateSynergies() {
                     const nome = card.dataset.nome;
                     const personagem = characters.find(x => x.nome === nome);
                     showCharacterDetails(personagem);
+                    sidebar.classList.add("open");
+                    menuBtn.style.display = "none";
                 });
             });
         });
@@ -899,7 +917,6 @@ function updateSynergies() {
     if (!algumaSinergia) {
         synergyListEl.innerHTML = "<li>No active synergies</li>";
     }
-}
 
 /* ====== Eventos iniciais ====== */
 document.querySelectorAll(".hex").forEach(slot => {
