@@ -497,52 +497,6 @@ object-fit: Save;
   #charList{ grid-template-columns: repeat(4, minmax(50px, 1fr)); }
 }
 
-/* === Credits (Info) === */
-#info-section { padding: 8px 0; }
-#info-section h3, #info-section h4 { margin: 8px 0 10px; }
-
-.credits-list{
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display:flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.credits-list li{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  background:#2a2a2a;
-  padding: 8px 10px;
-  border-radius: 8px;
-}
-
-.credit-name{
-  flex: 1;            /* cria o “espaçamento” entre nome e botões */
-  text-align: left;
-  font-weight: 600;
-}
-
-.credit-actions{
-  display:flex;
-  gap: 6px;
-}
-
-.credit-btn{
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  color: white;
-  text-decoration: none;
-  border: 0;
-}
-
-.credit-btn.discord{ background-color:#5865F2; }
-.credit-btn.twitter{ background-color:#1DA1F2; }
-.credit-btn:hover{ opacity: .9; }
-
 </style>
 </head>
 <body>
@@ -662,14 +616,7 @@ const characters = [
 { nome: "Komori UR",data: "09/09/26", funcao: "L", img: "img/komoriUR.png", School: "Itachiyama", vinculo: ["Top Spiker and Top Libero"],Stats:{Serve:1580,Spike:1579,Set:1904,Receive:2012,Block:1580,Save:1866}, habilidades:[{nome:"Key Person Of The Team",descricao:"When on the court, all allied backcourt players' [Defensive Technique] increases by 10%/13%/16%. Gains 6 stacks of [Connect to Next] at rally start; each stack increases [Set] by 3% and [Reflex] by 5%, up to 10 stacks."}, {nome:"Skillful Set",descricao:"Sets with power × 140%/160%/180% of [Set], increasing teammates' morale by 10. The first spike (Power Attack/Quick Attack) by an ally after this increases the spiker's [Attention] by 15% until the ball crosses the net twice."}, {nome:"Create The Flow Of The Game",descricao:"[Receive] increases by 12%/16%/20%. When an ally activates a non-special receive or Komori activates a receive special, consumes 2 stacks of [Connect to Next] to increase receive power by [Receive] × 30% and the first ally spike after this increases that spike's (Power Attack/Quick Attack) power by 20%."}, {nome:"Receive That Creates Momentum",descricao:"Receives with power × 260%/275%/290%/305%/320% of [Receive]. The first ally spike (Power Attack/Quick Attack) after this increases the spiker's [Attack Technique] by 20% until the ball crosses the net twice."}], symbols: [ "img/receivesymbol.png", "img/settersymbol.png" ] },
 
 ];
-/* === Dados de créditos: edite aqui os nomes e links === */
-const creditsData = [
-  { name: "goN6",  discord: "https://discord.com/users/SEU_ID", twitter: "https://twitter.com/SEU_USER" },
-  { name: "KRILL Group - Translation", discord: "https://discord.com/users/SEU_ID" }, // sem twitter
-  // { name: "Outro Nome", twitter: "https://twitter.com/USER" },      // sem discord
-];
 
-    
 const descricoesSinergia = {
 "Karasuno": "Increases ALL players’ Power Attack and Quick Attack Stats by 10%",
 "Nekoma": "Increases ALL players’ Receive Stat by 15%",
@@ -1537,43 +1484,8 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     updateSynergies();
     });
 
-/* === Helpers para montar a lista de créditos === */
-function buildCreditsListHTML(list){
-  return list.map(person => {
-    const discordBtn = person.discord ? `<a href="${person.discord}" target="_blank" class="credit-btn discord">Discord</a>` : "";
-    const twitterBtn = person.twitter ? `<a href="${person.twitter}" target="_blank" class="credit-btn twitter">Twitter</a>` : "";
-    return `
-      <li>
-        <span class="credit-name">${person.name}</span>
-        <span class="credit-actions">
-          ${discordBtn}${twitterBtn}
-        </span>
-      </li>`;
-  }).join("");
-}
-
-/* === Render da seção Info (inclui Credits) === */
-function renderInfoSection(){
-  const wrap = document.getElementById("sidebar-content");
-  if(!wrap) return;
-
-  wrap.innerHTML = `
-    <div id="info-section">
-      <h3>Info</h3>
-      <p style="opacity:.8;margin:0 0 12px">
-        Haikyu Fly High - Team Builder<br>
-        <small>(Credits: goN6 on discord)</small>
-      </p>
-
-      <h4>Credits</h4>
-      <ul class="credits-list">
-        ${buildCreditsListHTML(creditsData)}
-      </ul>
-    </div>
-  `;
-}
-
 </script>
 
 </body>
 </html>
+
