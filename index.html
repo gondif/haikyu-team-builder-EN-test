@@ -1655,6 +1655,13 @@ function rotateMainGridClockwise() {
   if (sm) sm.style.display = "none";
   if (typeof updateSynergies === "function") updateSynergies();
 }
+    const rotateBtn = document.getElementById("rotateBtn");
+if (rotateBtn) {
+  rotateBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    rotateMainGridClockwise();
+  });
+}
 /* mostra lista de times salvos no painel lateral */
 function showSavedTeams() {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
