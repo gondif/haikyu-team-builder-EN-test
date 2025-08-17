@@ -407,6 +407,16 @@ object-fit: Save;
     #scrollMenu {
     overflow-y: auto; /* já está, mas reforçando */
 }
+   /* header de filtros dentro do scrollMenu (bench) */
+#scrollMenu .bench-quick-inside{
+  display:flex; gap:6px; padding:6px 6px 8px; flex-wrap:wrap;
+}
+#scrollMenu .bench-quick-inside button{
+  background:#222; color:#fff; border:1px solid #555;
+  border-radius:6px; padding:4px 6px; font-size:12px; cursor:pointer;
+}
+#scrollMenu .bench-quick-inside button.active{ outline:2px solid #999; }
+    
 #sidebar-content ul {
     list-style: none;       /* remove bullets */
     padding-left: 0;        /* remove recuo padrão */
@@ -748,30 +758,90 @@ function attachBenchEvents(slot) {
 }
 
 function showMenu(role, slot) {
-    const scrollMenu = document.getElementById("scrollMenu");
-    scrollMenu.innerHTML = '';
-    let disponiveis;
+  const scrollMenu = document.getElementById("scrollMenu");
+  scrollMenu.innerHTML = '';
 
-    if (role === "bench") {
-        disponiveis = characters.filter(p => !selecionados.includes(p) && respeitaLimiteBench(p, slot));
-    } else {
-        disponiveis = characters.filter(p => p.funcao === role && !selecionados.includes(p));
+  if (role === "bench") {
+    // layout em coluna para botões em cima + grid de imagens embaixo
+    scrollMenu.style.display = 'flex';
+    scrollMenu.style.flexDirection = 'column';
+
+    // --- 5 botões no topo
+    const bar = document.createElement('div');
+    bar.className = 'bench-quick-inside';
+    ['S','MB','WS','OP','L'].forEach(r => {
+      const b = document.createElement('button');
+      b.textContent = r;
+      b.dataset.role = r;
+      b.title = `Bench: ${r}`;
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        render(r); // refiltra a lista
+      });
+      bar.appendChild(b);
+    });
+    scrollMenu.appendChild(bar);
+
+    // --- container das imagens
+    const grid = document.createElement('div');
+    grid.style.display = 'flex';
+    grid.style.flexWrap = 'wrap';
+    grid.style.gap = '8px';
+    scrollMenu.appendChild(grid);
+
+    // renderiza a lista (com ou sem filtro de posição)
+    function render(roleFilter = null) {
+      grid.innerHTML = '';
+      // marca o ativo
+      bar.querySelectorAll('button').forEach(btn =>
+        btn.classList.toggle('active', btn.dataset.role === roleFilter)
+      );
+
+      let disponiveis = characters.filter(p =>
+        !selecionados.includes(p) && respeitaLimiteBench(p, slot)
+      );
+      if (roleFilter) disponiveis = disponiveis.filter(p => p.funcao === roleFilter);
+
+      if (disponiveis.length === 0) {
+        grid.innerHTML = `<div style="color:#ccc; padding:8px;">
+          No available ${roleFilter ? roleFilter : ''} for bench.</div>`;
+      } else {
+        disponiveis.forEach(p => {
+          const img = document.createElement('img');
+          img.src = p.img;
+          img.alt = p.nome;
+          img.title = p.nome;
+          img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setCharacter(slot, p, 'bench');   // adiciona no banco
+            scrollMenu.style.display = 'none';
+          });
+          grid.appendChild(img);
+        });
+      }
     }
 
-    disponiveis.forEach(p => {
-        const img = document.createElement('img');
-        img.src = p.img;
-        img.alt = p.nome;
-        img.title = p.nome;
-        img.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setCharacter(slot, p, role);
-            scrollMenu.style.display = 'none';
-        });
-        scrollMenu.appendChild(img);
-    });
+    // abre já com "todos" (se preferir abrir já em S: troque para render('S'))
+    render(null);
+    return; // não continuar para o caso "não bench"
+  }
 
-    scrollMenu.style.display = 'flex';
+  // ==== restante igual ao original (S, MB, WS, OP, L fora do bench) ====
+  let disponiveis = characters.filter(p => p.funcao === role && !selecionados.includes(p));
+  disponiveis.forEach(p => {
+    const img = document.createElement('img');
+    img.src = p.img;
+    img.alt = p.nome;
+    img.title = p.nome;
+    img.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setCharacter(slot, p, role);
+      scrollMenu.style.display = 'none';
+    });
+    scrollMenu.appendChild(img);
+  });
+
+  scrollMenu.style.display = 'flex';
 }
 
 function respeitaLimiteBench(p, slot) {
