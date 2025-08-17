@@ -1753,16 +1753,6 @@ function loadTeam(name) {
     }
   });
 
-  // agora preenche titulares nos índices do time salvo
-  const hexes = Array.from(document.querySelectorAll(".hex"));
-  team.main.forEach((nome, i) => {
-    if (!nome) return;
-    const personagem = characters.find(p => p.nome === nome);
-    if (personagem && hexes[i]) {
-      setCharacter(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
-    }
-  });
-
     const benches = Array.from(document.querySelectorAll(".bench-slot"));
     team.bench.forEach((nome, i) => {
         if (!nome) return;
