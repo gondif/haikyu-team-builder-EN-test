@@ -973,6 +973,7 @@ function setCharacter(slot, personagem, role) {
     // monta imagem
     slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
     slot.dataset.nome = personagem.nome;
+    slot.dataset.role = role; // <-- Ensure correct role is set!
 
     // atualiza texto de info (procura .player-info no mesmo player-slot)
     const infoDiv = slot.parentElement.querySelector('.player-info');
