@@ -908,26 +908,21 @@ document.querySelectorAll(".bench-quick-btn").forEach(btn => {
 });
 // Rotaciona o main grid no sentido horário, mantendo o L fixo
 function rotateMainGridClockwise() {
-  const grid = document.querySelector(".team-grid");
-  if (!grid) return;
+  const rows = document.querySelectorAll('.team-grid .row');
+  if (rows.length < 2) return;
 
-  // pega só as 2 primeiras linhas (titulares). A 3ª é o wrapper do bench.
-  const rows = Array.from(grid.children).filter(el => el.classList.contains("row"));
-  const top = rows[0], bottom = rows[1];
-  if (!top || !bottom) return;
+  // pega os 3 de cima e 4 de baixo (o 1º de baixo é o L e fica parado)
+  const top = rows[0].querySelectorAll('.player-slot .hex');   // [S, MB, WS]
+  const bot = rows[1].querySelectorAll('.player-slot .hex');   // [L, WS, MB, OP]
 
-  const topHexes = top.querySelectorAll(".player-slot > .hex");    // [S, MB, WS]
-  const botHexes = bottom.querySelectorAll(".player-slot > .hex"); // [L, WS, MB, OP]
-  if (topHexes.length < 3 || botHexes.length < 4) return;
-
-  // anel no sentido horário (exclui o L = botHexes[0])
-  const ring = [ topHexes[0], topHexes[1], topHexes[2], botHexes[3], botHexes[2], botHexes[1] ];
+  // anel no sentido horário (sem o L): S → MB → WS → OP → MB (baixo) → WS (baixo) → (volta)
+  const ring = [top[0], top[1], top[2], bot[3], bot[2], bot[1]];
 
   // snapshot do estado atual
-  const state = ring.map(hex => ({
-    html: hex.innerHTML,
-    nome: hex.dataset.nome || null,
-    role: hex.dataset.role || null
+  const snap = ring.map(h => ({
+    nome: h.dataset.nome || null,
+    html: h.innerHTML,
+    role: h.dataset.role || h.getAttribute('data-role') || ''
   }));
 
   // rotaciona: último vai para o início
@@ -944,21 +939,7 @@ function rotateMainGridClockwise() {
     if (info) info.textContent = st.role;
   });
 
-    // atualiza a plaquinha abaixo
-    const infoDiv = hex.parentElement.querySelector(".player-info");
-    if (infoDiv) {
-      if (st.nome) {
-        const p = (typeof characters !== "undefined") && characters.find(x => x.nome === st.nome);
-        infoDiv.textContent = p ? `${st.nome} - ${p.funcao}` : st.nome;
-      } else {
-        infoDiv.textContent = st.role || "";
-      }
-    }
-
-  // fecha o menu (se aberto) e recalcula sinergias
-  const sm = document.getElementById("scrollMenu");
-  if (sm) sm.style.display = "none";
-  if (typeof updateSynergies === "function") updateSynergies();
+  updateSynergies?.();
 }
 
 // clique do botão ↻
