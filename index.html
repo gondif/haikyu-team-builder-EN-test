@@ -906,42 +906,77 @@ document.querySelectorAll(".bench-quick-btn").forEach(btn => {
     showBenchMenuByRole(btn.dataset.role);
   });
 });
-// Rotaciona o main grid no sentido horário, mantendo o L fixo
-function rotateMainGridClockwise() {
+// índices dos 6 slots que formam o "anel" (L fica fora, é fixo no índice 3)
+const RING_IDX = [0, 1, 2, 6, 5, 4]; // [S, MB, WS, OP, MB, WS] na orientação base
+
+// Rotaciona o anel 'steps' vezes no sentido horário (move conteúdo e data-role)
+function rotateRingClockwise(steps) {
   const rows = document.querySelectorAll('.team-grid .row');
   if (rows.length < 2) return;
+  const top = rows[0].querySelectorAll('.player-slot .hex');   // [0,1,2]
+  const bot = rows[1].querySelectorAll('.player-slot .hex');   // [3,4,5,6]
 
-  // pega os 3 de cima e 4 de baixo (o 1º de baixo é o L e fica parado)
-  const top = rows[0].querySelectorAll('.player-slot .hex');   // [S, MB, WS]
-  const bot = rows[1].querySelectorAll('.player-slot .hex');   // [L, WS, MB, OP]
+  const hexes = [
+    top[0], top[1], top[2],         // 0,1,2
+    bot[0], bot[1], bot[2], bot[3]  // 3,4,5,6 (3 é L)
+  ];
 
-  // anel no sentido horário (sem o L): S → MB → WS → OP → MB (baixo) → WS (baixo) → (volta)
-  const ring = [top[0], top[1], top[2], bot[3], bot[2], bot[1]];
+  const ring = RING_IDX.map(i => hexes[i]);
+  const k = ((steps % 6) + 6) % 6;
+  if (k === 0) return;
 
-  // snapshot do estado atual
-  const snap = ring.map(h => ({
-    nome: h.dataset.nome || null,
+  const state = ring.map(h => ({
     html: h.innerHTML,
+    nome: h.dataset.nome || null,
     role: h.dataset.role || h.getAttribute('data-role') || ''
   }));
 
-  // rotaciona: último vai para o início
-  const last = snap.pop();
-  snap.unshift(last);
+  // horário: último(s) vai(m) para frente
+  const rotated = state.slice(-k).concat(state.slice(0, -k));
 
-  // aplica de volta
-  snap.forEach((st, i) => {
-    const hex = ring[i];
-    hex.innerHTML = st.html;
-    if (st.nome) hex.dataset.nome = st.nome; else delete hex.dataset.nome;
-    hex.dataset.role = st.role;
-    const info = hex.parentElement.querySelector('.player-info');
-    if (info) info.textContent = st.role;
+  ring.forEach((h, i) => {
+    const st = rotated[i];
+    h.innerHTML = st.html;
+    if (st.nome) h.dataset.nome = st.nome; else delete h.dataset.nome;
+    h.dataset.role = st.role;
+
+    const info = h.parentElement.querySelector('.player-info');
+    if (info) {
+      if (st.nome) {
+        const p = (typeof characters !== "undefined") && characters.find(x => x.nome === st.nome);
+        info.textContent = p ? `${st.nome} - ${p.funcao}` : st.nome;
+      } else {
+        info.textContent = st.role;
+      }
+    }
   });
-
-  updateSynergies?.();
 }
 
+// Ajusta a orientação do grid para coincidir com o time salvo
+function orientGridToSavedTeam(team) {
+  // pega a função (S/MB/WS/OP/L) em cada índice salvo
+  const funcaoEm = (idx) => {
+    const nome = team.main[idx];
+    if (!nome) return null;
+    const p = characters.find(x => x.nome === nome);
+    return p ? p.funcao : null;
+  };
+
+  // Tentamos ancorar por S; se não existir, ancoramos por OP
+  const idxS = RING_IDX.find(i => funcaoEm(i) === 'S');
+  if (idxS !== undefined) {
+    const posNoAnel = RING_IDX.indexOf(idxS); // onde o S está
+    // na base, S está em RING_IDX[0] -> steps = pos atual
+    rotateRingClockwise(posNoAnel);
+    return;
+  }
+  const idxOP = RING_IDX.find(i => funcaoEm(i) === 'OP');
+  if (idxOP !== undefined) {
+    const posNoAnel = RING_IDX.indexOf(idxOP);
+    // na base, OP está em RING_IDX[3] -> passos = pos atual - 3
+    rotateRingClockwise((posNoAnel - 3 + 6) % 6);
+  }
+}
 // clique do botão ↻
 document.getElementById("rotateBtn").addEventListener("click", (e) => {
   e.stopPropagation();
@@ -1675,38 +1710,37 @@ function deleteTeam(name) {
     localStorage.setItem("savedTeams", JSON.stringify(teams));
 }
 
-/* Carrega time — monta usando setCharacter (assim datas e selected array ficam corretos) */
+/* Carrega time — monta usando setCharacter... */
 function loadTeam(name) {
-    const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
-    const team = teams[name];
-    if (!team) return;
+  const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
+  const team = teams[name];
+  if (!team) return;
 
-    selecionados = [];
+  selecionados = [];
 
-    document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
-  slot.innerHTML = "";
-  delete slot.dataset.nome;
+  // limpa grid e bench
+  document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
+    slot.innerHTML = "";
+    delete slot.dataset.nome;
+    const infoDiv = slot.parentElement.querySelector('.player-info');
+    if (infoDiv) {
+      if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench"; // ou "Banco"
+      else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+    }
+  });
 
-  // 🔧 garanta que o papel do slot volte para o papel original do HTML
-  if (slot.classList.contains("hex")) {
-    slot.dataset.role = slot.getAttribute("data-role") || slot.dataset.role || "";
-  }
+  // 🔧 NOVO: alinhar orientação do grid ao time salvo
+  orientGridToSavedTeam(team);
 
-  const infoDiv = slot.parentElement.querySelector('.player-info');
-  if (infoDiv) {
-    if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench";
-    else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
-  }
-});
-
-    const hexes = Array.from(document.querySelectorAll(".hex"));
-    team.main.forEach((nome, i) => {
-        if (!nome) return;
-        const personagem = characters.find(p => p.nome === nome);
-        if (personagem && hexes[i]) {
-            setCharacter(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
-        }
-    });
+  // agora preenche titulares nos índices do time salvo
+  const hexes = Array.from(document.querySelectorAll(".hex"));
+  team.main.forEach((nome, i) => {
+    if (!nome) return;
+    const personagem = characters.find(p => p.nome === nome);
+    if (personagem && hexes[i]) {
+      setCharacter(hexes[i], personagem, hexes[i].dataset.role || hexes[i].getAttribute("data-role"));
+    }
+  });
 
     const benches = Array.from(document.querySelectorAll(".bench-slot"));
     team.bench.forEach((nome, i) => {
