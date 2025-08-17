@@ -906,13 +906,7 @@ document.querySelectorAll(".bench-quick-btn").forEach(btn => {
     showBenchMenuByRole(btn.dataset.role);
   });
 });
-// wrapper: um passo no sentido horário + housekeeping
-function rotateMainGridClockwise() {
-  rotateRingClockwise(1);           // gira o anel (L fica parado)
-  const sm = document.getElementById("scrollMenu");
-  if (sm) sm.style.display = "none";
-  if (typeof updateSynergies === "function") updateSynergies();
-}
+
 // índices dos 6 slots que formam o "anel" (L fica fora, é fixo no índice 3)
 const RING_IDX = [0, 1, 2, 6, 5, 4]; // [S, MB, WS, OP, MB, WS] na orientação base
 
@@ -1654,6 +1648,13 @@ saveTeamBtn.addEventListener("click", (e) => {
     menuBtn.style.display = "none";
 });
 
+    // wrapper: um passo no sentido horário + housekeeping
+function rotateMainGridClockwise() {
+  rotateRingClockwise(1);           // gira o anel (L fica parado)
+  const sm = document.getElementById("scrollMenu");
+  if (sm) sm.style.display = "none";
+  if (typeof updateSynergies === "function") updateSynergies();
+}
 /* mostra lista de times salvos no painel lateral */
 function showSavedTeams() {
     const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
