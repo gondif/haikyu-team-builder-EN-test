@@ -906,39 +906,12 @@ document.querySelectorAll(".bench-quick-btn").forEach(btn => {
     showBenchMenuByRole(btn.dataset.role);
   });
 });
+// wrapper: um passo no sentido horário + housekeeping
 function rotateMainGridClockwise() {
-  const rows = document.querySelectorAll('.team-grid .row');
-  if (rows.length < 2) return;
-
-  // pega os 3 de cima e 4 de baixo (o 1º de baixo é o L e fica parado)
-  const top = rows[0].querySelectorAll('.player-slot .hex');   // [S, MB, WS]
-  const bot = rows[1].querySelectorAll('.player-slot .hex');   // [L, WS, MB, OP]
-
-  // anel no sentido horário (sem o L): S → MB → WS → OP → MB (baixo) → WS (baixo) → (volta)
-  const ring = [top[0], top[1], top[2], bot[3], bot[2], bot[1]];
-
-  // snapshot do estado atual
-  const snap = ring.map(h => ({
-    nome: h.dataset.nome || null,
-    html: h.innerHTML,
-    role: h.dataset.role || h.getAttribute('data-role') || ''
-  }));
-
-  // rotaciona: último vai para o início
-  const last = snap.pop();
-  snap.unshift(last);
-
-  // aplica de volta
-  snap.forEach((st, i) => {
-    const hex = ring[i];
-    hex.innerHTML = st.html;
-    if (st.nome) hex.dataset.nome = st.nome; else delete hex.dataset.nome;
-    hex.dataset.role = st.role;
-    const info = hex.parentElement.querySelector('.player-info');
-    if (info) info.textContent = st.role;
-  });
-
-  updateSynergies?.();
+  rotateRingClockwise(1);           // gira o anel (L fica parado)
+  const sm = document.getElementById("scrollMenu");
+  if (sm) sm.style.display = "none";
+  if (typeof updateSynergies === "function") updateSynergies();
 }
 // índices dos 6 slots que formam o "anel" (L fica fora, é fixo no índice 3)
 const RING_IDX = [0, 1, 2, 6, 5, 4]; // [S, MB, WS, OP, MB, WS] na orientação base
