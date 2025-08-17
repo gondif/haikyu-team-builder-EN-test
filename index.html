@@ -102,7 +102,14 @@ object-fit: Save;
     .add-slot-btn:hover {
         background-color: #218838;
     }
-
+.bench-quick{
+  display:flex; gap:6px; margin:0 10px;
+}
+.bench-quick-btn{
+  background:#222; color:#fff; border:1px solid #555;
+  border-radius:6px; padding:4px 6px; font-size:12px; cursor:pointer;
+}
+.bench-quick-btn:hover{ background:#333; }
     #saveTeamBtn {
         background-color: #28a745;
         border: none;
@@ -559,7 +566,13 @@ object-fit: Save;
     <button id="saveTeamBtn" title="Salvar Time" style="background-color:#222222;margin-right:8px;">⬇️</button>
     <button id="clearTeamBtn" title="Limpar Time" style="background-color:#222222; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
 </div>
-
+<div id="bench-quick" class="bench-quick">
+  <button class="bench-quick-btn" data-role="S"  title="Bench: Setters">S</button>
+  <button class="bench-quick-btn" data-role="MB" title="Bench: Middles">MB</button>
+  <button class="bench-quick-btn" data-role="WS" title="Bench: Wing Spikers">WS</button>
+  <button class="bench-quick-btn" data-role="OP" title="Bench: Opposites">OP</button>
+  <button class="bench-quick-btn" data-role="L"  title="Bench: Liberos">L</button>
+</div>
         <div class="row" id="bench-row" style="gap:10px;">
             <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
             <div class="player-slot bench"><div class="bench-slot" data-role="bench"></div><div class="player-info">Bench</div></div>
@@ -779,7 +792,55 @@ function respeitaLimiteBench(p, slot) {
 
     return true;
 }
+    function getFirstEmptyBenchSlot() {
+  // Procura um slot vazio do banco; se não houver, cria um novo
+  const slots = Array.from(document.querySelectorAll(".bench-slot"));
+  const empty = slots.find(s => !s.dataset.nome);
+  if (empty) return empty;
+  if (typeof addBenchSlot === "function") addBenchSlot(); // cria e já liga eventos
+  const all = Array.from(document.querySelectorAll(".bench-slot"));
+  return all[all.length - 1] || null;
+}
 
+function showBenchMenuByRole(role) {
+  const slot = getFirstEmptyBenchSlot();
+  if (!slot) return;
+
+  const scrollMenu = document.getElementById("scrollMenu");
+  scrollMenu.innerHTML = '';
+
+  // Filtra por posição + respeita regras do banco
+  const disponiveis = characters.filter(p =>
+    p.funcao === role &&
+    !selecionados.includes(p) &&
+    respeitaLimiteBench(p, slot)   // mesma regra usada quando role === "bench"
+  );
+
+  if (disponiveis.length === 0) {
+    scrollMenu.innerHTML = `<div style="color:#ccc; padding:8px;">No available ${role} for bench.</div>`;
+  } else {
+    disponiveis.forEach(p => {
+      const img = document.createElement('img');
+      img.src = p.img;
+      img.alt = p.nome;
+      img.title = p.nome;
+      img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setCharacter(slot, p, 'bench');   // adiciona direto ao banco
+        scrollMenu.style.display = 'none';
+      });
+      scrollMenu.appendChild(img);
+    });
+  }
+
+  scrollMenu.style.display = 'flex';
+}
+document.querySelectorAll(".bench-quick-btn").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showBenchMenuByRole(btn.dataset.role);
+  });
+});
 function setCharacter(slot, personagem, role) {
     // se já tinha alguém nesse slot, remove dos selecionados
     if (slot.dataset.nome) {
