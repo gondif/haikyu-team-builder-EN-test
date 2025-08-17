@@ -1685,10 +1685,6 @@ function showSavedTeams() {
 
     sidebarContent.innerHTML = html;
 
-    document.getElementById("rotateBtn").addEventListener("click", (e) => {
-  e.stopPropagation();
-  rotateMainGridClockwise();
-});
 
     document.querySelectorAll(".load-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
