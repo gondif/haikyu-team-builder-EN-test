@@ -685,11 +685,53 @@ function addBenchSlot() {
 }
 
 function attachBenchEvents(slot) {
-    slot.addEventListener("click", () => showMenu("bench", slot));
-    slot.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        removeCharacter(slot);
-    });
+  if (slot.__benchBound) return;         // evita duplicar handlers
+  slot.__benchBound = true;
+
+  let clickTimer = null;
+
+  slot.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    // 2º clique dentro da janela => trata como duplo clique
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+      clickTimer = null;
+
+      const nome = slot.dataset.nome;
+      if (!nome) {
+        // slot vazio: no duplo clique, abrimos o menu mesmo assim
+        if (typeof showMenu === "function") showMenu("bench", slot);
+        return;
+      }
+
+      const p = (typeof characters !== "undefined") && characters.find(x => x.nome === nome);
+      if (!p) return;
+
+      const sm = document.getElementById("scrollMenu");
+      if (sm) sm.style.display = "none";     // fecha menu de seleção, se aberto
+
+      if (typeof showCharacterDetails === "function") showCharacterDetails(p);
+
+      const sidebar = document.getElementById("sidebar");
+      const menuBtn = document.getElementById("menuBtn");
+      if (sidebar) sidebar.classList.add("open");
+      if (menuBtn) menuBtn.style.display = "none";
+      return;
+    }
+
+    // 1º clique: se não vier 2º clique rápido, abre o menu do banco
+    clickTimer = setTimeout(() => {
+      clickTimer = null;
+      if (typeof showMenu === "function") showMenu("bench", slot);
+    }, 250);
+  });
+
+  // botão direito: remover do banco
+  slot.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if (typeof removeCharacter === "function") removeCharacter(slot);
+  });
 }
 
 function showMenu(role, slot) {
