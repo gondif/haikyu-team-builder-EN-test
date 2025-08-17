@@ -930,15 +930,19 @@ function rotateMainGridClockwise() {
     role: hex.dataset.role || null
   }));
 
-  // gira: último -> primeiro (clockwise)
-  const rotated = [ state[state.length - 1], ...state.slice(0, state.length - 1) ];
+  // rotaciona: último vai para o início
+  const last = snap.pop();
+  snap.unshift(last);
 
   // aplica de volta
-  ring.forEach((hex, i) => {
-    const st = rotated[i];
+  snap.forEach((st, i) => {
+    const hex = ring[i];
     hex.innerHTML = st.html;
     if (st.nome) hex.dataset.nome = st.nome; else delete hex.dataset.nome;
-    if (st.role) hex.dataset.role = st.role;
+    hex.dataset.role = st.role;
+    const info = hex.parentElement.querySelector('.player-info');
+    if (info) info.textContent = st.role;
+  });
 
     // atualiza a plaquinha abaixo
     const infoDiv = hex.parentElement.querySelector(".player-info");
