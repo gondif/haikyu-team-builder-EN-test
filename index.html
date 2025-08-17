@@ -573,7 +573,7 @@ object-fit: Save;
     <!-- linha onde fica o botão SALVAR e os bench slots -->
     <div class="row" id="bench-row-wrapper" style="align-items:center;">
         <div style="display:flex; align-items:center;">
-    <button id="rotateBtn" title="Rotate clockwise" style="background:#222222; margin-left:8px;">↻</button>
+    <button id="rotateBtn" title="Rotate clockwise" style="background-color:#222222;margin-left:8px;">↻</button>
     <button id="saveTeamBtn" title="Salvar Time" style="background-color:#222222;margin-right:8px;">⬇️</button>
     <button id="clearTeamBtn" title="Limpar Time" style="background-color:#222222; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
 </div>
@@ -906,33 +906,32 @@ document.querySelectorAll(".bench-quick-btn").forEach(btn => {
     showBenchMenuByRole(btn.dataset.role);
   });
 });
-    // Rotaciona o main grid no sentido horário, mantendo o L fixo
+// Rotaciona o main grid no sentido horário, mantendo o L fixo
 function rotateMainGridClockwise() {
-  const rows = document.querySelectorAll(".team-grid > .row");
-  if (rows.length < 2) return;
+  const grid = document.querySelector(".team-grid");
+  if (!grid) return;
 
-  const top = rows[0];          // linha de cima: S, MB, WS
-  const bottom = rows[1];       // linha de baixo: L, WS, MB, OP
+  // pega só as 2 primeiras linhas (titulares). A 3ª é o wrapper do bench.
+  const rows = Array.from(grid.children).filter(el => el.classList.contains("row"));
+  const top = rows[0], bottom = rows[1];
+  if (!top || !bottom) return;
 
-  // ordem "clockwise" ignorando o L (que é o 1º da linha de baixo)
-  const ring = [
-    top.querySelector(".player-slot:nth-child(1) .hex"), // top-left  (S)
-    top.querySelector(".player-slot:nth-child(2) .hex"), // top-mid   (MB)
-    top.querySelector(".player-slot:nth-child(3) .hex"), // top-right (WS)
-    bottom.querySelector(".player-slot:nth-child(4) .hex"), // bottom-right (OP)
-    bottom.querySelector(".player-slot:nth-child(3) .hex"), // bottom-mid-right (MB)
-    bottom.querySelector(".player-slot:nth-child(2) .hex"), // bottom-mid-left  (WS)
-  ];
+  const topHexes = top.querySelectorAll(".player-slot > .hex");    // [S, MB, WS]
+  const botHexes = bottom.querySelectorAll(".player-slot > .hex"); // [L, WS, MB, OP]
+  if (topHexes.length < 3 || botHexes.length < 4) return;
 
-  // snapshot do estado atual de cada slot do anel (HTML + nome + role)
-  const snap = ring.map(hex => ({
+  // anel no sentido horário (exclui o L = botHexes[0])
+  const ring = [ topHexes[0], topHexes[1], topHexes[2], botHexes[3], botHexes[2], botHexes[1] ];
+
+  // snapshot do estado atual
+  const state = ring.map(hex => ({
     html: hex.innerHTML,
     nome: hex.dataset.nome || null,
     role: hex.dataset.role || null
   }));
 
-  // rotaciona (último vai para o primeiro = sentido horário)
-  const rotated = [ snap[snap.length - 1], ...snap.slice(0, snap.length - 1) ];
+  // gira: último -> primeiro (clockwise)
+  const rotated = [ state[state.length - 1], ...state.slice(0, state.length - 1) ];
 
   // aplica de volta
   ring.forEach((hex, i) => {
@@ -941,7 +940,7 @@ function rotateMainGridClockwise() {
     if (st.nome) hex.dataset.nome = st.nome; else delete hex.dataset.nome;
     if (st.role) hex.dataset.role = st.role;
 
-    // atualiza o texto da "plaquinha" abaixo
+    // atualiza a plaquinha abaixo
     const infoDiv = hex.parentElement.querySelector(".player-info");
     if (infoDiv) {
       if (st.nome) {
@@ -953,10 +952,18 @@ function rotateMainGridClockwise() {
     }
   });
 
-  // fecha o menu de seleção, se estiver aberto
+  // fecha o menu (se aberto) e recalcula sinergias
   const sm = document.getElementById("scrollMenu");
   if (sm) sm.style.display = "none";
+  if (typeof updateSynergies === "function") updateSynergies();
 }
+
+// clique do botão ↻
+document.getElementById("rotateBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  rotateMainGridClockwise();
+});
+    
 function setCharacter(slot, personagem, role) {
     // se já tinha alguém nesse slot, remove dos selecionados
     if (slot.dataset.nome) {
