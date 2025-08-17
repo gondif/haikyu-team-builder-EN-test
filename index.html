@@ -1700,14 +1700,20 @@ function loadTeam(name) {
     selecionados = [];
 
     document.querySelectorAll(".hex, .bench-slot").forEach(slot => {
-        slot.innerHTML = "";
-        delete slot.dataset.nome;
-        const infoDiv = slot.parentElement.querySelector('.player-info');
-        if (infoDiv) {
-            if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench";
-            else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
-        }
-    });
+  slot.innerHTML = "";
+  delete slot.dataset.nome;
+
+  // 🔧 garanta que o papel do slot volte para o papel original do HTML
+  if (slot.classList.contains("hex")) {
+    slot.dataset.role = slot.getAttribute("data-role") || slot.dataset.role || "";
+  }
+
+  const infoDiv = slot.parentElement.querySelector('.player-info');
+  if (infoDiv) {
+    if (slot.classList.contains("bench-slot")) infoDiv.textContent = "Bench";
+    else infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || "";
+  }
+});
 
     const hexes = Array.from(document.querySelectorAll(".hex"));
     team.main.forEach((nome, i) => {
