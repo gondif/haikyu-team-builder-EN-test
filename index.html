@@ -565,6 +565,19 @@ object-fit: Save;
 @media (min-width: 560px){
   #charList{ grid-template-columns: repeat(4, minmax(50px, 1fr)); }
 }
+    #bench-row-wrapper{
+  display: flex;
+  flex-direction: column;   /* empilha título, slots e toolbar */
+  gap: 8px;
+}
+#bench-row{ order: 1; }
+#bench-toolbar{
+  order: 2;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* ou center/space-between */
+  margin-top: 4px;
+}
 
 </style>
 </head>
