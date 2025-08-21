@@ -2293,19 +2293,24 @@ $set2.addEventListener('change', ()=>{ refreshDescs(); renderStats(); });
 window.afterAssignCharacter = function(slotEl, charName){
   slotEl.dataset.charName = charName;
   updateItemBadge(slotEl);
-  ensureItemGear(slotEl); // botão ⚙️ para abrir o modal (não conflita com dblclick de detalhes)
+  ensureItemGear(slotEl);                 // cria/exibe o botão ⚙️
+
+  // ⬇️ torna o botão clicável para abrir o modal
+  const gear = slotEl.querySelector('.item-gear');
+  if (gear) {
+    gear.onclick = (e)=>{
+      e.stopPropagation();
+      e.preventDefault();
+      openItemModal(slotEl);              // abre Memory + Potential (4p/2p)
+    };
+  }
 };
 window.afterRemoveCharacter = function(slotEl){
   delete slotEl.dataset.charName;
   removeItemGear(slotEl);
   // opcional: equipState.delete(getSlotId(slotEl)); updateItemBadge(slotEl);
 };
-function afterAssignCharacter(slotEl, charName){
-  ensureItemGear(slotEl);
-  const gear = slotEl.querySelector('.item-gear');
-  gear.onclick = ()=>openItemModal(slotEl, charName); // <-- precisa disso
-  updateItemBadge(slotEl);
-}
+
 /** Persistência (integre com seu Save/Load) */
 function serializeTeamItems(){
   const data = {};
