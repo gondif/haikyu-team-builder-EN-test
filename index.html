@@ -2015,7 +2015,7 @@ function applyBonus(outStats, bonus){
   }
 }
 function computeEffectiveStats(baseStats, memoryId, set4Id, set2Id){
-  const out = {...baseStats};
+  const out = { ...baseStats};
   // Memory
   if(memoryId){
     const mem = memoryCatalog.find(m=>m.id===memoryId);
@@ -2096,15 +2096,21 @@ function updateItemBadge(slotEl){
 
 /** Botão ⚙️ para abrir o modal (não conflita com seu dblclick de Details) */
 function ensureItemGear(slotEl){
-  if(slotEl.querySelector('.item-gear')) return;
   if(!slotEl.dataset.charName) return;
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'item-gear';
-  btn.title = 'Items (Memory + Potential)';
-  btn.innerHTML = '⚙️';
-  btn.addEventListener('click', (e)=>{ e.stopPropagation(); e.preventDefault(); openItemModal(slotEl); });
-  slotEl.appendChild(btn);
+  let btn = slotEl.querySelector('.item-gear');
+  if(!btn){
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'item-gear';
+    btn.title = 'Items (Memory + Potential)';
+    btn.innerHTML = '⚙️';
+    slotEl.appendChild(btn);
+  }
+  btn.onclick = (e)=>{
+    e.stopPropagation();
+    e.preventDefault();
+    openItemModal(slotEl);
+  };
 }
 function removeItemGear(slotEl){ slotEl.querySelectorAll('.item-gear').forEach(n=>n.remove()); }
 
@@ -2294,16 +2300,6 @@ window.afterAssignCharacter = function(slotEl, charName){
   slotEl.dataset.charName = charName;
   updateItemBadge(slotEl);
   ensureItemGear(slotEl);                 // cria/exibe o botão ⚙️
-
-  // ⬇️ torna o botão clicável para abrir o modal
-  const gear = slotEl.querySelector('.item-gear');
-  if (gear) {
-    gear.onclick = (e)=>{
-      e.stopPropagation();
-      e.preventDefault();
-      openItemModal(slotEl);              // abre Memory + Potential (4p/2p)
-    };
-  }
 };
 window.afterRemoveCharacter = function(slotEl){
   delete slotEl.dataset.charName;
@@ -2324,13 +2320,14 @@ function serializeTeamItems(){
 }
 function restoreTeamItems(saved){
   if(!saved) return;
-  for(const [slotId, payload] of Object.entries(saved)){
-    const el = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(e=>getSlotId(e)===slotId);
+  for (const [slotId, payload] of Object.entries(saved)){
+    const el = Array.from(document.querySelectorAll('.hex, .bench-slot'))
+      .find(e=>getSlotId(e)===slotId);
     if(!el) continue;
     el.dataset.charName = payload.charName;
     equipState.set(slotId, { memoryId: payload.memoryId || null, set4: payload.set4 || null, set2: payload.set2 || null });
     updateItemBadge(el);
-    ensureItemGear(el);
+    ensureItemGear(el);                   // ⬅️ cria/binda o botão ao restaurar
   }
 }
 
