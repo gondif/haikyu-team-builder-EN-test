@@ -1952,9 +1952,9 @@ const STAT_KEYS = ["Serve","Spike","Set","Receive","Block","Save"];
 const memoryCatalog = [
   { id:"mem_eye_setter",  name:"Eyes of the Setter",  positions:["S"],                 bonus:{ Set:{pct:10} }, desc:"Visão e distribuição aprimorada.", img:"img/memories/MemoUshijimaUR.png" },
   { id:"mem_iron_wall",   name:"Iron Wall Training",  positions:["MB","WS","OP"],     bonus:{ Block:{pct:12} }, desc:"Treino pesado de bloqueio.", img:"img/memories/MemoUshijimaUR.png" },
-  { id:"mem_libero_inst", name:"Libero's Instinct",   positions:["L"],                bonus:{ Receive:{pct:12}, Save:{pct:10} }, desc:"Reflexos e recepção do líbero." },
-  { id:"mem_serve_cannon",name:"Serve Cannon",        positions:["S","WS","OP","MB","L"], bonus:{ Serve:{pct:10}, Spike:{pct:5} }, desc:"Saque agressivo." },
-  { id:"mem_quick_guru",  name:"Quick Attack Guru",   positions:["MB","S"],           bonus:{ Spike:{pct:10}, Block:{pct:5} }, desc:"Quick + leitura de bloqueio." },
+  { id:"mem_libero_inst", name:"Libero's Instinct",   positions:["L"],                bonus:{ Receive:{pct:12}, Save:{pct:10} }, desc:"Reflexos e recepção do líbero.", img:"img/memories/MemoUshijimaUR.png" },
+  { id:"mem_serve_cannon",name:"Serve Cannon",        positions:["S","WS","OP","MB","L"], bonus:{ Serve:{pct:10}, Spike:{pct:5} }, desc:"Saque agressivo.", img:"img/memories/MemoUshijimaUR.png" },
+  { id:"mem_quick_guru",  name:"Quick Attack Guru",   positions:["MB","S"],           bonus:{ Spike:{pct:10}, Block:{pct:5} }, desc:"Quick + leitura de bloqueio.", img:"img/memories/MemoUshijimaUR.png" },
 ];
 
 /** Catálogo de SETS (POTENTIAL) — coloque aqui até 10 sets.
@@ -1962,14 +1962,14 @@ const memoryCatalog = [
  */
 const setCatalog = [
   {
-    id:"set_iron_wall", name:"Iron Wall", positions:["MB","WS","OP"],
-    twoPiece:{ Block:{pct:15} }, fourPiece:{ Block:{pct:8}, Spike:{pct:7} },
-    img:"img/sets/iron_wall.png", desc2:"2p: Block +15%.", desc4:"4p: Block +8% e Spike +7%."
+    id:"set_serve", name:"Serve Cannon", positions:["S","WS","OP","MB","L"],
+    twoPiece:{ Serve:{pct:12} }, fourPiece:{ Spike:{pct:8} },
+    img:"img/sets/PreciseServe.png", desc2:"2p: Serve +12%.", desc4:"4p: Spike +8%."
   },
   {
-    id:"set_libero", name:"Libero Instinct", positions:["L"],
-    twoPiece:{ Receive:{pct:16} }, fourPiece:{ Save:{pct:12} },
-    img:"img/sets/libero.png", desc2:"2p: Receive +16%.", desc4:"4p: Save +12%."
+    id:"set_serve", name:"Serve Cannon", positions:["S","WS","OP","MB","L"],
+    twoPiece:{ Serve:{pct:12} }, fourPiece:{ Spike:{pct:8} },
+    img:"img/sets/PreciseServe.png", desc2:"2p: Serve +12%.", desc4:"4p: Spike +8%."
   },
   {
     id:"set_serve", name:"Serve Cannon", positions:["S","WS","OP","MB","L"],
@@ -1982,9 +1982,9 @@ const setCatalog = [
     img:"img/sets/PreciseSet.png", desc2:"2p: Set +14%.", desc4:"4p: Receive +6%."
   },
   {
-    id:"set_quick", name:"Quick Attack Guru", positions:["MB","S"],
-    twoPiece:{ Spike:{pct:10} }, fourPiece:{ Block:{pct:6}, Spike:{pct:6} },
-    img:"img/sets/quick_guru.png", desc2:"2p: Spike +10%.", desc4:"4p: Block +6% e Spike +6%."
+    id:"set_serve", name:"Serve Cannon", positions:["S","WS","OP","MB","L"],
+    twoPiece:{ Serve:{pct:12} }, fourPiece:{ Spike:{pct:8} },
+    img:"img/sets/PreciseServe.png", desc2:"2p: Serve +12%.", desc4:"4p: Spike +8%."
   },
   // ...adicione mais até ter 10 sets
 ];
