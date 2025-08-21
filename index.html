@@ -2300,7 +2300,12 @@ window.afterRemoveCharacter = function(slotEl){
   removeItemGear(slotEl);
   // opcional: equipState.delete(getSlotId(slotEl)); updateItemBadge(slotEl);
 };
-
+function afterAssignCharacter(slotEl, charName){
+  ensureItemGear(slotEl);
+  const gear = slotEl.querySelector('.item-gear');
+  gear.onclick = ()=>openItemModal(slotEl, charName); // <-- precisa disso
+  updateItemBadge(slotEl);
+}
 /** Persistência (integre com seu Save/Load) */
 function serializeTeamItems(){
   const data = {};
