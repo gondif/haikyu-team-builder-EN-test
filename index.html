@@ -584,14 +584,8 @@ object-fit: Save;
   background:#111; border:1px solid #666; color:#fff;
   font-size:11px; padding:2px 6px; border-radius:6px; opacity:.9;
 }
-.item-modal-backdrop{
-  position:fixed; inset:0; background:rgba(0,0,0,.6);
-  display:flex; align-items:center; justify-content:center; z-index:2000;
-}
-.item-modal{
-  background:#2b2b2b; color:#fff; width:min(560px,92vw);
-  border-radius:12px; padding:14px; box-shadow:0 12px 32px rgba(0,0,0,.5);
-}
+.item-modal-backdrop{ background: rgba(0,0,0,0.6); }
+.item-modal{ box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
 .item-modal h3{ margin:0 0 8px 0; }
 .item-row{ display:grid; grid-template-columns: 130px 1fr; gap:10px; align-items:center; margin:8px 0; }
 .item-modal select, .item-modal input[type="range"]{
@@ -1067,12 +1061,13 @@ function setCharacter(slot, personagem, role) {
     }
 
     // monta imagem
-    slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
-    slot.dataset.nome = personagem.nome;
-    slot.dataset.role = role; // <-- Ensure correct role is set!
+   slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
+slot.dataset.nome = personagem.nome;
+slot.dataset.role = role;
+afterAssignCharacter(slot, personagem.nome);
 
     // Exemplo (ajuste ao teu código). Depois que setar a imagem etc.:
-    afterAssignCharacter(slotEl, personagem.nome);
+    afterAssignCharacter(slot, personagem.nome);
 
     // atualiza texto de info (procura .player-info no mesmo player-slot)
     const infoDiv = slot.parentElement.querySelector('.player-info');
@@ -2203,7 +2198,7 @@ function restoreTeamItems(saved){
   // saved = objeto retornado em serializeTeamItems()
   if(!saved) return;
   for(const [slotId, payload] of Object.entries(saved)){
-    const el = [...document.querySelectorAll('.hex, .bench-slot')].find(e=>getSlotId(e)===slotId);
+    const el = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(e=>getSlotId(e)===slotId);
     if(!el) continue;
     // garanta que teu load de personagens já colocou a imagem/nome;
     el.dataset.charName = payload.charName;
