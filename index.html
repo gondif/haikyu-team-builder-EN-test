@@ -607,7 +607,15 @@ object-fit: Save;
   background:#1e1e1e; border:1px solid #444; border-radius:10px; padding:8px; font-size:13px;
 }
 .item-stats code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-
+/* Engrenagem para abrir Items */
+.hex, .bench-slot { position: relative; } /* garante âncora p/ posicionar o botão */
+.item-gear{
+  position:absolute; top:4px; right:4px; z-index:5;
+  width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+  border-radius:999px; background:rgba(20,20,20,.85); border:1px solid #666;
+  font-size:14px; cursor:pointer; color:#fff;
+}
+.item-gear:hover{ background:rgba(40,40,40,.95); }
 </style>
 </head>
 <body>
@@ -2202,6 +2210,47 @@ function restoreTeamItems(saved){
     updateItemBadge(el);
   }
 }
+    // cria o botão ⚙️ no slot
+function ensureItemGear(slotEl){
+  if(slotEl.querySelector('.item-gear')) return; // já existe
+  if(!slotEl.dataset.charName) return; // só mostra se tiver personagem
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'item-gear';
+  btn.title = 'Items (Memory & Potential)';
+  btn.innerHTML = '⚙️';
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation(); e.preventDefault();   // não deixa clicar/abrir o details
+    openItemModal(slotEl);
+  });
+  slotEl.appendChild(btn);
+}
+function removeItemGear(slotEl){
+  slotEl.querySelectorAll('.item-gear').forEach(n=>n.remove());
+}
+
+// PATCH no helper que te passei antes:
+window.afterAssignCharacter = function(slotEl, charName){
+  slotEl.dataset.charName = charName;
+  updateItemBadge(slotEl);
+  ensureItemGear(slotEl);          // << adiciona o botão
+};
+
+// (se tiver uma função ao remover/desalocar personagem, chame isso)
+window.afterRemoveCharacter = function(slotEl){
+  delete slotEl.dataset.charName;
+  removeItemGear(slotEl);
+  // opcional: também limpar badge/estado se quiser
+  // equipState.delete(getSlotId(slotEl)); updateItemBadge(slotEl);
+};
+
+// Se você restaura time salvo, garanta que o gear apareça:
+const _restoreTeamItems = restoreTeamItems; // se já existir
+restoreTeamItems = function(saved){
+  _restoreTeamItems(saved);
+  document.querySelectorAll('.hex, .bench-slot')
+    .forEach(el => { if(el.dataset.charName) ensureItemGear(el); });
+};
 
 /* ====== EXEMPLOS DE USO ======
 1) Ao salvar:
