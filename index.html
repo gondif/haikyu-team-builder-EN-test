@@ -578,6 +578,35 @@ object-fit: Save;
   justify-content: flex-end; /* ou center/space-between */
   margin-top: 45px;
 }
+    /* === ITEMS (Memory & Potential) === */
+.item-badge {
+  position:absolute; bottom:4px; right:6px;
+  background:#111; border:1px solid #666; color:#fff;
+  font-size:11px; padding:2px 6px; border-radius:6px; opacity:.9;
+}
+.item-modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  display:flex; align-items:center; justify-content:center; z-index:2000;
+}
+.item-modal{
+  background:#2b2b2b; color:#fff; width:min(560px,92vw);
+  border-radius:12px; padding:14px; box-shadow:0 12px 32px rgba(0,0,0,.5);
+}
+.item-modal h3{ margin:0 0 8px 0; }
+.item-row{ display:grid; grid-template-columns: 130px 1fr; gap:10px; align-items:center; margin:8px 0; }
+.item-modal select, .item-modal input[type="range"]{
+  width:100%; background:#1f1f1f; color:#fff; border:1px solid #555; border-radius:8px; padding:6px;
+}
+.item-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+.item-btn{
+  background:#444; border:1px solid #666; color:#fff;
+  padding:8px 10px; border-radius:8px; cursor:pointer;
+}
+.item-btn:hover{ background:#555; }
+.item-stats{
+  background:#1e1e1e; border:1px solid #444; border-radius:10px; padding:8px; font-size:13px;
+}
+.item-stats code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
 
 </style>
 </head>
@@ -1889,7 +1918,303 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     });
     updateSynergies();
     });
+/** Catálogo de memórias (exemplos — adicione/ajuste à vontade) */
+const memoryCatalog = [
+  {
+    id: "mem_eye_setter",
+    name: "Eyes of the Setter",
+    positions: ["S"],
+    bonus: { Set: {pct: 10}, Awareness: {pct: 8} },
+    desc: "Visão de jogo para distribuidores: mais Set e Awareness."
+  },
+  {
+    id: "mem_iron_wall",
+    name: "Iron Wall Training",
+    positions: ["MB", "WS", "OP"], /* MB prioritariamente */
+    bonus: { Block: {pct: 12}, Reflex: {pct: 6} },
+    desc: "Treino de bloqueio pesado."
+  },
+  {
+    id: "mem_libero_instinct",
+    name: "Libero's Instinct",
+    positions: ["L"],
+    bonus: { Receive: {pct: 12}, Save: {pct: 10} },
+    desc: "Instinto defensivo do líbero."
+  },
+  {
+    id: "mem_serve_cannon",
+    name: "Serve Cannon",
+    positions: ["S","WS","OP","MB","L"],
+    bonus: { Serve: {pct: 10}, Spike: {pct: 5} },
+    desc: "Foco em saque agressivo."
+  },
+  {
+    id: "mem_quick_guru",
+    name: "Quick Attack Guru",
+    positions: ["MB","S"],
+    bonus: { Spike: {pct: 10}, Block: {pct: 5} }, // Spike aqui representa Quick no teu dataset
+    desc: "Explora Quick + leitura de bloqueio."
+  }
+];
 
+/** Potencial — níveis 0..6, % em todos os stats (ajustável) */
+const POTENTIAL_LEVELS = [0, 2, 4, 6, 8, 10, 12]; // %
+const STAT_KEYS = ["Serve","Spike","Set","Receive","Block","Save"];
+
+/** Estado dos itens equipados por SLOT (id lógico do slot) */
+const equipState = new Map(); 
+// estrutura: equipState.set(slotId, { memoryId: "mem_x", potential: 0..6 })
+
+/** Util: obtem id lógico do slot (estável entre recarregamentos) */
+function getSlotId(el){
+  // damos um id se não tiver, para persistir no DOM
+  if(!el.dataset.slotId){
+    const prefix = el.classList.contains('bench-slot') ? 'bench' : 'court';
+    const all = [...document.querySelectorAll('.hex, .bench-slot')];
+    const idx = all.indexOf(el);
+    el.dataset.slotId = `${prefix}-${idx >= 0 ? idx : Math.random().toString(36).slice(2,8)}`;
+  }
+  return el.dataset.slotId;
+}
+
+/** Util: pega o nome do personagem alocado nesse slot.
+ *  -> Recomendação: no teu fluxo de alocar, setar el.dataset.charName = personagem.nome
+ */
+function getSlotChar(el){
+  return el?.dataset?.charName || null;
+}
+
+/** Busca personagem pelo nome no teu array characters */
+function findCharacterByName(name){
+  return characters.find(c => c.nome === name) || null;
+}
+
+/** Aplica bônus de memória e potencial sobre os stats base */
+function computeEffectiveStats(baseStats, memoryId, potentialLevel){
+  // clone
+  const out = {...baseStats};
+  // potencial (% em tudo)
+  const potPct = POTENTIAL_LEVELS[potentialLevel|0] || 0;
+  for(const k of STAT_KEYS){ out[k] = Math.round(out[k] * (1 + potPct/100)); }
+
+  // memória (pct ou flat por stat)
+  if(memoryId){
+    const mem = memoryCatalog.find(m => m.id === memoryId);
+    if(mem && mem.bonus){
+      for(const [stat, mod] of Object.entries(mem.bonus)){
+        if(out[stat] == null) continue;
+        if(mod.pct) out[stat] = Math.round(out[stat] * (1 + mod.pct/100));
+        if(mod.flat) out[stat] = Math.max(0, out[stat] + mod.flat);
+      }
+    }
+  }
+  return out;
+}
+
+/** Scoring simples para recomendações por função */
+function scoreMemoryForRole(mem, funcao){
+  // pesos por função
+  const weights = {
+    "S": { Set: 1.0, Awareness: .7, Serve: .4, Receive: .2 },
+    "MB": { Spike: .8, Block: 1.0, Reflex: .6, Serve: .2 },
+    "WS": { Spike: 1.0, Serve: .5, Receive: .4, Awareness: .3 },
+    "OP": { Spike: 1.0, Serve: .5, Block: .3 },
+    "L": { Receive: 1.0, Save: .9, Reflex: .6, Set: .2 }
+  }[funcao] || {};
+  let s = 0;
+  for(const [stat, mod] of Object.entries(mem.bonus||{})){
+    const w = weights[stat] || 0;
+    const val = (mod.pct||0) + (mod.flat? (mod.flat/100) : 0); // flat normalizado
+    s += w * val;
+  }
+  return s;
+}
+
+/** Retorna top recomendações compatíveis para a função */
+function recommendMemoriesForRole(funcao){
+  const pool = memoryCatalog.filter(m => m.positions.includes(funcao));
+  return pool
+    .map(m => ({m, score: scoreMemoryForRole(m, funcao)}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,3)
+    .map(x=>x.m);
+}
+
+/** Badge com info rápida no slot */
+function updateItemBadge(slotEl){
+  // remove antiga
+  slotEl.querySelectorAll('.item-badge').forEach(n=>n.remove());
+  const slotId = getSlotId(slotEl);
+  const eq = equipState.get(slotId);
+  if(!eq) return;
+  const mem = memoryCatalog.find(m=>m.id===eq.memoryId);
+  if(!mem && !Number.isFinite(eq.potential)) return;
+  const badge = document.createElement('div');
+  badge.className = 'item-badge';
+  const pTxt = Number.isFinite(eq.potential) ? `P${eq.potential}` : '';
+  badge.textContent = `${mem? mem.name : '—'} ${pTxt? '· '+pTxt : ''}`;
+  slotEl.appendChild(badge);
+}
+
+/** Modal UI */
+function openItemModal(slotEl){
+  const charName = getSlotChar(slotEl);
+  if(!charName){ alert('Coloque um personagem no slot antes de equipar itens.'); return; }
+  const ch = findCharacterByName(charName);
+  if(!ch){ alert('Personagem não encontrado.'); return; }
+
+  const slotId = getSlotId(slotEl);
+  const current = equipState.get(slotId) || { memoryId:null, potential:0 };
+
+  // memórias compatíveis com a função do personagem
+  const allowed = memoryCatalog.filter(m => m.positions.includes(ch.funcao));
+
+  // criar DOM
+  const $back = document.createElement('div'); $back.className = 'item-modal-backdrop';
+  const $box  = document.createElement('div'); $box.className  = 'item-modal';
+  $back.appendChild($box);
+
+  $box.innerHTML = `
+    <h3>Items for <b>${ch.nome}</b> (${ch.funcao})</h3>
+
+    <div class="item-row">
+      <div>Memory</div>
+      <div>
+        <select id="memSel">
+          <option value="">— none —</option>
+          ${allowed.map(m=>`<option value="${m.id}" ${m.id===current.memoryId?'selected':''}>${m.name}</option>`).join('')}
+        </select>
+        <div id="memDesc" style="opacity:.85; margin-top:6px; font-size:12px;"></div>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div>Potential</div>
+      <div>
+        <input id="potRange" type="range" min="0" max="${POTENTIAL_LEVELS.length-1}" step="1" value="${current.potential||0}">
+        <div style="font-size:12px; opacity:.85; margin-top:4px;">Level: <span id="potLv">${current.potential||0}</span>  ·  Bonus global: <span id="potPct">${POTENTIAL_LEVELS[current.potential||0]}%</span></div>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div>Stats preview</div>
+      <div class="item-stats"><div id="statsPreview"></div></div>
+    </div>
+
+    <div class="item-actions">
+      <button class="item-btn" id="btnRec">Recommend</button>
+      <button class="item-btn" id="btnClear">Clear</button>
+      <button class="item-btn" id="btnSave">Save</button>
+      <button class="item-btn" id="btnClose">Close</button>
+    </div>
+  `;
+
+  document.body.appendChild($back);
+
+  const $memSel = $box.querySelector('#memSel');
+  const $memDesc= $box.querySelector('#memDesc');
+  const $potRange=$box.querySelector('#potRange');
+  const $potLv  = $box.querySelector('#potLv');
+  const $potPct = $box.querySelector('#potPct');
+  const $stats  = $box.querySelector('#statsPreview');
+
+  function refreshMemDesc(){
+    const mem = memoryCatalog.find(m=>m.id===$memSel.value);
+    $memDesc.textContent = mem ? mem.desc : '';
+  }
+  function renderStats(){
+    const eff = computeEffectiveStats(ch.Stats, $memSel.value||null, parseInt($potRange.value||'0',10));
+    const base = ch.Stats;
+    // string compacta
+    const fmt = (k)=> `${k}:${eff[k]} (${base[k]})`;
+    $stats.innerHTML = `<code>${STAT_KEYS.map(fmt).join('  |  ')}</code>`;
+  }
+  refreshMemDesc(); renderStats();
+
+  $memSel.addEventListener('change', ()=>{ refreshMemDesc(); renderStats(); });
+  $potRange.addEventListener('input', ()=>{
+    $potLv.textContent = $potRange.value;
+    $potPct.textContent = `${POTENTIAL_LEVELS[$potRange.value]}%`;
+    renderStats();
+  });
+
+  $box.querySelector('#btnClose').onclick = ()=> $back.remove();
+  $box.querySelector('#btnClear').onclick = ()=>{
+    $memSel.value = "";
+    $potRange.value = 0; $potLv.textContent = "0"; $potPct.textContent = `${POTENTIAL_LEVELS[0]}%`;
+    refreshMemDesc(); renderStats();
+  };
+  $box.querySelector('#btnSave').onclick = ()=>{
+    const data = { memoryId: $memSel.value || null, potential: parseInt($potRange.value||'0',10) };
+    equipState.set(slotId, data);
+    updateItemBadge(slotEl);
+    $back.remove();
+  };
+  $box.querySelector('#btnRec').onclick = ()=>{
+    const recs = recommendMemoriesForRole(ch.funcao);
+    if(recs[0]){ $memSel.value = recs[0].id; refreshMemDesc(); renderStats(); }
+  };
+}
+
+/** Abrir o modal com duplo clique nos slots ocupados */
+function bindItemModalOpen(){
+  const slots = document.querySelectorAll('.hex, .bench-slot');
+  slots.forEach(el=>{
+    el.addEventListener('dblclick', ()=>{
+      // só abre se tiver personagem
+      if(getSlotChar(el)) openItemModal(el);
+    });
+  });
+}
+bindItemModalOpen();
+
+/** Hook opcional: se no teu fluxo de “alocar personagem no slot” houver uma função,
+ *  chame esta util para setar o nome no dataset e desenhar/atualizar a badge.
+ *  Ex.: afterAssignCharacter(slotEl, personagem.nome);
+ */
+window.afterAssignCharacter = function(slotEl, charName){
+  slotEl.dataset.charName = charName;
+  updateItemBadge(slotEl); // repinta badge (se já houver itens salvos)
+};
+
+/** Integração com Save / Load de time
+ *  - Adapte estes helpers dentro das tuas funções save / load
+ */
+function serializeTeamItems(){
+  const data = {};
+  document.querySelectorAll('.hex, .bench-slot').forEach(el=>{
+    const id = getSlotId(el);
+    const charName = getSlotChar(el);
+    if(!charName) return;
+    data[id] = { charName, ...(equipState.get(id)||{ memoryId:null, potential:0 }) };
+  });
+  return data; // objeto para salvar junto do time
+}
+function restoreTeamItems(saved){
+  // saved = objeto retornado em serializeTeamItems()
+  if(!saved) return;
+  for(const [slotId, payload] of Object.entries(saved)){
+    const el = [...document.querySelectorAll('.hex, .bench-slot')].find(e=>getSlotId(e)===slotId);
+    if(!el) continue;
+    // garanta que teu load de personagens já colocou a imagem/nome;
+    el.dataset.charName = payload.charName;
+    equipState.set(slotId, { memoryId: payload.memoryId || null, potential: payload.potential|0 });
+    updateItemBadge(el);
+  }
+}
+
+/* ====== EXEMPLOS DE USO ======
+1) Ao salvar:
+   const itemsBlob = serializeTeamItems();
+   // inclua isso no JSON do seu time: { ...teamData, items: itemsBlob }
+
+2) Ao carregar:
+   // depois de popular os slots com os personagens:
+   restoreTeamItems(savedTeam.items);
+
+3) Ao alocar personagem no slot (onde já existe sua lógica atual):
+   afterAssignCharacter(slotEl, personagem.nome);
+================================================== */
 </script>
 
 </body>
