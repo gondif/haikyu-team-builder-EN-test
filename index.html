@@ -616,6 +616,21 @@ object-fit: Save;
   font-size:14px; cursor:pointer; color:#fff;
 }
 .item-gear:hover{ background:rgba(40,40,40,.95); }
+.item-badge img { width:14px; height:14px; vertical-align:-2px; margin-right:4px; border-radius:3px; }
+/* preview com imagem + nome */
+.item-choice {
+  display:flex; align-items:center; gap:10px;
+  background:#1e1e1e; border:1px solid #444; border-radius:10px;
+  padding:6px 8px; margin-bottom:6px; min-height:40px;
+}
+.item-choice img {
+  width:28px; height:28px; border-radius:6px; object-fit:cover; flex:0 0 28px;
+  background:#2a2a2a;
+}
+.item-choice .title { font-size:13px; font-weight:600; opacity:.95; }
+.item-choice .subtitle { font-size:12px; opacity:.75; }
+.item-choice.empty { opacity:.6 }
+.item-choice.empty .title { font-weight:500; }
 </style>
 </head>
 <body>
@@ -1935,8 +1950,8 @@ const STAT_KEYS = ["Serve","Spike","Set","Receive","Block","Save"];
 
 /** Catálogo de MEMÓRIAS (exemplos; ajuste/expanda à vontade) */
 const memoryCatalog = [
-  { id:"mem_eye_setter",  name:"Eyes of the Setter",  positions:["S"],                bonus:{ Set:{pct:10} }, desc:"Visão e distribuição aprimorada." },
-  { id:"mem_iron_wall",   name:"Iron Wall Training",  positions:["MB","WS","OP"],     bonus:{ Block:{pct:12} }, desc:"Treino pesado de bloqueio." },
+  { id:"mem_eye_setter",  name:"Eyes of the Setter",  positions:["S"],                 bonus:{ Set:{pct:10} }, desc:"Visão e distribuição aprimorada.", img:"img/memories/MemoUshijimaUR.png" },
+  { id:"mem_iron_wall",   name:"Iron Wall Training",  positions:["MB","WS","OP"],     bonus:{ Block:{pct:12} }, desc:"Treino pesado de bloqueio.", img:"img/memories/MemoUshijimaUR.png" },
   { id:"mem_libero_inst", name:"Libero's Instinct",   positions:["L"],                bonus:{ Receive:{pct:12}, Save:{pct:10} }, desc:"Reflexos e recepção do líbero." },
   { id:"mem_serve_cannon",name:"Serve Cannon",        positions:["S","WS","OP","MB","L"], bonus:{ Serve:{pct:10}, Spike:{pct:5} }, desc:"Saque agressivo." },
   { id:"mem_quick_guru",  name:"Quick Attack Guru",   positions:["MB","S"],           bonus:{ Spike:{pct:10}, Block:{pct:5} }, desc:"Quick + leitura de bloqueio." },
@@ -1959,12 +1974,12 @@ const setCatalog = [
   {
     id:"set_serve", name:"Serve Cannon", positions:["S","WS","OP","MB","L"],
     twoPiece:{ Serve:{pct:12} }, fourPiece:{ Spike:{pct:8} },
-    img:"img/sets/serve_cannon.png", desc2:"2p: Serve +12%.", desc4:"4p: Spike +8%."
+    img:"img/sets/PreciseServe.png", desc2:"2p: Serve +12%.", desc4:"4p: Spike +8%."
   },
   {
     id:"set_setter", name:"Eyes of the Setter", positions:["S"],
     twoPiece:{ Set:{pct:14} }, fourPiece:{ Receive:{pct:6} },
-    img:"img/sets/eyes_setter.png", desc2:"2p: Set +14%.", desc4:"4p: Receive +6%."
+    img:"img/sets/PreciseSet.png", desc2:"2p: Set +14%.", desc4:"4p: Receive +6%."
   },
   {
     id:"set_quick", name:"Quick Attack Guru", positions:["MB","S"],
@@ -2111,53 +2126,118 @@ function openItemModal(slotEl){
   $back.appendChild($box);
 
   $box.innerHTML = `
-    <h3>Items for <b>${ch.nome}</b> (${ch.funcao})</h3>
+  <h3>Items for <b>${ch.nome}</b> (${ch.funcao})</h3>
 
-    <div class="item-row">
-      <div>Memory</div>
-      <div>
-        <select id="memSel">
-          <option value="">— none —</option>
-          ${allowedMem.map(m=>`<option value="${m.id}" ${m.id===current.memoryId?'selected':''}>${m.name}</option>`).join('')}
-        </select>
-        <div id="memDesc" class="item-desc"></div>
+  <div class="item-row">
+    <div>Memory</div>
+    <div>
+      <div id="memChoice" class="item-choice empty">
+        <img src="" alt="">
+        <div>
+          <div class="title">— none —</div>
+          <div class="subtitle"></div>
+        </div>
       </div>
+      <select id="memSel">
+        <option value="">— none —</option>
+        ${allowedMem.map(m=>`<option value="${m.id}" ${m.id===current.memoryId?'selected':''}>${m.name}</option>`).join('')}
+      </select>
+      <div id="memDesc" class="item-desc"></div>
     </div>
+  </div>
 
-    <div class="item-row">
-      <div>Potential (4-Piece)</div>
-      <div>
-        <select id="set4Sel">
-          <option value="">— none —</option>
-          ${allowedSet.map(s=>`<option value="${s.id}" ${s.id===current.set4?'selected':''}>${s.name}</option>`).join('')}
-        </select>
-        <div id="set4Desc" class="item-desc"></div>
+  <div class="item-row">
+    <div>Potential (4-Piece)</div>
+    <div>
+      <div id="set4Choice" class="item-choice empty">
+        <img src="" alt="">
+        <div>
+          <div class="title">— none —</div>
+          <div class="subtitle"></div>
+        </div>
       </div>
+      <select id="set4Sel">
+        <option value="">— none —</option>
+        ${allowedSet.map(s=>`<option value="${s.id}" ${s.id===current.set4?'selected':''}>${s.name}</option>`).join('')}
+      </select>
+      <div id="set4Desc" class="item-desc"></div>
     </div>
+  </div>
 
-    <div class="item-row">
-      <div>Potential (2-Piece)</div>
-      <div>
-        <select id="set2Sel">
-          <option value="">— none —</option>
-          ${allowedSet.map(s=>`<option value="${s.id}" ${s.id===current.set2?'selected':''}>${s.name}</option>`).join('')}
-        </select>
-        <div id="set2Desc" class="item-desc"></div>
+  <div class="item-row">
+    <div>Potential (2-Piece)</div>
+    <div>
+      <div id="set2Choice" class="item-choice empty">
+        <img src="" alt="">
+        <div>
+          <div class="title">— none —</div>
+          <div class="subtitle"></div>
+        </div>
       </div>
+      <select id="set2Sel">
+        <option value="">— none —</option>
+        ${allowedSet.map(s=>`<option value="${s.id}" ${s.id===current.set2?'selected':''}>${s.name}</option>`).join('')}
+      </select>
+      <div id="set2Desc" class="item-desc"></div>
     </div>
+  </div>
 
-    <div class="item-row">
-      <div>Stats preview</div>
-      <div class="item-stats"><div id="statsPreview"></div></div>
-    </div>
+  <div class="item-row">
+    <div>Stats preview</div>
+    <div class="item-stats"><div id="statsPreview"></div></div>
+  </div>
 
-    <div class="item-actions">
-      <button class="item-btn" id="btnRec">Recommend</button>
-      <button class="item-btn" id="btnClear">Clear</button>
-      <button class="item-btn" id="btnSave">Save</button>
-      <button class="item-btn" id="btnClose">Close</button>
-    </div>
-  `;
+  <div class="item-actions">
+    <button class="item-btn" id="btnRec">Recommend</button>
+    <button class="item-btn" id="btnClear">Clear</button>
+    <button class="item-btn" id="btnSave">Save</button>
+    <button class="item-btn" id="btnClose">Close</button>
+  </div>
+`;
+
+// após criar os elementos ($mem, $set4, $set2...), adicione:
+function renderChoice($el, item, fallbackTitle){
+  if(item){
+    const img = item.img || "";
+    $el.classList.remove('empty');
+    $el.querySelector('img').src = img;
+    $el.querySelector('.title').textContent = item.name;
+    $el.querySelector('.subtitle').textContent = item.short || ""; // opcional
+  }else{
+    $el.classList.add('empty');
+    $el.querySelector('img').src = "";
+    $el.querySelector('.title').textContent = fallbackTitle || "— none —";
+    $el.querySelector('.subtitle').textContent = "";
+  }
+}
+
+function refreshChoices(){
+  const mem = memoryCatalog.find(m=>m.id===$mem.value);
+  const s4  = setCatalog.find(s=>s.id===$set4.value);
+  const s2  = setCatalog.find(s=>s.id===$set2.value);
+  renderChoice($box.querySelector('#memChoice'),  mem, "— none —");
+  renderChoice($box.querySelector('#set4Choice'), s4,  "— none —");
+  renderChoice($box.querySelector('#set2Choice'), s2,  "— none —");
+}
+
+// já existiam refreshDescs/renderStats — atualize-os para também chamar refreshChoices():
+function refreshDescs(){
+  const mem = memoryCatalog.find(m=>m.id===$mem.value);
+  const s4  = setCatalog.find(s=>s.id===$set4.value);
+  const s2  = setCatalog.find(s=>s.id===$set2.value);
+  $mD.textContent = mem ? (mem.desc || '') : '';
+  $d4.textContent = s4  ? (s4.desc4 || '') : '';
+  $d2.textContent = s2  ? (s2.desc2 || '') : '';
+  refreshChoices();
+}
+
+// chame uma vez ao abrir:
+refreshDescs(); renderStats();
+
+// e em cada change event já existente:
+$mem.addEventListener('change', ()=>{ refreshDescs(); renderStats(); });
+$set4.addEventListener('change', ()=>{ refreshDescs(); renderStats(); });
+$set2.addEventListener('change', ()=>{ refreshDescs(); renderStats(); });
   document.body.appendChild($back);
 
   const $mem  = $box.querySelector('#memSel');
@@ -2251,6 +2331,32 @@ document.addEventListener('contextmenu', (e)=>{
   e.preventDefault();
   openItemModal(el);
 });
+function updateItemBadge(slotEl){
+  slotEl.querySelectorAll('.item-badge').forEach(n=>n.remove());
+  const slotId = getSlotId(slotEl);
+  const eq = equipState.get(slotId); if(!eq) return;
+
+  const mem = memoryCatalog.find(m=>m.id===eq.memoryId);
+  const s4  = setCatalog.find(s=>s.id===eq.set4);
+  const s2  = setCatalog.find(s=>s.id===eq.set2);
+  if(!mem && !s4 && !s2) return;
+
+  const badge = document.createElement('div');
+  badge.className = 'item-badge';
+
+  const parts = [];
+  if(mem){
+    parts.push(`${mem.img?`<img src="${mem.img}">`:''}${mem.name}`);
+  }
+  if(s4){
+    parts.push(`${s4.img?`<img src="${s4.img}">`:''}4p:${s4.name}`);
+  }
+  if(s2){
+    parts.push(`${s2.img?`<img src="${s2.img}">`:''}2p:${s2.name}`);
+  }
+  badge.innerHTML = parts.join(' • ');
+  slotEl.appendChild(badge);
+}
 
 </script>
 
