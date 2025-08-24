@@ -538,13 +538,15 @@ object-fit: Save;
 
 /* === LISTA NO Side Menu === */
 #charList{
-  display: grid !important;
+  display: grid;
   grid-template-columns: repeat(2, minmax(50px, 1fr)); /* 2 colunas no menu */
   gap: 10px;
   padding: 0;
   margin: 0;
   list-style: none;
 }
+/* nova classe para esconder */
+#charList.is-hidden { display: none !important; }
 
 /* escalar a imagem ao tamanho da coluna */
 #charList .person-card img{
@@ -819,6 +821,8 @@ object-fit: Save;
   padding:6px 10px;
 }
 .stats-list li b{ margin-right:6px; }
+.hex.drop-ok, .bench-slot.drop-ok { outline: 2px dashed #9cf; }
+.hex.drop-bad, .bench-slot.drop-bad { outline: 2px dashed #f66; }
 </style>
 </head>
 <body>
@@ -831,6 +835,7 @@ object-fit: Save;
         <!-- substituí EStatísticas por Save/Load -->
         <li><button class="menu-link bond-btn" data-section="save">💾 Save & Load Teams</button></li>
         <li><button class="menu-link bond-btn" data-section="characters">🔍 Characters</button></li>
+        <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
     </ul>
     <div id="sidebar-content">
@@ -1042,6 +1047,7 @@ function attachBenchEvents(slot) {
     if (typeof removeCharacter === "function") removeCharacter(slot);
   });
 }
+
 
 function showMenu(role, slot) {
   const scrollMenu = document.getElementById("scrollMenu");
@@ -1287,9 +1293,7 @@ function setCharacter(slot, personagem, role) {
    slot.innerHTML = `<img src="${personagem.img}" alt="${personagem.nome}">`;
 slot.dataset.nome = personagem.nome;
 slot.dataset.role = role;
-afterAssignCharacter(slot, personagem.nome);
 
-    // Exemplo (ajuste ao teu código). Depois que setar a imagem etc.:
     afterAssignCharacter(slot, personagem.nome);
 
     // atualiza texto de info (procura .player-info no mesmo player-slot)
@@ -1301,21 +1305,29 @@ afterAssignCharacter(slot, personagem.nome);
 }
 
 function removeCharacter(slot) {
-    if (slot.dataset.nome) {
-        selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
-        slot.innerHTML = ""; 
-        delete slot.dataset.nome;
+  if (slot.dataset.nome) {
+    selecionados = selecionados.filter(p => p.nome !== slot.dataset.nome);
 
-        const infoDiv = slot.parentElement.querySelector('.player-info');
-        if (slot.classList.contains("bench-slot")) {
-            infoDiv.textContent = "Bench";
-        } else {
-            // tenta recuperar role
-            infoDiv.textContent = slot.dataset.role || slot.getAttribute("data-role") || slot.parentElement.querySelector('.hex')?.dataset.role || "";
-        }
-
-        updateSynergies();
+    // CHAME O HOOK ANTES de limpar o slot
+    if (typeof window.afterRemoveCharacter === "function") {
+      window.afterRemoveCharacter(slot);
     }
+
+    slot.innerHTML = "";
+    delete slot.dataset.nome;
+
+    const infoDiv = slot.parentElement.querySelector('.player-info');
+    if (slot.classList.contains("bench-slot")) {
+      infoDiv.textContent = "Bench";
+    } else {
+      infoDiv.textContent = slot.dataset.role
+        || slot.getAttribute("data-role")
+        || slot.parentElement.querySelector('.hex')?.dataset.role || "";
+    }
+
+    updateSynergies();
+    if (typeof afterRemoveCharacter === "function") afterRemoveCharacter(slot);
+  }
 }
 
 function updateSynergies() {
@@ -1546,14 +1558,16 @@ document.querySelectorAll(".bench-slot").forEach(slot => attachBenchEvents(slot)
 /* ====== SIDEBAR NAV ====== */
 const sidebarContent = document.getElementById("sidebar-content");
 document.querySelectorAll(".menu-link").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const section = btn.dataset.section;
-        if (section === "characters") {
-            showCharacterList();
-        } else if (section === "save") {
-            showSavedTeams();
-        } else if (section === "help") {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const section = btn.dataset.section;
+    if (section === "characters") {
+      showCharacterList();
+    } else if (section === "schools") {
+      showSchoolsList();             
+    } else if (section === "save") {
+      showSavedTeams();
+    } else if (section === "help") {
     sidebarContent.innerHTML = `
         <h3>Info</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
@@ -1637,6 +1651,23 @@ function showCharacterList() {
     const funcoes = [...new Set(characters.map(p => p.funcao))];
     const escolas = [...new Set(characters.map(p => p.School))];
     const StatsKeys = [...new Set(characters.flatMap(p => Object.keys(p.Stats || {})))];
+    function symbolToType(sym){
+  const s = String(sym||"").toLowerCase();
+  if (s.includes("quicksymbol"))   return "quick";
+  if (s.includes("powersymbol"))   return "power";
+  if (s.includes("servesymbol"))   return "serve";
+  if (s.includes("settersymbol"))  return "setter";
+  if (s.includes("receivesymbol")) return "receive";
+  if (s.includes("blocksymbol"))   return "block";
+  if (s.includes("savesymbol"))    return "save";
+  return null;
+}
+
+// tipos únicos lendo characters[*].symbols
+const allTypes = [...new Set(
+  characters.flatMap(p => (Array.isArray(p.symbols) ? p.symbols : [])
+    .map(symbolToType).filter(Boolean))
+)].sort();
 
     let html = `
     <h3>Characters</h3>
@@ -1670,12 +1701,25 @@ function showCharacterList() {
                 <option value="desc">Descending (MM/DD/YY)</option>
             </select>
         </div>
+        <div>
+             <label>Type:</label>
+             <div id="filtroType">
+             ${allTypes.map(t => `
+             <label style="display:inline-flex;align-items:center;gap:6px;margin:2px 8px 2px 0;">
+             <input type="checkbox" name="typeFilter" value="${t}"> ${t.toUpperCase()}
+             </label>
+             `).join("")}
+             </div>
+        </div>
 <button id="limparFiltros">Clear</button>
     </div>
 <div class='char-list' id="charList"></div>
     `;
 
     sidebarContent.innerHTML = html;
+    const list = document.getElementById('charList');
+if (list) list.classList.remove('is-hidden');
+    enableCloseOutsideCharList();
 
     // Helpers de data (MM/DD/YY)
     function parseDateMMDDYY(s) {
@@ -1698,18 +1742,31 @@ function getStatsSafe(p, key) {
 
    function renderLista() {
   const listaEl   = document.getElementById("charList");
+  if (listaEl) listaEl.classList.remove('is-hidden');
 
   const funcaoSel = (document.getElementById("filtroFuncao").value || "").trim();
   const escolaSel = (document.getElementById("filtroEscola").value || "").trim();
   let   StatsSel = (document.getElementById("filtroStats").value || "").trim();
   const dataOrdem = (document.getElementById("filtroDataOrdem")?.value || "").trim();
+  const typeSel = Array.from(
+  document.querySelectorAll('#filtroType input[name="typeFilter"]:checked')
+).map(el => el.value);
+  const typeBox = document.getElementById('filtroType');
+if (typeBox) typeBox.addEventListener('change', renderLista);
+
+  function getCharTypes(p){
+  const arr = Array.isArray(p?.symbols) ? p.symbols : [];
+  const types = new Set(arr.map(symbolToType).filter(Boolean));
+  return [...types];
+}
 
   if (StatsSel.toLowerCase() === "todos") StatsSel = "";
 
   // 1) filtro base
   let filtrados = characters.filter(p =>
     (funcaoSel === "" || p.funcao === funcaoSel) &&
-    (escolaSel === "" || p.School === escolaSel)
+    (escolaSel === "" || p.School === escolaSel) &&
+    (typeSel.length === 0 || typeSel.every(t => getCharTypes(p).includes(t)))
   );
 
   // 2) ordenar por data quando escolhido (e ignorar sem data)
@@ -1765,11 +1822,13 @@ document.getElementById("filtroEscola").addEventListener("change", renderLista);
 document.getElementById("filtroStats").addEventListener("change", renderLista);
 document.getElementById("filtroDataOrdem").addEventListener("change", renderLista);
 
+
 // botão Limpar
 document.getElementById("limparFiltros").addEventListener("click", () => {
   document.getElementById("filtroFuncao").value = "";
   document.getElementById("filtroEscola").value = "";
   document.getElementById("filtroStats").value = "";
+  document.querySelectorAll('#filtroType input[name="typeFilter"]').forEach(cb => cb.checked = false);
   const selData = document.getElementById("filtroDataOrdem");
   if (selData) selData.value = "";
   renderLista();
@@ -1784,6 +1843,82 @@ if (listaEl && !listaEl.dataset.stopCloseBound) {
 
 // primeira renderização
 renderLista();
+}
+
+function showSchoolsList(){
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn  = document.getElementById("menuBtn");
+
+  const schools = [...new Set(characters.map(p => p.School))].sort((a,b)=>a.localeCompare(b));
+
+  sidebarContent.innerHTML = `
+    <h3>Schools</h3>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${schools.map(s => `
+        <button class="bond-btn school-open" data-school="${s}">
+           ${s}
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  // abre e esconde o botão verde
+  if (sidebar) sidebar.classList.add("open");
+  if (menuBtn) menuBtn.style.display = "none";
+
+  // clique de cada escola abre a página detalhada
+  sidebarContent.querySelectorAll(".school-open").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      showSchoolDetail(btn.dataset.school);
+    });
+  });
+}
+
+// Página de uma escola específica: descrição + personagens
+function showSchoolDetail(schoolName){
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn  = document.getElementById("menuBtn");
+
+  const relacionados = characters.filter(p => p.School === schoolName);
+  const desc = (typeof descricoesSinergia === "object" && descricoesSinergia[schoolName])
+             ? descricoesSinergia[schoolName]
+             : "No description available.";
+
+  sidebarContent.innerHTML = `
+    <h3>School: ${schoolName}</h3>
+    <p>${desc}</p>
+    <div class="char-list">
+      ${relacionados.map(r => `
+        <div class="char-card" data-nome="${r.nome}">
+          <img src="${r.img}" alt="${r.nome}">
+          <p>${r.nome}</p>
+        </div>
+      `).join("")}
+    </div>
+    <button id="backToSchools" class="bond-btn">← Back</button>
+  `;
+
+  if (sidebar) sidebar.classList.add("open");
+  if (menuBtn) menuBtn.style.display = "none";
+
+  // voltar para a lista de Schools
+  document.getElementById("backToSchools").addEventListener("click", (e)=>{
+    e.stopPropagation();
+    showSchoolsList();
+  });
+
+  // clicar num personagem abre os detalhes dele (já existe showCharacterDetails)
+  sidebarContent.querySelectorAll(".char-card").forEach(card=>{
+    card.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const nome = card.dataset.nome;
+      const p = characters.find(x => x.nome === nome);
+      if (p && typeof showCharacterDetails === "function") {
+        showCharacterDetails(p);
+      }
+    });
+  });
 }
 
 function showCharacterDetails(p) {
@@ -1938,8 +2073,13 @@ saveTeamBtn.addEventListener("click", (e) => {
         }
     }
 
-    teams[teamName] = getCurrentTeamByName();
-    localStorage.setItem("savedTeams", JSON.stringify(teams));
+    const savePayload = {
+  ...getCurrentTeamByName(),   // { main: [...], bench: [...] }
+  items: serializeTeamItems()  // <- memories / potentials por slot
+};
+
+teams[teamName] = savePayload;
+localStorage.setItem("savedTeams", JSON.stringify(teams));
     alert(`Team "${teamName}" saved!`);
 
     showSavedTeams();
@@ -2022,6 +2162,7 @@ function deleteTeam(name) {
 
 /* Carrega time — monta usando setCharacter... */
 function loadTeam(name) {
+  equipState.clear();  // evita lixo de items grudado em slots antigos
   const teams = JSON.parse(localStorage.getItem("savedTeams") || "{}");
   const team = teams[name];
   if (!team) return;
@@ -2062,7 +2203,8 @@ function loadTeam(name) {
         }
     });
 
-    // atualizar sinergias após Load
+    equipState.clear();                 // (garante que nada antigo fique no Map)
+    restoreTeamItems(team.items);       // <- aplica memories/potentials
     updateSynergies();
 }
 
@@ -2111,7 +2253,7 @@ document.addEventListener("click", (e) => {
     }
 });
     // Botão para limpar todo o time e resetar o banco
-document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
+    document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
     e.stopPropagation();
     if (!confirm("Are you sure you want to reset court and bench?")) return;
 
@@ -2121,7 +2263,14 @@ document.getElementById("clearTeamBtn").addEventListener("click", (e) => {
 
     // Limpa seleção
     selecionados = [];
+    equipState.clear();
+    document.querySelectorAll('.hex, .bench-slot')
+   .forEach(el => el.querySelectorAll('.item-badge,.item-gear').forEach(n => n.remove()));
 
+    clearAllEquips();
+    document.querySelectorAll('.hex, .bench-slot').forEach(el => {
+    if (el.dataset.nome || el.dataset.charName) removeCharacter(el);
+});
     // Reseta todos os slots principais
     document.querySelectorAll(".hex").forEach(slot => {
         slot.innerHTML = "";
@@ -3216,34 +3365,320 @@ window.afterAssignCharacter = function(slotEl, charName){
   ensureItemGear(slotEl); // botão ⚙️ para abrir o modal (não conflita com dblclick de detalhes)
 };
 window.afterRemoveCharacter = function(slotEl){
-  delete slotEl.dataset.charName;
-  removeItemGear(slotEl);
-  // opcional: equipState.delete(getSlotId(slotEl)); updateItemBadge(slotEl);
+  delete slotEl.dataset.charName;   // mantém compatibilidade com suas badges
+  clearSlotEquip(slotEl);           // <- limpa Map + badges/engrenagem
+  updateItemBadge(slotEl);          // defensivo (como já faz no assign)
 };
 
-/** Persistência (integre com seu Save/Load) */
+// Guarda por slot, mas também salva o nome do char para restaurar por nome
 function serializeTeamItems(){
   const data = {};
   document.querySelectorAll('.hex, .bench-slot').forEach(el=>{
     const id = getSlotId(el);
-    const charName = getSlotChar(el);
-    if(!charName) return;
-    data[id] = { charName, ...(equipState.get(id) || { memoryId:null, set4:null, set2:null }) };
+    const charName = el.dataset.charName || el.dataset.nome || null;
+    if (!charName) return;
+    const eq = equipState.get(id) || { memoryId:null, set4:null, set2:null };
+    data[id] = { charName, ...eq };
   });
   return data;
 }
+
+// Ao carregar: 1) limpa tudo; 2) tenta aplicar itens pelo NOME do char.
+// Se não achar o nome no grid atual, cai no slot salvo (fallback).
 function restoreTeamItems(saved){
-  if(!saved) return;
-  for(const [slotId, payload] of Object.entries(saved)){
-    const el = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(e=>getSlotId(e)===slotId);
-    if(!el) continue;
-    el.dataset.charName = payload.charName;
-    equipState.set(slotId, { memoryId: payload.memoryId || null, set4: payload.set4 || null, set2: payload.set2 || null });
-    updateItemBadge(el);
-    ensureItemGear(el);
+  clearAllEquips();
+  if (!saved) return;
+
+  const allSlots = Array.from(document.querySelectorAll('.hex, .bench-slot'));
+
+  // mapa rápido: nome -> slot atual
+  const byName = new Map();
+  allSlots.forEach(el=>{
+    const n = el.dataset.charName || el.dataset.nome || null;
+    if (n) byName.set(n, el);
+  });
+
+  for (const [slotId, payload] of Object.entries(saved)){
+    const target =
+      byName.get(payload.charName) ||
+      allSlots.find(e => getSlotId(e) === slotId);
+
+    if (!target) continue;
+
+    const id = getSlotId(target);
+    equipState.set(id, {
+      memoryId: payload.memoryId || null,
+      set4:     payload.set4     || null,
+      set2:     payload.set2     || null
+    });
+    updateItemBadge(target);
+    ensureItemGear(target);
+  }
+}
+// ========= DRAG & DROP (compatível com sua estrutura) =========
+(function(){
+  if (window.__dndFix) return; window.__dndFix = true;
+
+  const getChar = n => characters.find(c => c.nome === n);
+  let dragCtx = null; // {type:'character'|'slot', nome?, id?}
+
+  function setDragCtx(obj, e){
+    dragCtx = obj;
+    try { e.dataTransfer.setData('application/json', JSON.stringify(obj)); } catch(_) {}
+    try { e.dataTransfer.setData('text/plain', JSON.stringify(obj)); } catch(_) {}
+    e.dataTransfer.effectAllowed = (obj.type === 'slot') ? 'move' : 'copyMove';
+  }
+
+  function canDropCharOn(slot, p){
+    const isBench = slot.classList.contains('bench-slot');
+    if (isBench) return respeitaLimiteBench(p, slot);
+    const role = slot.dataset.role || slot.getAttribute('data-role');
+    return p.funcao === role;
+  }
+
+  function dropCharacterOn(slot, p) {
+  // zera items pendurados nesse slot (é um overwrite vindo do menu)
+  equipState.delete(getSlotId(slot));
+
+  const isBench = slot.classList.contains('bench-slot');
+  const role = isBench ? 'bench' : (slot.dataset.role || slot.getAttribute('data-role'));
+  setCharacter(slot, p, role);
+
+  const sm = document.getElementById("scrollMenu");
+  if (sm) sm.style.display = "none";
+}
+
+  function moveBetweenSlots(srcEl, dstEl){
+  if (srcEl === dstEl) return;
+
+  const srcRole = srcEl.dataset.role || srcEl.getAttribute('data-role');
+  const dstRole = dstEl.dataset.role || dstEl.getAttribute('data-role');
+
+  const pSrc = characters.find(x => x.nome === srcEl.dataset.nome);
+  const pDst = characters.find(x => x.nome === dstEl.dataset.nome);
+
+  // --- MIGRAÇÃO/SWAP DE ITEMS (por slot) ---
+  const srcId = getSlotId(srcEl);
+  const dstId = getSlotId(dstEl);
+  const srcEq = equipState.get(srcId) || null;
+  const dstEq = equipState.get(dstId) || null;
+
+  if (pDst) {
+    // swap
+    if (srcEq) equipState.set(dstId, srcEq); else equipState.delete(dstId);
+    if (dstEq) equipState.set(srcId, dstEq); else equipState.delete(srcId);
+
+    setCharacter(dstEl, pSrc, dstRole);
+    setCharacter(srcEl, pDst, srcRole);
+  } else {
+    // move → dst vazio
+    const keep = srcEq ? {...srcEq} : null;
+    equipState.delete(srcId);                 // libera o src
+    if (keep) equipState.set(dstId, keep);    // coloca no dst
+
+    removeCharacter(srcEl);
+    setCharacter(dstEl, pSrc, dstRole);
   }
 }
 
+  function decorateDropTarget(slot){
+    slot.addEventListener('dragover', (e)=>{
+      // permita o drop SEM depender de getData()
+      e.preventDefault();
+      const ctx = dragCtx;
+      let ok = false;
+      if (ctx?.type === 'character'){
+        const p = getChar(ctx.nome);
+        ok = !!p && canDropCharOn(slot, p);
+      } else if (ctx?.type === 'slot'){
+        const srcEl = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(el => getSlotId(el) === ctx.id);
+        const p = srcEl?.dataset.nome ? getChar(srcEl.dataset.nome) : null;
+        ok = !!p && (slot === srcEl || canDropCharOn(slot, p) || slot.classList.contains('bench-slot'));
+      }
+      slot.classList.toggle('drop-ok', ok);
+      slot.classList.toggle('drop-bad', ctx && !ok);
+    });
+
+    slot.addEventListener('dragleave', ()=> slot.classList.remove('drop-ok','drop-bad'));
+
+    slot.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      slot.classList.remove('drop-ok','drop-bad');
+      const ctx = dragCtx; dragCtx = null; // consome o contexto
+
+      if (!ctx) return;
+      if (ctx.type === 'character'){
+        const p = getChar(ctx.nome);
+        if (p && canDropCharOn(slot, p)) dropCharacterOn(slot, p);
+      } else if (ctx.type === 'slot'){
+        const srcEl = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(el => getSlotId(el) === ctx.id);
+        if (srcEl) moveBetweenSlots(srcEl, slot);
+      }
+    });
+
+    // habilita arrastar a partir do slot quando tiver personagem
+    const refresh = ()=> slot.setAttribute('draggable', slot.dataset.nome ? 'true' : 'false');
+    refresh();
+    slot.addEventListener('dragstart', (e)=>{
+      if (!slot.dataset.nome) return;
+      setDragCtx({ type:'slot', id:getSlotId(slot), nome:slot.dataset.nome }, e);
+    });
+
+    // atualiza o draggable quando setar/remover
+    const oldAssign = window.afterAssignCharacter;
+    window.afterAssignCharacter = function(el, name){
+      if (typeof oldAssign === 'function') oldAssign(el, name);
+      if (el === slot) slot.setAttribute('draggable','true');
+    };
+    const oldRemove = window.afterRemoveCharacter;
+    window.afterRemoveCharacter = function(el){
+      if (typeof oldRemove === 'function') oldRemove(el);
+      if (el === slot) slot.setAttribute('draggable','false');
+    };
+  }
+
+  function decorateAll(){ document.querySelectorAll('.hex, .bench-slot').forEach(decorateDropTarget); }
+
+  function initDnd(){
+    // 1) Fontes: **#charList** (lista do menu lateral)
+    const list = document.getElementById('charList');
+    if (list){
+      list.addEventListener('dragstart', (e)=>{
+        const img = e.target.closest('img'); if (!img) return;
+        const nome = img.alt || img.title;
+        if (getChar(nome)) { img.setAttribute('draggable','true'); setDragCtx({type:'character', nome}, e); }
+      });
+      list.querySelectorAll('img').forEach(img => img.setAttribute('draggable','true'));
+    }
+
+    // 2) Fontes: #scrollMenu (seu menu flutuante por posição)
+    const sm = document.getElementById('scrollMenu');
+    if (sm){
+      sm.addEventListener('dragstart', (e)=>{
+        const img = e.target.closest('img'); if (!img) return;
+        const nome = img.alt || img.title;
+        if (getChar(nome)) { img.setAttribute('draggable','true'); setDragCtx({type:'character', nome}, e); }
+      });
+      sm.querySelectorAll('img').forEach(img => img.setAttribute('draggable','true'));
+    }
+
+    // 3) Alvos e fontes: quadra + banco
+    decorateAll();
+
+    // redecorar após rotacionar (se você rotaciona os hex com innerHTML)
+    if (typeof window.rotateRingClockwise === 'function' && !window.__dndWrapRot){
+      const old = window.rotateRingClockwise;
+      window.rotateRingClockwise = function(){
+        const r = old.apply(this, arguments);
+        try { RING_IDX.map(i => document.querySelectorAll('.hex')[i]).forEach(decorateDropTarget); }
+        catch(_) { decorateAll(); }
+        return r;
+      };
+      window.__dndWrapRot = true;
+    }
+
+    // redecorar após adicionar novo slot de bench
+    if (typeof window.addBenchSlot === 'function' && !window.__dndWrapAdd){
+      const old = window.addBenchSlot;
+      window.addBenchSlot = function(){
+        const r = old.apply(this, arguments);
+        const last = Array.from(document.querySelectorAll('.bench-slot')).pop();
+        if (last) decorateDropTarget(last);
+        return r;
+      };
+      window.__dndWrapAdd = true;
+    }
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initDnd);
+  } else {
+    initDnd();
+  }
+})();
+
+// === fechar #charList ao clicar fora / ESC, ligado sob demanda ===
+(function(){
+  let off = null; // guard para remover handlers antigos
+
+  function enableCloseOutsideCharList(){
+  if (off) { off(); off = null; }
+
+  const list = document.getElementById('charList');
+  if (!list) return;
+
+  const onDown = (e) => {
+    // ✅ qualquer clique dentro do sidebar (filtros + lista) NÃO fecha
+    if (e.target.closest('#sidebar-content')) return;
+
+    // cliques no link que abre Characters também não fecham
+    if (e.target.closest("[data-section='characters'], [data-open-charlist]")) return;
+
+    // ❌ clique realmente fora => fecha
+    list.classList.add('is-hidden');
+    cleanup();
+  };
+
+    const onEsc = (e)=>{
+      if (e.key === "Escape") {
+        list.classList.add('is-hidden');
+        cleanup();
+      }
+    };
+
+    function cleanup(){
+      document.removeEventListener('pointerdown', onDown, true);
+      document.removeEventListener('keydown', onEsc);
+      off = null;
+    }
+
+    document.addEventListener('pointerdown', onDown, true); // captura cedo
+    document.addEventListener('keydown', onEsc);
+
+    // fornece um “desligar” externo para quando trocar de seção
+    off = cleanup;
+  }
+
+  // deixa acessível para chamar ao montar a seção
+  window.enableCloseOutsideCharList = enableCloseOutsideCharList;
+})();
+
+function clearSlotEquip(slotEl){
+  const id = getSlotId(slotEl);
+  equipState.delete(id);
+  slotEl.querySelectorAll('.item-badge,.item-gear').forEach(n=>n.remove());
+}
+
+function clearAllEquips(){
+  equipState.clear();
+  document.querySelectorAll('.hex, .bench-slot')
+    .forEach(el => el.querySelectorAll('.item-badge,.item-gear').forEach(n=>n.remove()));
+}
+
+// mover o “equip” junto com o personagem (A -> B), trocando se B já tiver algo
+function transferEquipState(fromEl, toEl){
+  const a = getSlotId(fromEl);
+  const b = getSlotId(toEl);
+  const aEq = equipState.get(a) || null;
+  const bEq = equipState.get(b) || null;
+
+  if (aEq == null && bEq == null) return;
+
+  // se B já tem alguém, trocamos; se B estava vazio, apenas movemos
+  if (bEq != null && aEq != null){
+    equipState.set(a, bEq);
+    equipState.set(b, aEq);
+  } else if (aEq != null){
+    equipState.delete(a);
+    equipState.set(b, aEq);
+  } else { // bEq != null
+    equipState.set(a, bEq);
+    equipState.delete(b);
+  }
+
+  updateItemBadge(fromEl);
+  updateItemBadge(toEl);
+}
 
 
 </script>
