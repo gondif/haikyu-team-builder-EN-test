@@ -985,6 +985,611 @@ const descricoesSinergia = {
 "Brain and Commander SP": "When Kenma SP and Kuro SP are on court, can activate the quick attack skill Brain and Commander*"
   
 };
+    
+/** Catálogo de MEMÓRIAS (exemplos; ajuste/expanda à vontade) */
+const memoryCatalog = [
+  {
+    id:"mem_op",
+    name:"Memória de OP",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
+    },
+    desc:"When a member with this memory plays for the first time in each set, their [Receive] increases by 24%. This effect lasts for 3 rallies.",
+    img:"img/memories/MemoOP.png"
+  },
+  {
+    id:"mem_l",
+    name:"Memória de L",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"The main parameters of the member who has this memory set will increase by 6.4%.If the corresponding member's receive result is not BAD, the power of the next powerful hit of the ally will be increased by [Power Hit] x 24% of the member performing the powerful hit.",
+    img:"img/memories/MemoL.png"
+  },
+  {
+    id:"mem_ws",
+    name:"Memória de WS",
+    positions:["WS"],
+    bonus:{
+      Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:518}, Save:{flat:490}
+    },
+    desc:"The member who has this memory set will have their [Power Hit] increased by 12%.When the affected member hits a powerful shot, the opposing member's [Block] will be reduced by 6.4%. This effect will last until the ball goes over the net once.If the opponent's block result for this play is BAD, the opposing team member who blocked will have their [Block] reduced by 6.4%. This effect lasts until the ball goes over the net twice.",
+    img:"img/memories/MemoWS.png"
+  },
+  {
+    id:"mem_s",
+    name:"Memória de S",
+    positions:["S"],
+    bonus:{
+      Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663},
+      Receive:{flat:490}, Block:{flat:605}, Save:{flat:461}
+    },
+    desc:"When a member with this memory is on the court, the [Toss] of allied members will increase by 8%.Once per set, when a member's stamina drops below 30, that member's stamina will be restored by 24.",
+    img:"img/memories/MemoS.png"
+  },
+  {
+    id:"mem_mb",
+    name:"Memória de MB",
+    positions:["MB"],
+    bonus:{
+      Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:518}, Block:{flat:663}, Save:{flat:490}
+    },
+    desc:"The [Quick Attack] of the member who has this memory set is increased by 12%.For each Block member in the opponent's front line, that member's [Quick Attack] increases by an additional 6.4%",
+    img:"img/memories/MemoMB.png"
+  },
+  {
+    id:"mem_up_consciencia_wakatoshi_ushijima",
+    name:"Ushijima UR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:570}, Spike:{flat:729}, Set:{flat:507},
+      Receive:{flat:729}, Block:{flat:665}, Save:{flat:539}
+    },
+    desc:"A [consciência] do membro aumenta 20%. Se a [consciência] do membro relevante for >20%, o [poder] aumenta 1% para cada 1% excedente, até 100%.",
+    img:"img/memories/MemoUshijimaUR.png"
+  },
+  {
+    id:"mem_ofensive_up_osamu_miya",
+    name:"Osamu UR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:570}, Spike:{flat:729}, Set:{flat:507},
+      Receive:{flat:729}, Block:{flat:665}, Save:{flat:539}
+    },
+    desc:"O [ataque rápido] do membro aumenta 24%. Se a [técnica de ataque] do membro for >40%, o poder do ataque rápido aumenta 48% do [ataque rápido].",
+    img:"img/memories/MemoOsamuUR.png"
+  },
+  {
+    id:"mem_receba_reforco_hard_hit_daichi_sawamura",
+    name:"Daichi SSR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
+    },
+    desc:"O [recebimento] do membro aumenta 20%. Se o membro estiver em quadra, cada vez que um aliado forte consome 20 de resistência, ele ganha 1 pilha de efeitos [tripas], aumentando o poder do golpe em [golpe forte] ×4% por pilha (até 10 pilhas).",
+    img:"img/memories/MemoDaichiSSR.png"
+  },
+  {
+    id:"mem_reacao_para_cima_akinori_konoha",
+    name:"Konoha SSR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
+    },
+    desc:"O parâmetro principal do membro aumenta 12%. A [reação] do membro relevante aumenta a moral da equipe em 10%. Enquanto um aliado ativa a excitação moral, a [reação] do membro correspondente aumenta 8%.",
+    img:"img/memories/MemoKonohaSP.png"
+  },
+  {
+    id:"mem_ofensive_up_kentaro_kyotani",
+    name:"Kentaro MAD DOG SSR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
+    },
+    desc:"Se o membro estiver em quadra, o [poder] do aliado forte aumenta 12%. Se a resistência do adversário for ≤60, o [bloqueio] do adversário é reduzido 16% por 3 cruzamentos da bola. Este efeito pode ser ativado uma vez por set por membro.",
+    img:"img/memories/MemoKentaroSP.png"
+  },
+  {
+    id:"mem_param_main_e_hard_hit_takehito_sasaya",
+    name:"Sasaya SSR",
+    positions:["OP"],
+    bonus:{
+      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
+      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
+    },
+    desc:"O [golpe forte] e o [bloqueio] do membro aumentam 12%. Se o oponente estiver liderando, o poder de golpe forte do membro aumenta 28% do [golpe forte].",
+    img:"img/memories/MemoSasayaSSR.png"
+  },
+  {
+    id:"mem_defense_up_yu_nishinoya_depois_da_escola",
+    name:"Nishinoya SP",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:619}, Spike:{flat:656}, Set:{flat:765},
+      Receive:{flat:838}, Block:{flat:583}, Save:{flat:838}
+    },
+    desc:"A [recepção] do membro aumenta 24%. Ao ativar o golpe especial, a [reação] aumenta 1,2% e o [mental] 2,4% por pilha (até 5 pilhas). Se o membro ativar 2 ou mais movimentos especiais em um rali, sua resistência é restaurada em 10 e a [técnica defensiva] aumenta 16% no próximo movimento especial, válido por 2 cruzamentos da bola.",
+    img:"img/memories/MemoNishinoyaSP.png"
+  },
+  {
+    id:"mem_defense_offensive_up_motoya_komori",
+    name:"Komori UR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:619}, Spike:{flat:656}, Set:{flat:838},
+      Receive:{flat:838}, Block:{flat:583}, Save:{flat:765}
+    },
+    desc:"A [recepção] do membro aumenta 24%. Ao receber, a [técnica defensiva] da retaguarda aliada aumenta 2% por pilha (até 3 pilhas). Se o membro estiver em quadra, ao ativar a habilidade receptora de um aliado, a resistência do receptor é restaurada em 2 e o [golpe forte/ataque rápido] aumenta 15%, válido por 2 cruzamentos da bola.",
+    img:"img/memories/MemoKomoriUR.png"
+  },
+  {
+    id:"mem_defense_up_yu_nishinoya",
+    name:"Nishinoya SSR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"Se o membro estiver em quadra, a [cobertura] da retaguarda aliada aumenta 8%. Se o consumo de resistência ao ativar habilidades de recebimento for ≥8, o [recebimento] do membro aumenta 20% e sua resistência é restaurada em 2.",
+    img:"img/memories/MemoNishinoyaSP.png"
+  },
+  {
+    id:"mem_receba_morisuke_yaku",
+    name:"Yaku SSR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"Quando o membro recebe, o [recebimento] aumenta 4% por pilha (até 5 pilhas). Se o recebimento do membro correspondente for PERFEITO, o próximo poder de ataque rápido do aliado aumenta 32% do [ataque rápido] do membro que realiza o ataque.",
+    img:"img/memories/MemoYakuSSR.png"
+  },
+  {
+    id:"mem_receba_haruki_komi",
+    name:"Haruki SSR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"O [recebimento] e a [cobertura] do membro aumentam 16%. Se o resultado de recepção ou cobertura não for RUIM, a moral da equipe aumenta 10. O próximo poder de golpe forte de um aliado aumenta 10% do [golpe forte] do membro que realiza o acerto.",
+    img:"img/memories/MemoHarukiSSR.png"
+  },
+  {
+    id:"mem_receba_yamagata_hayato",
+    name:"Memo Yamagata SSR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"O [recebimento] do membro aumenta 20%. Ao ativar um movimento especial receptor, a [reação] aumenta 12%.",
+    img:"img/memories/MemoYamagataSSR.png"
+  },
+  {
+    id:"mem_defense_up_michinari_akagi",
+    name:"Memo Akagi SSR",
+    positions:["L"],
+    bonus:{
+      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
+      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
+    },
+    desc:"O [recebimento] do membro aumenta 20%. Se o resultado de recepção ou cobertura não for RUIM, a [técnica defensiva] do aliado aumenta 16% por pilha (até 3 pilhas) por 1 rally.",
+    img:"img/memories/MemoAkagiSSR.png"
+  },
+  {
+    id:"mem_power_up_shouyou_hinata_hanami",
+    name:"Hinata SP",
+    positions:["MB"],
+    bonus:{ Serve:{flat:619}, Spike:{flat:838}, Set:{flat:656}, Receive:{flat:838}, Block:{flat:765}, Save:{flat:583} },
+    desc:"Aumenta o poder do jogador em 24% e concede bônus adicionais ao realizar ataques rápidos bem-sucedidos.",
+    img:"img/memories/MemoHinataSP.png"
+  },
+  {
+    id:"mem_hast_attack_block_up_tsukishima_firefly_display_de_fogos_de_artificio",
+    name:"Tsuki SP",
+    positions:["MB"],
+    bonus:{ Serve:{flat:619}, Spike:{flat:838}, Set:{flat:656}, Receive:{flat:765}, Block:{flat:838}, Save:{flat:583} },
+    desc:"O [ataque rápido] do membro aumenta 24%. Se o membro jogar bem, o [bloqueio] aumenta 9% (até 3 pilhas). Além disso, aplica aleatoriamente um efeito desfavorável [segurar] a um adversário, reduzindo seu principal parâmetro em 5%, válido até a bola cruzar a rede 8 vezes.",
+    img:"img/memories/MemoTsukiSP.png"
+  },
+  {
+    id:"mem_kurosp",
+    name:"Kuro SP",
+    positions:["MB"],
+    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:619}, Receive:{flat:838}, Block:{flat:838}, Save:{flat:583} },
+    desc:"The [Block] is increased by 12%. When the corresponding member blocks or receives, if the member on the opponent's court has a disadvantageous effect, the corresponding member's [Defensive Technique] is increased by 20%. This effect lasts until the ball goes over the net four times",
+    img:"img/memories/MemoKuroSP.png"
+  },
+  {
+    id:"mem_tecnica_de_defesa_bloqueio_takashi_aone_banho_de_mar",
+    name:"Aone SP",
+    positions:["MB"],
+    bonus:{ Serve:{flat:838}, Spike:{flat:765}, Set:{flat:656}, Receive:{flat:619}, Block:{flat:838}, Save:{flat:583} },
+    desc:"A [técnica defensiva] do membro aumenta 12,8%. Se participar de um bloqueio 2/3, o [bloqueio] do aliado da linha de frente aumenta 12% por 2 trocas de bola. Se o bloqueio 2/3 ocorrer bloqueando o membro correspondente, o [bloqueio] dele aumenta mais 15%.",
+    img:"img/memories/MemoAoneSP.png"
+  },
+  {
+    id:"mem_hast_attack_blockup_tetsuro_kuroo",
+    name:"Kuro UR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:570}, Block:{flat:729}, Save:{flat:539} },
+    desc:"O bloqueio do membro aumenta 24%. Cada aumento de ataque rápido gera uma pilha de [aperto], aumentando o bloco 2,4% por pilha (até 10). Ao ativar o movimento especial, 10 pilhas são consumidas e o cooldown do movimento especial é reduzido 10 vezes quando a bola cruza a rede.",
+    img:"img/memories/MemoKuroUR.png"
+  },
+  {
+    id:"mem_block_up_hirugami_yukoro",
+    name:"Hirugami UR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:729}, Spike:{flat:665}, Set:{flat:507}, Receive:{flat:570}, Block:{flat:729}, Save:{flat:539} },
+    desc:"O bloqueio do membro aumenta 20%. Ao marcar, ganha +4,8% de bloqueio (até 3 vezes). Se um aliado tiver [bloqueio forte], a técnica defensiva do membro aliado aumenta 2,4% ao bloquear, válido até 4 trocas de bola (até 3 vezes).",
+    img:"img/memories/MemoHirugamiUR.png"
+  },
+  {
+    id:"mem_increase_consciousness_shoyo_hinata",
+    name:"Hinata SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"O aumento da consciência do membro é de 16%. Se a consciência já for ≥40%, ela aumenta mais 16%, mas o bloco é reduzido em 8%.",
+    img:"img/memories/MemoHinataSSR.png"
+  },
+  {
+    id:"mem_block_up_tsukishima",
+    name:"Tsuki SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"O [bloqueio] do membro aumenta 20%. Ao ativar o movimento especial, se o adversário tiver efeito desfavorável, o poder de bloqueio aumenta 32% do bloqueio do membro correspondente.",
+    img:"img/memories/MemoTsukiSSR.png"
+  },
+  {
+    id:"mem_offensive_up_tetsuro_kuroo_pratica",
+    name:"Kuro SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"A [consciência] do membro aumenta 16%. Ao bloquear, a [técnica defensiva] eleva o [poder] do membro em 24%.",
+    img:"img/memories/MemoKuroSSR.png"
+  },
+  {
+    id:"mem_block_up_tatsuo",
+    name:"Tatsuo SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"O [bloqueio] do membro aumenta 24%. Se o bloqueio resultar em uma boa jogada contra golpes fortes do adversário, ele se confirma como boa jogada. Se o resultado não for ruim, o [bloqueio] do membro correspondente aumenta 5% (até 3 pilhas).",
+    img:"img/memories/MemoTatsuoSSR.png"
+  },
+  {
+    id:"mem_receive_up_ataque_rapido_reforco_haiba_lev",
+    name:"Lev SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"Se o membro estiver em quadra, o [recebimento] da retaguarda aliada aumenta 12%. Se o recebimento do aliado for PERFEITO, o próximo ataque rápido do membro aumenta 24% do seu [ataque rápido].",
+    img:"img/memories/MemoLevSSR.png"
+  },
+  {
+    id:"mem_defense_up_takanobu_aone",
+    name:"Aone SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"A [técnica defensiva] do membro aumenta 16%. Se o bloqueio não for RUIM, a resistência do adversário que atacou é reduzida em 2; se for golpe forte, perde mais 1 de vigor.",
+    img:"img/memories/MemoAoneSSR.png"
+  },
+  {
+    id:"mem_block_up_tendo_satoru",
+    name:"Tendo SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"O [bloqueio] do membro aumenta 28%. Se o bloqueio se tornar uma boa jogada, o cooldown do lance especial de bloqueio é reduzido 3 vezes o número de cruzamentos da bola na rede.",
+    img:"img/memories/MemoTendoSSR.png"
+  },
+  {
+    id:"mem_fast_attack_up_rintaro_suna",
+    name:"Rintaro SSR",
+    positions:["MB"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
+    desc:"O [ataque rápido] do membro aumenta 20%. Se o bloqueio do adversário tiver efeito desfavorável, o poder do ataque rápido aumenta 40% do [ataque rápido] do membro correspondente.",
+    img:"img/memories/MemoRintaroSSR.png"
+  },
+  {
+    id:"mem_toss_main_akaashi_banho_maritimo",
+    name:"Akaashi SP",
+    positions:["S"],
+    bonus:{ Serve:{flat:838}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:619}, Block:{flat:765}, Save:{flat:583} },
+    desc:"O [toque] do membro aumenta 24%. Enquanto um aliado ativa o despertar moral, a [consciência] do membro aumenta 10%. Se os aliados tiverem efeito [Excelente], seus principais parâmetros aumentam 15%. Se perderem o efeito [de grande forma], todas as [reações] dos aliados aumentam 10% até a bola cruzar a rede 8 vezes.",
+    img:"img/memories/MemoAkaashiSP.png"
+  },
+  {
+    id:"mem_param_principal_sugawara_depois_da_escola",
+    name:"Sugawara SP",
+    positions:["S"],
+    bonus:{ Serve:{flat:838}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:619}, Block:{flat:765}, Save:{flat:583} },
+    desc:"O parâmetro principal do membro aumenta 16%. Ao lançar, o [ataque rápido] do membro aumenta 2% por 6 de resistência (até 30%) por 2 cruzamentos da bola. Ao ativar a habilidade, se houver consumo de resistência, o aliado com menor resistência recupera 10.",
+    img:"img/memories/MemoSugawaraSP.png"
+  },
+  {
+    id:"mem_reacao_up_solitary_nail_polishing_flor_de_cerejeira",
+    name:"Kenma SP",
+    positions:["S"],
+    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:838}, Block:{flat:619}, Save:{flat:583} },
+    desc:"A [reação] do membro aumenta 16%. Se os ataques do oponente se tornarem boa jogada, o aliado que bloquear ou receber ganha 1 pilha de [persist], aumentando a [reação] 4% por pilha (até 3). Com 3 pilhas, elas são consumidas e a [reação] do aliado correspondente aumenta 100% por 1 cruzamento da bola.",
+    img:"img/memories/MemoKenmaSP.png"
+  },
+  {
+    id:"mem_serve_up_toru_oikawa",
+    name:"Oikawa UR",
+    positions:["S"],
+    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
+    desc:"O [saque] do membro aumenta 24%. Se o saque se tornar uma boa jogada, ganha 2 pilhas de [ritmo de ataque], aumentando 1% da [consciência] por pilha (até 10). Ao fazer um ás, recebe 4 pilhas adicionais. Com 6 pilhas, o [poder] e o [mental] dos aliados aumentam 4% (até 3 pilhas).",
+    img:"img/memories/MemoOikawaUR.png"
+  },
+  {
+    id:"mem_toss_up_two_attack_reforcent_tobio_kageyama",
+    name:"Kageyama UR",
+    positions:["S"],
+    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
+    desc:"O [toque] do membro aumenta 24%. O [poder] aumenta em [consciência] ×40% quando a habilidade de dois ataques do membro correspondente é ativada (até 100%). Ao ativar essa habilidade, o próximo poder de pico (golpe forte/ataque rápido) do aliado aumenta 28% do [golpe forte/ataque rápido] do membro correspondente.",
+    img:"img/memories/MemoKageyamaUR.png"
+  },
+  {
+    id:"mem_toss_up_miya_atsumu",
+    name:"Atsumu UR",
+    positions:["S"],
+    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
+    desc:"O [toque] do membro aumenta 24%. Se estiver em quadra, a [técnica de ataque] e [técnica de defesa] de aliados com [consciência] e [reação] abaixo de 20% aumenta 6,4%. Se a jogada de um aliado não for boa, a [técnica de ataque] e [técnica de defesa] do membro aumenta 2% por pilha (até 5 pilhas) por 1 rali da bola.",
+    img:"img/memories/MemoAtsumuUR.png"
+  },
+  {
+    id:"mem_ofensive_up_tobio_kageyama_pratica",
+    name:"Kageyama SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [saque] do membro aumenta 20%. Ao ativar o movimento especial de dois ataques, a [consciência] do membro aumenta 20% e a do membro correspondente aumenta 15%.",
+    img:"img/memories/MemoKageyamaSSR.png"
+  },
+  {
+    id:"mem_toss_up_solitaria_esmaltacao_de_unhas",
+    name:"Kenma SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [toque] do membro aumenta 8%. Se estiver em quadra, o [recebimento] da retaguarda aliada aumenta 12%. Quando o membro correspondente está em quadra e os efeitos [connect] dos aliados diminuem, o aliado ganha 1 pilha de [connect], aumentando 1% do [recebimento] por pilha (até 6 pilhas).",
+    img:"img/memories/MemoKenmaSSR.png"
+  },
+  {
+    id:"mem_toss_up_akaashi_kyoji",
+    name:"Akaashi SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [toque] do membro aumenta 12%. Enquanto um aliado ativa o despertar da moral, a resistência do aliado que realiza arremessos é restaurada em 4, e a [técnica de ataque] aumenta 16% durante o spike (golpe forte/ataque rápido). Se o membro correspondente cancela um efeito desfavorável de um aliado, o efeito [Modo Shobokure] do alvo também é cancelado.",
+    img:"img/memories/MemoAkaashiSSR.png"
+  },
+  {
+    id:"mem_ofensive_up_toru_oikawa_pratica",
+    name:"Oikawa SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [toque] do membro aumenta 20%. Quando o efeito [Ritmo de Ataque] atinge 10 pilhas pela primeira vez em cada série, o [toque] do membro correspondente aumenta 20%. Cada pilha de [Ritmo de Ataque] aumenta 1% da [consciência] do membro na quadra amiga (até 10 pilhas).",
+    img:"img/memories/MemoOikawaSSR.png"
+  },
+  {
+    id:"mem_toss_up_spike_reforcent_koganekawa_kanji",
+    name:"Koganekawa SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [toque] do membro aumenta 16%. Se o bloqueio do aliado não for RUIM, o próximo golpe forte do oponente é reduzido em 20% do [golpe forte] do membro. Se o bloqueio do aliado for RUIM, o [bloqueio] do próximo aliado aumenta 32% do bloqueio do membro.",
+    img:"img/memories/MemoKoganegawaSSR.png"
+  },
+  {
+    id:"mem_toss_up_kenjiro_shirabu",
+    name:"Shirabu SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"O [toque] do membro aumenta 16%. Se o lance do membro for uma boa jogada, o [poder] do aliado que realiza o golpe forte aumenta 32% por 1 cruzamento da bola.",
+    img:"img/memories/MemoShirabuSSR.png"
+  },
+  {
+    id:"mem_serve_up_eita_semi",
+    name:"Semi SSR",
+    positions:["S"],
+    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
+    desc:"A [consciência] aumenta 16% com esta memória. O [saque] aumenta 6,4% ao ativar o movimento especial de saque do membro relevante (até 3 pilhas).",
+    img:"img/memories/MemoSemiSSR.png"
+  },
+  {
+    id:"mem_offense_defense_up_hoshiumi_ur",
+    name:"Hoshiumi UR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:729}, Block:{flat:570}, Save:{flat:539} },
+    desc:"As [técnicas de ataque] e [técnicas de defesa] aumentam 6,4%. Ao ativar uma habilidade/Especial, o [parâmetro principal] aumenta 2% (máx. 10 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo extra.",
+    img:"img/memories/MemoHoshiumiUR.png"
+  },
+  {
+    id:"mem_spike_up_bokuto_ur",
+    name:"Bokuto UR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:765}, Spike:{flat:838}, Set:{flat:583}, Receive:{flat:838}, Block:{flat:656}, Save:{flat:619} },
+    desc:"O [forte] do membro aumenta 20%. Quando um saque aliado for [Boa] ou quando o próprio [forte] for [Boa], o poder do spike deste membro aumenta em [consciência] × 12% (até 3 acúmulos).",
+    img:"img/memories/MemoBokutoUR.png"
+  },
+  {
+    id:"mem_spike_attacktech_up_sakusa_ur",
+    name:"Hayaseiomi UR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:838}, Block:{flat:619}, Save:{flat:583} },
+    desc:"A [técnica de ataque] do membro aumenta 6,4%. Quando um aliado ativa uma habilidade de ataque, o [forte] deste membro aumenta conforme o [rápido] × 16%. Se essa jogada for [Boa], o [defesa] do membro aumenta em [consciência] × 16% (máx. 3 acúmulos).",
+    img:"img/memories/MemoHayaseiomiUR.png"
+  },
+
+  {
+    id:"mem_spike_up_goshiki_ssr",
+    name:"Goshiki SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"O [forte] do membro aumenta 20%. Enquanto a equipe estiver em [despertar do ânimo], o [forte] do membro aumenta 32%.",
+    img:"img/memories/MemoGoshikiSSR.png"
+  },
+  {
+    id:"mem_receive_up_iwaizumi_ssr",
+    name:"Iwaizumi SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"Quando a recepção do membro for [Boa], a [técnica de defesa] dele aumenta 8% (máx. 3 acúmulos). Quando um aliado fizer um [forte] [Boa], a próxima recepção do membro será sempre [Boa].",
+    img:"img/memories/MemoIwaizumiSSR.png"
+  },
+  {
+    id:"mem_defense_power_up_ohira_ssr",
+    name:"Ohira SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"Se um aliado da linha de frente estiver com HP abaixo de 50%, o membro recebe +16% de [consciência] e +16% de [reação]. Durante o ataque do membro, o poder do spike aumenta em [consciência] × 6% (se a jogada for [Boa], ganha +6% extra); acumula até 3 vezes.",
+    img:"img/memories/MemoOhiraSSR.png"
+  },
+  {
+    id:"mem_spike_up_aran_ssr",
+    name:"Oshiro SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"O [forte] do membro aumenta 20%. Para cada inimigo com [debuff], o poder do spike deste membro aumenta em [consciência] × 8% (máx. 3 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo adicional.",
+    img:"img/memories/MemoOshiroSSR.png"
+  },
+  {
+    id:"mem_receive_up_kita_ssr",
+    name:"Kita SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"A [recepção] do membro aumenta 20%. Se a recepção do membro NÃO for [Boa], a próxima recepção de um aliado terá seu poder aumentado em [recepção] × 40%.",
+    img:"img/memories/MemoKitaSSR.png"
+  },
+  {
+    id:"mem_offense_up_kyotani_ssr",
+  name:"Kyotani SSR",
+  positions:["OP"],
+  bonus:{ Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:605}, Save:{flat:490} },
+  desc:"Enquanto este membro estiver em quadra, o [poder] dos aliados de [forte] aumenta 12%. Se um oponente cair para ≤60 de stamina enquanto ele estiver em quadra, o [bloqueio] desse oponente reduz 16% por até 3 cruzamentos (1 vez por membro por set).",
+  img:"img/memories/MemoKyotaniSSR.png"
+  },
+  {
+  id:"mem_reaction_up_konoha_ssr",
+  name:"Konoha SSR",
+  positions:["OP"],
+  bonus:{ Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:605}, Save:{flat:490} },
+  desc:"O [parâmetro principal] deste membro aumenta 12%. O [reflexo] aumenta em 10% × o [moral] da equipe. Enquanto o [Despertar do Moral] estiver ativo, o [reflexo] aumenta mais 8%.",
+  img:"img/memories/MemoKonohaSSR.png"
+},
+{
+  id:"mem_spike_up_terushima_ssr",
+  name:"Terushima SSR",
+  positions:["WS"],
+  bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+  desc:"O [forte] aumenta 24%. Ao perder o efeito [Mais Diversão], ganha 2 pilhas de [Mais Diversão] e a [recepção] dos aliados da linha de trás aumenta 12% por 1 rali. Para cada pilha de [Mais Diversão], [forte/rápido] +2,5% (máx. 4 pilhas).",
+  img:"img/memories/MemoTerushimaSSR.png"
+}
+
+];
+
+/** Catálogo de SETS (POTENTIAL) — coloque aqui até 10 sets.
+ *  Você disse que depois adiciona imagens/descrições reais; deixei placeholders.
+ */
+const setCatalog = [
+  {
+  id:"set_rapid_quick_attack",
+  name:"Rapid Quick Attack",
+  twoPiece:{ Spike:{ pct:15 } },
+  fourPiece:{Spike:{ pct:15 }}, // condicional
+  img:"img/sets/rapid_quick_attack.png",
+  desc2:"2p: Quick +15%.",
+  desc4:"2p: Quick +15%. 4p: Cada vez que Quick Spike é usado, Quick Spike +5%, acumulando até 5x."
+},
+{
+  id:"set_sharp_sense",
+  name:"Sharp Sense",
+  twoPiece:{ Spike:{ pct:15 } },
+  fourPiece:{Spike:{ pct:15 }}, // condicional
+  img:"img/sets/sharp_sense.png",
+  desc2:"2p: Quick +15%.",
+  desc4:"2p: Quick +15%. 4p: Consciência +15%; quando Quick Spike for Crítico, Força +10%."
+},
+{
+  id:"set_power_vibe",
+  name:"Power Vibe",
+  twoPiece:{ Spike:{ pct:15 } },
+  fourPiece:{Spike:{ pct:15 }}, // condicional
+  img:"img/sets/power_vibe.png",
+  desc2:"2p: Power +15%.",
+  desc4:"2p: Power +15%. 4p: Consciência +15%; quando Power Spike for Crítico, Força +10%."
+},
+{
+  id:"set_power_rise",
+  name:"Power Rise",
+  twoPiece:{ Spike:{ pct:15 } },
+  fourPiece:{Spike:{ pct:15 }}, // condicional
+  img:"img/sets/power_rise.png",
+  desc2:"2p: Power +15%.",
+  desc4:"2p: Power +15%. 4p: Técnica de Ataque +10% ao usar Power Spike; ao pontuar com Power Spike, recupera 5 de Stamina."
+},
+{
+  id:"set_precise_serve",
+  name:"Precise Serve",
+  twoPiece:{ Set:{ pct:15 } },
+  fourPiece:{Set:{ pct:15 }}, // condicional
+  img:"img/sets/precise_serve.png",
+  desc2:"2p: Set +15%.",
+  desc4:"2p: Set +15%. 4p: Saques nunca falham e Técnica de Ataque +15% ao sacar."
+},
+{
+  id:"set_precise_set",
+  name:"Precise Set",
+  twoPiece:{ Set:{ pct:15 } },
+  fourPiece:{Set:{ pct:15 } }, // condicional
+  img:"img/sets/precise_set.png",
+  desc2:"2p: Set +15%.",
+  desc4:"2p: Set +15%. 4p: Aumenta o poder do levantamento em 15% do atributo Set."
+},
+{
+  id:"set_precise_block",
+  name:"Precise Block",
+  twoPiece:{ Block:{ pct:15 } },
+  fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
+  img:"img/sets/precise_block.png",
+  desc2:"2p: Block +15%.",
+  desc4:"2p: Block +15%. 4p: Ao bloquear um Power Spike, aumenta o poder deste bloqueio em 20% do atributo Block."
+},
+{
+  id:"set_block_movement",
+  name:"Block Movement",
+  twoPiece:{ Block:{ pct:15 } },
+  fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
+  img:"img/sets/block_movement.png",
+  desc2:"2p: Block +15%.",
+  desc4:"2p: Block +15%. 4p: Ao bloquear um spike com outros jogadores do tipo Block na linha da frente, aumenta o poder deste bloqueio em 20% do atributo Block."
+},
+ {
+    id:"set_assist_receive",
+    name:"Assist Receive",
+    twoPiece:{ Receive:{ pct:15 } },
+    fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
+    img:"img/sets/assist_receive.png",
+    desc2:"2p: Receive +15%.",
+    desc4:"2p: Receive +15%. 4p: Ao conseguir uma recepção PERFEITA, aumenta o poder do PRÓXIMO Spike do seu lado em 30% do atributo Power/Quick Attack do atacante."
+  },
+  {
+    id:"set_supreme_receive",
+    name:"Supreme Receive",
+    twoPiece:{ Receive:{ pct:15 } },
+    fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
+    img:"img/sets/supreme_receive.png",
+    desc2:"2p: Receive +15%.",
+    desc4:"2p: Receive +15%. 4p: Ao receber um Quick Spike, aumenta o poder desta recepção em 30% do atributo Receive."
+  }
+];
+let selecionados = [];
 
 let selecionados = [];
 
@@ -2299,610 +2904,6 @@ document.addEventListener("click", (e) => {
 /** Estat keys do seu dataset */
 const STAT_KEYS = ["Serve","Spike","Set","Receive","Block","Save"];
 
-/** Catálogo de MEMÓRIAS (exemplos; ajuste/expanda à vontade) */
-const memoryCatalog = [
-  {
-    id:"mem_op",
-    name:"Memória de OP",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
-    },
-    desc:"When a member with this memory plays for the first time in each set, their [Receive] increases by 24%. This effect lasts for 3 rallies.",
-    img:"img/memories/MemoOP.png"
-  },
-  {
-    id:"mem_l",
-    name:"Memória de L",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"The main parameters of the member who has this memory set will increase by 6.4%.If the corresponding member's receive result is not BAD, the power of the next powerful hit of the ally will be increased by [Power Hit] x 24% of the member performing the powerful hit.",
-    img:"img/memories/MemoL.png"
-  },
-  {
-    id:"mem_ws",
-    name:"Memória de WS",
-    positions:["WS"],
-    bonus:{
-      Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:518}, Save:{flat:490}
-    },
-    desc:"The member who has this memory set will have their [Power Hit] increased by 12%.When the affected member hits a powerful shot, the opposing member's [Block] will be reduced by 6.4%. This effect will last until the ball goes over the net once.If the opponent's block result for this play is BAD, the opposing team member who blocked will have their [Block] reduced by 6.4%. This effect lasts until the ball goes over the net twice.",
-    img:"img/memories/MemoWS.png"
-  },
-  {
-    id:"mem_s",
-    name:"Memória de S",
-    positions:["S"],
-    bonus:{
-      Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663},
-      Receive:{flat:490}, Block:{flat:605}, Save:{flat:461}
-    },
-    desc:"When a member with this memory is on the court, the [Toss] of allied members will increase by 8%.Once per set, when a member's stamina drops below 30, that member's stamina will be restored by 24.",
-    img:"img/memories/MemoS.png"
-  },
-  {
-    id:"mem_mb",
-    name:"Memória de MB",
-    positions:["MB"],
-    bonus:{
-      Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:518}, Block:{flat:663}, Save:{flat:490}
-    },
-    desc:"The [Quick Attack] of the member who has this memory set is increased by 12%.For each Block member in the opponent's front line, that member's [Quick Attack] increases by an additional 6.4%",
-    img:"img/memories/MemoMB.png"
-  },
-  {
-    id:"mem_up_consciencia_wakatoshi_ushijima",
-    name:"Ushijima UR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:570}, Spike:{flat:729}, Set:{flat:507},
-      Receive:{flat:729}, Block:{flat:665}, Save:{flat:539}
-    },
-    desc:"A [consciência] do membro aumenta 20%. Se a [consciência] do membro relevante for >20%, o [poder] aumenta 1% para cada 1% excedente, até 100%.",
-    img:"img/memories/MemoUshijimaUR.png"
-  },
-  {
-    id:"mem_ofensive_up_osamu_miya",
-    name:"Osamu UR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:570}, Spike:{flat:729}, Set:{flat:507},
-      Receive:{flat:729}, Block:{flat:665}, Save:{flat:539}
-    },
-    desc:"O [ataque rápido] do membro aumenta 24%. Se a [técnica de ataque] do membro for >40%, o poder do ataque rápido aumenta 48% do [ataque rápido].",
-    img:"img/memories/MemoOsamuUR.png"
-  },
-  {
-    id:"mem_receba_reforco_hard_hit_daichi_sawamura",
-    name:"Daichi SSR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
-    },
-    desc:"O [recebimento] do membro aumenta 20%. Se o membro estiver em quadra, cada vez que um aliado forte consome 20 de resistência, ele ganha 1 pilha de efeitos [tripas], aumentando o poder do golpe em [golpe forte] ×4% por pilha (até 10 pilhas).",
-    img:"img/memories/MemoDaichiSSR.png"
-  },
-  {
-    id:"mem_reacao_para_cima_akinori_konoha",
-    name:"Konoha SSR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
-    },
-    desc:"O parâmetro principal do membro aumenta 12%. A [reação] do membro relevante aumenta a moral da equipe em 10%. Enquanto um aliado ativa a excitação moral, a [reação] do membro correspondente aumenta 8%.",
-    img:"img/memories/MemoKonohaSP.png"
-  },
-  {
-    id:"mem_ofensive_up_kentaro_kyotani",
-    name:"Kentaro MAD DOG SSR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
-    },
-    desc:"Se o membro estiver em quadra, o [poder] do aliado forte aumenta 12%. Se a resistência do adversário for ≤60, o [bloqueio] do adversário é reduzido 16% por 3 cruzamentos da bola. Este efeito pode ser ativado uma vez por set por membro.",
-    img:"img/memories/MemoKentaroSP.png"
-  },
-  {
-    id:"mem_param_main_e_hard_hit_takehito_sasaya",
-    name:"Sasaya SSR",
-    positions:["OP"],
-    bonus:{
-      Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461},
-      Receive:{flat:663}, Block:{flat:605}, Save:{flat:490}
-    },
-    desc:"O [golpe forte] e o [bloqueio] do membro aumentam 12%. Se o oponente estiver liderando, o poder de golpe forte do membro aumenta 28% do [golpe forte].",
-    img:"img/memories/MemoSasayaSSR.png"
-  },
-  {
-    id:"mem_defense_up_yu_nishinoya_depois_da_escola",
-    name:"Nishinoya SP",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:619}, Spike:{flat:656}, Set:{flat:765},
-      Receive:{flat:838}, Block:{flat:583}, Save:{flat:838}
-    },
-    desc:"A [recepção] do membro aumenta 24%. Ao ativar o golpe especial, a [reação] aumenta 1,2% e o [mental] 2,4% por pilha (até 5 pilhas). Se o membro ativar 2 ou mais movimentos especiais em um rali, sua resistência é restaurada em 10 e a [técnica defensiva] aumenta 16% no próximo movimento especial, válido por 2 cruzamentos da bola.",
-    img:"img/memories/MemoNishinoyaSP.png"
-  },
-  {
-    id:"mem_defense_offensive_up_motoya_komori",
-    name:"Komori UR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:619}, Spike:{flat:656}, Set:{flat:838},
-      Receive:{flat:838}, Block:{flat:583}, Save:{flat:765}
-    },
-    desc:"A [recepção] do membro aumenta 24%. Ao receber, a [técnica defensiva] da retaguarda aliada aumenta 2% por pilha (até 3 pilhas). Se o membro estiver em quadra, ao ativar a habilidade receptora de um aliado, a resistência do receptor é restaurada em 2 e o [golpe forte/ataque rápido] aumenta 15%, válido por 2 cruzamentos da bola.",
-    img:"img/memories/MemoKomoriUR.png"
-  },
-  {
-    id:"mem_defense_up_yu_nishinoya",
-    name:"Nishinoya SSR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"Se o membro estiver em quadra, a [cobertura] da retaguarda aliada aumenta 8%. Se o consumo de resistência ao ativar habilidades de recebimento for ≥8, o [recebimento] do membro aumenta 20% e sua resistência é restaurada em 2.",
-    img:"img/memories/MemoNishinoyaSP.png"
-  },
-  {
-    id:"mem_receba_morisuke_yaku",
-    name:"Yaku SSR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"Quando o membro recebe, o [recebimento] aumenta 4% por pilha (até 5 pilhas). Se o recebimento do membro correspondente for PERFEITO, o próximo poder de ataque rápido do aliado aumenta 32% do [ataque rápido] do membro que realiza o ataque.",
-    img:"img/memories/MemoYakuSSR.png"
-  },
-  {
-    id:"mem_receba_haruki_komi",
-    name:"Haruki SSR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"O [recebimento] e a [cobertura] do membro aumentam 16%. Se o resultado de recepção ou cobertura não for RUIM, a moral da equipe aumenta 10. O próximo poder de golpe forte de um aliado aumenta 10% do [golpe forte] do membro que realiza o acerto.",
-    img:"img/memories/MemoHarukiSSR.png"
-  },
-  {
-    id:"mem_receba_yamagata_hayato",
-    name:"Memo Yamagata SSR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"O [recebimento] do membro aumenta 20%. Ao ativar um movimento especial receptor, a [reação] aumenta 12%.",
-    img:"img/memories/MemoYamagataSSR.png"
-  },
-  {
-    id:"mem_defense_up_michinari_akagi",
-    name:"Memo Akagi SSR",
-    positions:["L"],
-    bonus:{
-      Serve:{flat:490}, Spike:{flat:518}, Set:{flat:605},
-      Receive:{flat:663}, Block:{flat:461}, Save:{flat:663}
-    },
-    desc:"O [recebimento] do membro aumenta 20%. Se o resultado de recepção ou cobertura não for RUIM, a [técnica defensiva] do aliado aumenta 16% por pilha (até 3 pilhas) por 1 rally.",
-    img:"img/memories/MemoAkagiSSR.png"
-  },
-  {
-    id:"mem_power_up_shouyou_hinata_hanami",
-    name:"Hinata SP",
-    positions:["MB"],
-    bonus:{ Serve:{flat:619}, Spike:{flat:838}, Set:{flat:656}, Receive:{flat:838}, Block:{flat:765}, Save:{flat:583} },
-    desc:"Aumenta o poder do jogador em 24% e concede bônus adicionais ao realizar ataques rápidos bem-sucedidos.",
-    img:"img/memories/MemoHinataSP.png"
-  },
-  {
-    id:"mem_hast_attack_block_up_tsukishima_firefly_display_de_fogos_de_artificio",
-    name:"Tsuki SP",
-    positions:["MB"],
-    bonus:{ Serve:{flat:619}, Spike:{flat:838}, Set:{flat:656}, Receive:{flat:765}, Block:{flat:838}, Save:{flat:583} },
-    desc:"O [ataque rápido] do membro aumenta 24%. Se o membro jogar bem, o [bloqueio] aumenta 9% (até 3 pilhas). Além disso, aplica aleatoriamente um efeito desfavorável [segurar] a um adversário, reduzindo seu principal parâmetro em 5%, válido até a bola cruzar a rede 8 vezes.",
-    img:"img/memories/MemoTsukiSP.png"
-  },
-  {
-    id:"mem_kurosp",
-    name:"Kuro SP",
-    positions:["MB"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:619}, Receive:{flat:838}, Block:{flat:838}, Save:{flat:583} },
-    desc:"The [Block] is increased by 12%. When the corresponding member blocks or receives, if the member on the opponent's court has a disadvantageous effect, the corresponding member's [Defensive Technique] is increased by 20%. This effect lasts until the ball goes over the net four times",
-    img:"img/memories/MemoKuroSP.png"
-  },
-  {
-    id:"mem_tecnica_de_defesa_bloqueio_takashi_aone_banho_de_mar",
-    name:"Aone SP",
-    positions:["MB"],
-    bonus:{ Serve:{flat:838}, Spike:{flat:765}, Set:{flat:656}, Receive:{flat:619}, Block:{flat:838}, Save:{flat:583} },
-    desc:"A [técnica defensiva] do membro aumenta 12,8%. Se participar de um bloqueio 2/3, o [bloqueio] do aliado da linha de frente aumenta 12% por 2 trocas de bola. Se o bloqueio 2/3 ocorrer bloqueando o membro correspondente, o [bloqueio] dele aumenta mais 15%.",
-    img:"img/memories/MemoAoneSP.png"
-  },
-  {
-    id:"mem_hast_attack_blockup_tetsuro_kuroo",
-    name:"Kuro UR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:570}, Block:{flat:729}, Save:{flat:539} },
-    desc:"O bloqueio do membro aumenta 24%. Cada aumento de ataque rápido gera uma pilha de [aperto], aumentando o bloco 2,4% por pilha (até 10). Ao ativar o movimento especial, 10 pilhas são consumidas e o cooldown do movimento especial é reduzido 10 vezes quando a bola cruza a rede.",
-    img:"img/memories/MemoKuroUR.png"
-  },
-  {
-    id:"mem_block_up_hirugami_yukoro",
-    name:"Hirugami UR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:729}, Spike:{flat:665}, Set:{flat:507}, Receive:{flat:570}, Block:{flat:729}, Save:{flat:539} },
-    desc:"O bloqueio do membro aumenta 20%. Ao marcar, ganha +4,8% de bloqueio (até 3 vezes). Se um aliado tiver [bloqueio forte], a técnica defensiva do membro aliado aumenta 2,4% ao bloquear, válido até 4 trocas de bola (até 3 vezes).",
-    img:"img/memories/MemoHirugamiUR.png"
-  },
-  {
-    id:"mem_increase_consciousness_shoyo_hinata",
-    name:"Hinata SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"O aumento da consciência do membro é de 16%. Se a consciência já for ≥40%, ela aumenta mais 16%, mas o bloco é reduzido em 8%.",
-    img:"img/memories/MemoHinataSSR.png"
-  },
-  {
-    id:"mem_block_up_tsukishima",
-    name:"Tsuki SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"O [bloqueio] do membro aumenta 20%. Ao ativar o movimento especial, se o adversário tiver efeito desfavorável, o poder de bloqueio aumenta 32% do bloqueio do membro correspondente.",
-    img:"img/memories/MemoTsukiSSR.png"
-  },
-  {
-    id:"mem_offensive_up_tetsuro_kuroo_pratica",
-    name:"Kuro SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"A [consciência] do membro aumenta 16%. Ao bloquear, a [técnica defensiva] eleva o [poder] do membro em 24%.",
-    img:"img/memories/MemoKuroSSR.png"
-  },
-  {
-    id:"mem_block_up_tatsuo",
-    name:"Tatsuo SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"O [bloqueio] do membro aumenta 24%. Se o bloqueio resultar em uma boa jogada contra golpes fortes do adversário, ele se confirma como boa jogada. Se o resultado não for ruim, o [bloqueio] do membro correspondente aumenta 5% (até 3 pilhas).",
-    img:"img/memories/MemoTatsuoSSR.png"
-  },
-  {
-    id:"mem_receive_up_ataque_rapido_reforco_haiba_lev",
-    name:"Lev SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"Se o membro estiver em quadra, o [recebimento] da retaguarda aliada aumenta 12%. Se o recebimento do aliado for PERFEITO, o próximo ataque rápido do membro aumenta 24% do seu [ataque rápido].",
-    img:"img/memories/MemoLevSSR.png"
-  },
-  {
-    id:"mem_defense_up_takanobu_aone",
-    name:"Aone SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"A [técnica defensiva] do membro aumenta 16%. Se o bloqueio não for RUIM, a resistência do adversário que atacou é reduzida em 2; se for golpe forte, perde mais 1 de vigor.",
-    img:"img/memories/MemoAoneSSR.png"
-  },
-  {
-    id:"mem_block_up_tendo_satoru",
-    name:"Tendo SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"O [bloqueio] do membro aumenta 28%. Se o bloqueio se tornar uma boa jogada, o cooldown do lance especial de bloqueio é reduzido 3 vezes o número de cruzamentos da bola na rede.",
-    img:"img/memories/MemoTendoSSR.png"
-  },
-  {
-    id:"mem_fast_attack_up_rintaro_suna",
-    name:"Rintaro SSR",
-    positions:["MB"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:518}, Block:{flat:663}, Save:{flat:490} },
-    desc:"O [ataque rápido] do membro aumenta 20%. Se o bloqueio do adversário tiver efeito desfavorável, o poder do ataque rápido aumenta 40% do [ataque rápido] do membro correspondente.",
-    img:"img/memories/MemoRintaroSSR.png"
-  },
-  {
-    id:"mem_toss_main_akaashi_banho_maritimo",
-    name:"Akaashi SP",
-    positions:["S"],
-    bonus:{ Serve:{flat:838}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:619}, Block:{flat:765}, Save:{flat:583} },
-    desc:"O [toque] do membro aumenta 24%. Enquanto um aliado ativa o despertar moral, a [consciência] do membro aumenta 10%. Se os aliados tiverem efeito [Excelente], seus principais parâmetros aumentam 15%. Se perderem o efeito [de grande forma], todas as [reações] dos aliados aumentam 10% até a bola cruzar a rede 8 vezes.",
-    img:"img/memories/MemoAkaashiSP.png"
-  },
-  {
-    id:"mem_param_principal_sugawara_depois_da_escola",
-    name:"Sugawara SP",
-    positions:["S"],
-    bonus:{ Serve:{flat:838}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:619}, Block:{flat:765}, Save:{flat:583} },
-    desc:"O parâmetro principal do membro aumenta 16%. Ao lançar, o [ataque rápido] do membro aumenta 2% por 6 de resistência (até 30%) por 2 cruzamentos da bola. Ao ativar a habilidade, se houver consumo de resistência, o aliado com menor resistência recupera 10.",
-    img:"img/memories/MemoSugawaraSP.png"
-  },
-  {
-    id:"mem_reacao_up_solitary_nail_polishing_flor_de_cerejeira",
-    name:"Kenma SP",
-    positions:["S"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:838}, Block:{flat:619}, Save:{flat:583} },
-    desc:"A [reação] do membro aumenta 16%. Se os ataques do oponente se tornarem boa jogada, o aliado que bloquear ou receber ganha 1 pilha de [persist], aumentando a [reação] 4% por pilha (até 3). Com 3 pilhas, elas são consumidas e a [reação] do aliado correspondente aumenta 100% por 1 cruzamento da bola.",
-    img:"img/memories/MemoKenmaSP.png"
-  },
-  {
-    id:"mem_serve_up_toru_oikawa",
-    name:"Oikawa UR",
-    positions:["S"],
-    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
-    desc:"O [saque] do membro aumenta 24%. Se o saque se tornar uma boa jogada, ganha 2 pilhas de [ritmo de ataque], aumentando 1% da [consciência] por pilha (até 10). Ao fazer um ás, recebe 4 pilhas adicionais. Com 6 pilhas, o [poder] e o [mental] dos aliados aumentam 4% (até 3 pilhas).",
-    img:"img/memories/MemoOikawaUR.png"
-  },
-  {
-    id:"mem_toss_up_two_attack_reforcent_tobio_kageyama",
-    name:"Kageyama UR",
-    positions:["S"],
-    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
-    desc:"O [toque] do membro aumenta 24%. O [poder] aumenta em [consciência] ×40% quando a habilidade de dois ataques do membro correspondente é ativada (até 100%). Ao ativar essa habilidade, o próximo poder de pico (golpe forte/ataque rápido) do aliado aumenta 28% do [golpe forte/ataque rápido] do membro correspondente.",
-    img:"img/memories/MemoKageyamaUR.png"
-  },
-  {
-    id:"mem_toss_up_miya_atsumu",
-    name:"Atsumu UR",
-    positions:["S"],
-    bonus:{ Serve:{flat:729}, Spike:{flat:570}, Set:{flat:729}, Receive:{flat:539}, Block:{flat:665}, Save:{flat:507} },
-    desc:"O [toque] do membro aumenta 24%. Se estiver em quadra, a [técnica de ataque] e [técnica de defesa] de aliados com [consciência] e [reação] abaixo de 20% aumenta 6,4%. Se a jogada de um aliado não for boa, a [técnica de ataque] e [técnica de defesa] do membro aumenta 2% por pilha (até 5 pilhas) por 1 rali da bola.",
-    img:"img/memories/MemoAtsumuUR.png"
-  },
-  {
-    id:"mem_ofensive_up_tobio_kageyama_pratica",
-    name:"Kageyama SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [saque] do membro aumenta 20%. Ao ativar o movimento especial de dois ataques, a [consciência] do membro aumenta 20% e a do membro correspondente aumenta 15%.",
-    img:"img/memories/MemoKageyamaSSR.png"
-  },
-  {
-    id:"mem_toss_up_solitaria_esmaltacao_de_unhas",
-    name:"Kenma SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [toque] do membro aumenta 8%. Se estiver em quadra, o [recebimento] da retaguarda aliada aumenta 12%. Quando o membro correspondente está em quadra e os efeitos [connect] dos aliados diminuem, o aliado ganha 1 pilha de [connect], aumentando 1% do [recebimento] por pilha (até 6 pilhas).",
-    img:"img/memories/MemoKenmaSSR.png"
-  },
-  {
-    id:"mem_toss_up_akaashi_kyoji",
-    name:"Akaashi SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [toque] do membro aumenta 12%. Enquanto um aliado ativa o despertar da moral, a resistência do aliado que realiza arremessos é restaurada em 4, e a [técnica de ataque] aumenta 16% durante o spike (golpe forte/ataque rápido). Se o membro correspondente cancela um efeito desfavorável de um aliado, o efeito [Modo Shobokure] do alvo também é cancelado.",
-    img:"img/memories/MemoAkaashiSSR.png"
-  },
-  {
-    id:"mem_ofensive_up_toru_oikawa_pratica",
-    name:"Oikawa SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [toque] do membro aumenta 20%. Quando o efeito [Ritmo de Ataque] atinge 10 pilhas pela primeira vez em cada série, o [toque] do membro correspondente aumenta 20%. Cada pilha de [Ritmo de Ataque] aumenta 1% da [consciência] do membro na quadra amiga (até 10 pilhas).",
-    img:"img/memories/MemoOikawaSSR.png"
-  },
-  {
-    id:"mem_toss_up_spike_reforcent_koganekawa_kanji",
-    name:"Koganekawa SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [toque] do membro aumenta 16%. Se o bloqueio do aliado não for RUIM, o próximo golpe forte do oponente é reduzido em 20% do [golpe forte] do membro. Se o bloqueio do aliado for RUIM, o [bloqueio] do próximo aliado aumenta 32% do bloqueio do membro.",
-    img:"img/memories/MemoKoganegawaSSR.png"
-  },
-  {
-    id:"mem_toss_up_kenjiro_shirabu",
-    name:"Shirabu SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"O [toque] do membro aumenta 16%. Se o lance do membro for uma boa jogada, o [poder] do aliado que realiza o golpe forte aumenta 32% por 1 cruzamento da bola.",
-    img:"img/memories/MemoShirabuSSR.png"
-  },
-  {
-    id:"mem_serve_up_eita_semi",
-    name:"Semi SSR",
-    positions:["S"],
-    bonus:{ Serve:{flat:663}, Spike:{flat:518}, Set:{flat:663}, Receive:{flat:490}, Block:{flat:605}, Save:{flat:461} },
-    desc:"A [consciência] aumenta 16% com esta memória. O [saque] aumenta 6,4% ao ativar o movimento especial de saque do membro relevante (até 3 pilhas).",
-    img:"img/memories/MemoSemiSSR.png"
-  },
-  {
-    id:"mem_offense_defense_up_hoshiumi_ur",
-    name:"Hoshiumi UR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:729}, Block:{flat:570}, Save:{flat:539} },
-    desc:"As [técnicas de ataque] e [técnicas de defesa] aumentam 6,4%. Ao ativar uma habilidade/Especial, o [parâmetro principal] aumenta 2% (máx. 10 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo extra.",
-    img:"img/memories/MemoHoshiumiUR.png"
-  },
-  {
-    id:"mem_spike_up_bokuto_ur",
-    name:"Bokuto UR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:838}, Set:{flat:583}, Receive:{flat:838}, Block:{flat:656}, Save:{flat:619} },
-    desc:"O [forte] do membro aumenta 20%. Quando um saque aliado for [Boa] ou quando o próprio [forte] for [Boa], o poder do spike deste membro aumenta em [consciência] × 12% (até 3 acúmulos).",
-    img:"img/memories/MemoBokutoUR.png"
-  },
-  {
-    id:"mem_spike_attacktech_up_sakusa_ur",
-    name:"Hayaseiomi UR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:838}, Block:{flat:619}, Save:{flat:583} },
-    desc:"A [técnica de ataque] do membro aumenta 6,4%. Quando um aliado ativa uma habilidade de ataque, o [forte] deste membro aumenta conforme o [rápido] × 16%. Se essa jogada for [Boa], o [defesa] do membro aumenta em [consciência] × 16% (máx. 3 acúmulos).",
-    img:"img/memories/MemoHayaseiomiUR.png"
-  },
-
-  {
-    id:"mem_spike_up_goshiki_ssr",
-    name:"Goshiki SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"O [forte] do membro aumenta 20%. Enquanto a equipe estiver em [despertar do ânimo], o [forte] do membro aumenta 32%.",
-    img:"img/memories/MemoGoshikiSSR.png"
-  },
-  {
-    id:"mem_receive_up_iwaizumi_ssr",
-    name:"Iwaizumi SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"Quando a recepção do membro for [Boa], a [técnica de defesa] dele aumenta 8% (máx. 3 acúmulos). Quando um aliado fizer um [forte] [Boa], a próxima recepção do membro será sempre [Boa].",
-    img:"img/memories/MemoIwaizumiSSR.png"
-  },
-  {
-    id:"mem_defense_power_up_ohira_ssr",
-    name:"Ohira SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"Se um aliado da linha de frente estiver com HP abaixo de 50%, o membro recebe +16% de [consciência] e +16% de [reação]. Durante o ataque do membro, o poder do spike aumenta em [consciência] × 6% (se a jogada for [Boa], ganha +6% extra); acumula até 3 vezes.",
-    img:"img/memories/MemoOhiraSSR.png"
-  },
-  {
-    id:"mem_spike_up_aran_ssr",
-    name:"Oshiro SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"O [forte] do membro aumenta 20%. Para cada inimigo com [debuff], o poder do spike deste membro aumenta em [consciência] × 8% (máx. 3 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo adicional.",
-    img:"img/memories/MemoOshiroSSR.png"
-  },
-  {
-    id:"mem_receive_up_kita_ssr",
-    name:"Kita SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"A [recepção] do membro aumenta 20%. Se a recepção do membro NÃO for [Boa], a próxima recepção de um aliado terá seu poder aumentado em [recepção] × 40%.",
-    img:"img/memories/MemoKitaSSR.png"
-  },
-  {
-    id:"mem_offense_up_kyotani_ssr",
-  name:"Kyotani SSR",
-  positions:["OP"],
-  bonus:{ Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:605}, Save:{flat:490} },
-  desc:"Enquanto este membro estiver em quadra, o [poder] dos aliados de [forte] aumenta 12%. Se um oponente cair para ≤60 de stamina enquanto ele estiver em quadra, o [bloqueio] desse oponente reduz 16% por até 3 cruzamentos (1 vez por membro por set).",
-  img:"img/memories/MemoKyotaniSSR.png"
-  },
-  {
-  id:"mem_reaction_up_konoha_ssr",
-  name:"Konoha SSR",
-  positions:["OP"],
-  bonus:{ Serve:{flat:518}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:605}, Save:{flat:490} },
-  desc:"O [parâmetro principal] deste membro aumenta 12%. O [reflexo] aumenta em 10% × o [moral] da equipe. Enquanto o [Despertar do Moral] estiver ativo, o [reflexo] aumenta mais 8%.",
-  img:"img/memories/MemoKonohaSSR.png"
-},
-{
-  id:"mem_spike_up_terushima_ssr",
-  name:"Terushima SSR",
-  positions:["WS"],
-  bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-  desc:"O [forte] aumenta 24%. Ao perder o efeito [Mais Diversão], ganha 2 pilhas de [Mais Diversão] e a [recepção] dos aliados da linha de trás aumenta 12% por 1 rali. Para cada pilha de [Mais Diversão], [forte/rápido] +2,5% (máx. 4 pilhas).",
-  img:"img/memories/MemoTerushimaSSR.png"
-}
-
-];
-
-/** Catálogo de SETS (POTENTIAL) — coloque aqui até 10 sets.
- *  Você disse que depois adiciona imagens/descrições reais; deixei placeholders.
- */
-const setCatalog = [
-  {
-  id:"set_rapid_quick_attack",
-  name:"Rapid Quick Attack",
-  twoPiece:{ Spike:{ pct:15 } },
-  fourPiece:{Spike:{ pct:15 }}, // condicional
-  img:"img/sets/rapid_quick_attack.png",
-  desc2:"2p: Quick +15%.",
-  desc4:"2p: Quick +15%. 4p: Cada vez que Quick Spike é usado, Quick Spike +5%, acumulando até 5x."
-},
-{
-  id:"set_sharp_sense",
-  name:"Sharp Sense",
-  twoPiece:{ Spike:{ pct:15 } },
-  fourPiece:{Spike:{ pct:15 }}, // condicional
-  img:"img/sets/sharp_sense.png",
-  desc2:"2p: Quick +15%.",
-  desc4:"2p: Quick +15%. 4p: Consciência +15%; quando Quick Spike for Crítico, Força +10%."
-},
-{
-  id:"set_power_vibe",
-  name:"Power Vibe",
-  twoPiece:{ Spike:{ pct:15 } },
-  fourPiece:{Spike:{ pct:15 }}, // condicional
-  img:"img/sets/power_vibe.png",
-  desc2:"2p: Power +15%.",
-  desc4:"2p: Power +15%. 4p: Consciência +15%; quando Power Spike for Crítico, Força +10%."
-},
-{
-  id:"set_power_rise",
-  name:"Power Rise",
-  twoPiece:{ Spike:{ pct:15 } },
-  fourPiece:{Spike:{ pct:15 }}, // condicional
-  img:"img/sets/power_rise.png",
-  desc2:"2p: Power +15%.",
-  desc4:"2p: Power +15%. 4p: Técnica de Ataque +10% ao usar Power Spike; ao pontuar com Power Spike, recupera 5 de Stamina."
-},
-{
-  id:"set_precise_serve",
-  name:"Precise Serve",
-  twoPiece:{ Set:{ pct:15 } },
-  fourPiece:{Set:{ pct:15 }}, // condicional
-  img:"img/sets/precise_serve.png",
-  desc2:"2p: Set +15%.",
-  desc4:"2p: Set +15%. 4p: Saques nunca falham e Técnica de Ataque +15% ao sacar."
-},
-{
-  id:"set_precise_set",
-  name:"Precise Set",
-  twoPiece:{ Set:{ pct:15 } },
-  fourPiece:{Set:{ pct:15 } }, // condicional
-  img:"img/sets/precise_set.png",
-  desc2:"2p: Set +15%.",
-  desc4:"2p: Set +15%. 4p: Aumenta o poder do levantamento em 15% do atributo Set."
-},
-{
-  id:"set_precise_block",
-  name:"Precise Block",
-  twoPiece:{ Block:{ pct:15 } },
-  fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
-  img:"img/sets/precise_block.png",
-  desc2:"2p: Block +15%.",
-  desc4:"2p: Block +15%. 4p: Ao bloquear um Power Spike, aumenta o poder deste bloqueio em 20% do atributo Block."
-},
-{
-  id:"set_block_movement",
-  name:"Block Movement",
-  twoPiece:{ Block:{ pct:15 } },
-  fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
-  img:"img/sets/block_movement.png",
-  desc2:"2p: Block +15%.",
-  desc4:"2p: Block +15%. 4p: Ao bloquear um spike com outros jogadores do tipo Block na linha da frente, aumenta o poder deste bloqueio em 20% do atributo Block."
-},
- {
-    id:"set_assist_receive",
-    name:"Assist Receive",
-    twoPiece:{ Receive:{ pct:15 } },
-    fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
-    img:"img/sets/assist_receive.png",
-    desc2:"2p: Receive +15%.",
-    desc4:"2p: Receive +15%. 4p: Ao conseguir uma recepção PERFEITA, aumenta o poder do PRÓXIMO Spike do seu lado em 30% do atributo Power/Quick Attack do atacante."
-  },
-  {
-    id:"set_supreme_receive",
-    name:"Supreme Receive",
-    twoPiece:{ Receive:{ pct:15 } },
-    fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
-    img:"img/sets/supreme_receive.png",
-    desc2:"2p: Receive +15%.",
-    desc4:"2p: Receive +15%. 4p: Ao receber um Quick Spike, aumenta o poder desta recepção em 30% do atributo Receive."
-  }
-];
-
 /** Estado por slot: { memoryId, set4, set2 } */
 const equipState = new Map();
 
@@ -3451,30 +3452,40 @@ function restoreTeamItems(saved){
   function moveBetweenSlots(srcEl, dstEl){
   if (srcEl === dstEl) return;
 
-  const srcRole = srcEl.dataset.role || srcEl.getAttribute('data-role');
-  const dstRole = dstEl.dataset.role || dstEl.getAttribute('data-role');
-
   const pSrc = characters.find(x => x.nome === srcEl.dataset.nome);
-  const pDst = characters.find(x => x.nome === dstEl.dataset.nome);
+  const pDst = dstEl.dataset.nome ? characters.find(x => x.nome === dstEl.dataset.nome) : null;
 
-  // --- MIGRAÇÃO/SWAP DE ITEMS (por slot) ---
+  const dstIsBench = dstEl.classList.contains('bench-slot');
+  const srcIsBench = srcEl.classList.contains('bench-slot');
+  const dstRole = dstIsBench ? 'bench' : (dstEl.dataset.role || dstEl.getAttribute('data-role'));
+  const srcRole = srcIsBench ? 'bench' : (srcEl.dataset.role || srcEl.getAttribute('data-role'));
+
+  // 🔒 TRAVAS: destino precisa aceitar o personagem
+  if (!dstIsBench && pSrc.funcao !== dstRole) return;
+  if (dstIsBench && !respeitaLimiteBench(pSrc, dstEl)) return;
+
+  // --- MIGRAÇÃO/SWAP DE ITENS (equipState) ---
   const srcId = getSlotId(srcEl);
   const dstId = getSlotId(dstEl);
   const srcEq = equipState.get(srcId) || null;
   const dstEq = equipState.get(dstId) || null;
 
-  if (pDst) {
-    // swap
+  if (pDst){
+    // 🔒 TRAVAS simétricas para a volta
+    if (!srcIsBench && pDst.funcao !== srcRole) return;
+    if (srcIsBench && !respeitaLimiteBench(pDst, srcEl)) return;
+
+    // swap de itens
     if (srcEq) equipState.set(dstId, srcEq); else equipState.delete(dstId);
     if (dstEq) equipState.set(srcId, dstEq); else equipState.delete(srcId);
 
     setCharacter(dstEl, pSrc, dstRole);
     setCharacter(srcEl, pDst, srcRole);
   } else {
-    // move → dst vazio
-    const keep = srcEq ? {...srcEq} : null;
-    equipState.delete(srcId);                 // libera o src
-    if (keep) equipState.set(dstId, keep);    // coloca no dst
+    // mover p/ slot vazio: leva os itens juntos
+    const keep = srcEq ? { ...srcEq } : null;
+    equipState.delete(srcId);
+    if (keep) equipState.set(dstId, keep);
 
     removeCharacter(srcEl);
     setCharacter(dstEl, pSrc, dstRole);
@@ -3493,7 +3504,7 @@ function restoreTeamItems(saved){
       } else if (ctx?.type === 'slot'){
         const srcEl = Array.from(document.querySelectorAll('.hex, .bench-slot')).find(el => getSlotId(el) === ctx.id);
         const p = srcEl?.dataset.nome ? getChar(srcEl.dataset.nome) : null;
-        ok = !!p && (slot === srcEl || canDropCharOn(slot, p) || slot.classList.contains('bench-slot'));
+        ok = !!p && (slot === srcEl || canDropCharOn(slot, p));
       }
       slot.classList.toggle('drop-ok', ok);
       slot.classList.toggle('drop-bad', ctx && !ok);
