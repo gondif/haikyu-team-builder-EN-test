@@ -1403,80 +1403,119 @@ const memoryCatalog = [
     desc:"A [consciência] aumenta 16% com esta memória. O [saque] aumenta 6,4% ao ativar o movimento especial de saque do membro relevante (até 3 pilhas).",
     img:"img/memories/MemoSemiSSR.png"
   },
+    {
+    id:"mem_bokuto_sp",
+    name:"Bokuto SP",
+    positions:["WS"],
+    bonus:{ Serve:{flat:765}, Spike:{flat:838}, Set:{flat:583}, Receive:{flat:838}, Block:{flat:656}, Save:{flat:619} },
+    desc:"The [Power] of the member who has this memory set is increased by 24%. When the corresponding member hits hard, [Attack Technique] increases by 5%. If the remaining duration of an ally's Team Morale Awakening is 6 or more ball touches, [Attack Technique] is increased by an additional 20%.",
+    img:"img/memories/MemoBokutoSP.png"
+},
   {
     id:"mem_offense_defense_up_hoshiumi_ur",
     name:"Hoshiumi UR",
     positions:["WS"],
     bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:729}, Block:{flat:570}, Save:{flat:539} },
-    desc:"As [técnicas de ataque] e [técnicas de defesa] aumentam 6,4%. Ao ativar uma habilidade/Especial, o [parâmetro principal] aumenta 2% (máx. 10 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo extra.",
+    desc:"[Attack Technique] and [Defense Technique] increase by 6.4%. When the member's Skill/Special is activated, their [Main Parameter] increases by 2% (max 10 stacks). If the play is a [Nice Play], gain 1 additional stack.",
     img:"img/memories/MemoHoshiumiUR.png"
-  },
+},
   {
-    id:"mem_spike_up_bokuto_ur",
+    id:"mem_bokuto_ur",
     name:"Bokuto UR",
     positions:["WS"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:838}, Set:{flat:583}, Receive:{flat:838}, Block:{flat:656}, Save:{flat:619} },
-    desc:"O [forte] do membro aumenta 20%. Quando um saque aliado for [Boa] ou quando o próprio [forte] for [Boa], o poder do spike deste membro aumenta em [consciência] × 12% (até 3 acúmulos).",
+    bonus:{ Serve:{flat:665}, Spike:{flat:729}, Set:{flat:507}, Receive:{flat:729}, Block:{flat:570}, Save:{flat:539} },
+    desc:"The member who has this memory set will have their [Power Hit] increased by 24%. Each time an ally activates Team Morale Awakening, that member's [Power Attack] increases by 8%, up to 3 stacks. When the relevant member is on the court, the duration of the team morale boost for allies is increased by 2 ball touches.",
     img:"img/memories/MemoBokutoUR.png"
-  },
+    },
   {
-    id:"mem_spike_attacktech_up_sakusa_ur",
-    name:"Hayaseiomi UR",
+    id:"mem_hayaseomi_ur",
+    name:"Hayaseomi UR",
     positions:["WS"],
-    bonus:{ Serve:{flat:765}, Spike:{flat:656}, Set:{flat:838}, Receive:{flat:838}, Block:{flat:619}, Save:{flat:583} },
-    desc:"A [técnica de ataque] do membro aumenta 6,4%. Quando um aliado ativa uma habilidade de ataque, o [forte] deste membro aumenta conforme o [rápido] × 16%. Se essa jogada for [Boa], o [defesa] do membro aumenta em [consciência] × 16% (máx. 3 acúmulos).",
-    img:"img/memories/MemoHayaseiomiUR.png"
-  },
-
-  {
-    id:"mem_spike_up_goshiki_ssr",
-    name:"Goshiki SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"O [forte] do membro aumenta 20%. Enquanto a equipe estiver em [despertar do ânimo], o [forte] do membro aumenta 32%.",
-    img:"img/memories/MemoGoshikiSSR.png"
-  },
-  {
-    id:"mem_receive_up_iwaizumi_ssr",
-    name:"Iwaizumi SSR",
+    bonus:{ Serve:{flat:765}, Spike:{flat:838}, Set:{flat:583}, Receive:{flat:838}, Block:{flat:656}, Save:{flat:619} },
+    desc:"The member who has this memory set will have their [Power Hit] increased by 24%. When the corresponding member receives, [Attack Technique] increases by 15% until the ball goes over the net twice. After receiving, the corresponding member's [Mental] increases by 8%, up to 4 stacks.",
+    img:"img/memories/MemoHayaseomiUR.png"
+    },
+   {
+    id:"mem_yui_ssr",
+    name:"Yui SSR",
     positions:["WS"],
     bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"Quando a recepção do membro for [Boa], a [técnica de defesa] dele aumenta 8% (máx. 3 acúmulos). Quando um aliado fizer um [forte] [Boa], a próxima recepção do membro será sempre [Boa].",
-    img:"img/memories/MemoIwaizumiSSR.png"
-  },
-  {
-    id:"mem_defense_power_up_ohira_ssr",
-    name:"Ohira SSR",
-    positions:["WS"],
-    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"Se um aliado da linha de frente estiver com HP abaixo de 50%, o membro recebe +16% de [consciência] e +16% de [reação]. Durante o ataque do membro, o poder do spike aumenta em [consciência] × 6% (se a jogada for [Boa], ganha +6% extra); acumula até 3 vezes.",
-    img:"img/memories/MemoOhiraSSR.png"
-  },
-  {
-    id:"mem_spike_up_aran_ssr",
+    desc:"[Receive] increases by 20%. When this member receives, [Power Attack] increases by 16% and lasts until the ball has crossed the net six times. If this member's receive is a [Nice Play], their next Power Attack is guaranteed to be a [Nice Play].",
+    img:"img/memories/MemoYuiSSR.png"
+    },
+   {
+    id:"mem_oshiro_ssr",
     name:"Oshiro SSR",
     positions:["WS"],
     bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"O [forte] do membro aumenta 20%. Para cada inimigo com [debuff], o poder do spike deste membro aumenta em [consciência] × 8% (máx. 3 acúmulos). Se a jogada for [Boa], ganha 1 acúmulo adicional.",
+    desc:"[Power Attack] increases by 20%. For every 6 Stamina recovered by this member, [Power Attack] increases by 6.3%. This effect lasts until the ball has crossed the net five times. If the Stamina recovered in a single instance exceeds 10, [Attack Technique] increases by 6.4%; this effect lasts until the ball has crossed the net five times.",
     img:"img/memories/MemoOshiroSSR.png"
-  },
-  {
-    id:"mem_receive_up_kita_ssr",
+},
+    {
+    id:"mem_kita_ssr",
     name:"Kita SSR",
     positions:["WS"],
     bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-    desc:"A [recepção] do membro aumenta 20%. Se a recepção do membro NÃO for [Boa], a próxima recepção de um aliado terá seu poder aumentado em [recepção] × 40%.",
+    desc:"[Receive] increases by 20%. If this member's receive is not a [Nice Play], the power of the next ally's receive increases by 40% of the receiving member's [Receive] stat.",
     img:"img/memories/MemoKitaSSR.png"
-  },
-{
-  id:"mem_spike_up_terushima_ssr",
-  name:"Terushima SSR",
-  positions:["WS"],
-  bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
-  desc:"O [forte] aumenta 24%. Ao perder o efeito [Mais Diversão], ganha 2 pilhas de [Mais Diversão] e a [recepção] dos aliados da linha de trás aumenta 12% por 1 rali. Para cada pilha de [Mais Diversão], [forte/rápido] +2,5% (máx. 4 pilhas).",
-  img:"img/memories/MemoTerushimaSSR.png"
-}
-
+},
+    {
+    id:"mem_tanaka_ssr",
+    name:"Tanaka SSR",
+    positions:["WS"],
+    bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+    desc:"[Power Attack] increases by 20%. For this member, up to the second Power Spike in each set, the finishing power increases by 36% of [Power Attack].",
+    img:"img/memories/MemoTanakaSSR.png"
+},
+    {
+id:"mem_azumane_ssr",
+name:"Azumane SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"If the member equipping this memory has 50 or more Stamina, [Power Attack] increases by 36%. When this member activates a Power Spike skill and the Stamina consumed is 20 or more, this Power Spike's power increases by 32% of [Power Attack].",
+img:"img/memories/MemoAzumaneSSR.png"
+},
+    {
+id:"mem_iwaizumi_ssr",
+name:"Iwaizumi SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"[Wing Spiker] Exclusive: Increases [Receive] by 10%. When the equipper executes a Critical Power Spike Ultimate, increases [Power Attack] by 8% of [Receive] for 3 net crossings.",
+img:"img/memories/MemoIwaizumiSSR.png"
+},
+    {
+id:"mem_futakuchi_ssr",
+name:"Futakuchi SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"[Block] increases by 20%. For each ally Block-type member on the court, this member's Special finishing power increases by 6.4% of the parameter corresponding to that Special.",
+img:"img/memories/MemoFutakuchiSSR.png"
+},
+    {
+id:"mem_goshiki_ssr",
+name:"Goshiki SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"[Power Attack] increases by 20%. While an ally's Team Morale Awakening is active, this member's [Power Attack] increases by 32%.",
+img:"img/memories/MemoGoshikiSSR.png"
+},
+    {
+id:"mem_awareness_reaction_up_oshiro_ssr",
+name:"Oshiro SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"When this member activates a Skill, [Awareness] increases by 3.2% and [Reaction] increases by 3.2%, up to 5 stacks.",
+img:"img/memories/MemoOshiroSSR.png"
+},
+    {
+id:"mem_terushima_ssr",
+name:"Terushima SSR",
+positions:["WS"],
+bonus:{ Serve:{flat:605}, Spike:{flat:663}, Set:{flat:461}, Receive:{flat:663}, Block:{flat:518}, Save:{flat:490} },
+desc:"[Power Attack] increases by 24%. When this member activates the [Choose More] effect, gain 2 stacks of [Choose More] and increase back-row allies' [Receive] by 12% for 1 rally. For each stack of [Choose More], [Power Attack]/[Quick Attack] increases by 2.5%, up to 4 stacks.",
+img:"img/memories/MemoTerushimaSSR.png"
+}   
+    
 ];
 
 /** Catálogo de SETS (POTENTIAL)  * */
