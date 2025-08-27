@@ -1479,9 +1479,7 @@ const memoryCatalog = [
 
 ];
 
-/** Catálogo de SETS (POTENTIAL) — coloque aqui até 10 sets.
- *  Você disse que depois adiciona imagens/descrições reais; deixei placeholders.
- */
+/** Catálogo de SETS (POTENTIAL)  * */
 const setCatalog = [
   {
   id:"set_rapid_quick_attack",
@@ -1489,8 +1487,8 @@ const setCatalog = [
   twoPiece:{ Spike:{ pct:15 } },
   fourPiece:{Spike:{ pct:15 }}, // condicional
   img:"img/sets/rapid_quick_attack.png",
-  desc2:"2p: Quick +15%.",
-  desc4:"2p: Quick +15%. 4p: Cada vez que Quick Spike é usado, Quick Spike +5%, acumulando até 5x."
+  desc2:"2p: Increases Quick Attack stat by 15%.",
+  desc4:"2p: Increases Quick Attack stat by 15%. 4p: Each time Quick Spike is used, increases Quick Spike stat by 5%, up to 5 stacks."
 },
 {
   id:"set_sharp_sense",
@@ -1498,8 +1496,8 @@ const setCatalog = [
   twoPiece:{ Spike:{ pct:15 } },
   fourPiece:{Spike:{ pct:15 }}, // condicional
   img:"img/sets/sharp_sense.png",
-  desc2:"2p: Quick +15%.",
-  desc4:"2p: Quick +15%. 4p: Consciência +15%; quando Quick Spike for Crítico, Força +10%."
+  desc2:"2p: Increases Quick Attack stat by 15%.",
+  desc4:"2p: Increases Quick Attack stat by 15%. 4p: Increases Awareness by 15%; when Quick Spike is Critical, increases Strength by 10%."
 },
 {
   id:"set_power_vibe",
@@ -1507,8 +1505,8 @@ const setCatalog = [
   twoPiece:{ Spike:{ pct:15 } },
   fourPiece:{Spike:{ pct:15 }}, // condicional
   img:"img/sets/power_vibe.png",
-  desc2:"2p: Power +15%.",
-  desc4:"2p: Power +15%. 4p: Consciência +15%; quando Power Spike for Crítico, Força +10%."
+  desc2:"2p: Increases Power Attack stat by 15%.",
+  desc4:"2p: Increases Power Attack stat by 15%. 4p: Increases Awareness by 15%; when Power Spike is Critical, increases Strength by 10%."
 },
 {
   id:"set_power_rise",
@@ -1516,8 +1514,8 @@ const setCatalog = [
   twoPiece:{ Spike:{ pct:15 } },
   fourPiece:{Spike:{ pct:15 }}, // condicional
   img:"img/sets/power_rise.png",
-  desc2:"2p: Power +15%.",
-  desc4:"2p: Power +15%. 4p: Técnica de Ataque +10% ao usar Power Spike; ao pontuar com Power Spike, recupera 5 de Stamina."
+  desc2:"2p: Increases Power Attack stat by 15%.",
+  desc4:"2p: Increases Power Attack stat by 15%. 4p: Increases Attack Technique by 10% when using Power Spike; when scoring with Power Spike, recovers 5 Stamina."
 },
 {
   id:"set_precise_serve",
@@ -1525,8 +1523,8 @@ const setCatalog = [
   twoPiece:{ Set:{ pct:15 } },
   fourPiece:{Set:{ pct:15 }}, // condicional
   img:"img/sets/precise_serve.png",
-  desc2:"2p: Set +15%.",
-  desc4:"2p: Set +15%. 4p: Saques nunca falham e Técnica de Ataque +15% ao sacar."
+  desc2:"2p: Increases Set stat by 15%.",
+  desc4:"2p: Increases Set stat by 15%. 4p: Serves never fail and increases Attack Technique by 15% when serving."
 },
 {
   id:"set_precise_set",
@@ -1534,8 +1532,8 @@ const setCatalog = [
   twoPiece:{ Set:{ pct:15 } },
   fourPiece:{Set:{ pct:15 } }, // condicional
   img:"img/sets/precise_set.png",
-  desc2:"2p: Set +15%.",
-  desc4:"2p: Set +15%. 4p: Aumenta o poder do levantamento em 15% do atributo Set."
+  desc2:"2p: Increases Set stat by 15%.",
+  desc4:"2p: Increases Set stat by 15%. 4p: Increases setting power by 15% of the Set stat." 
 },
 {
   id:"set_precise_block",
@@ -1543,8 +1541,8 @@ const setCatalog = [
   twoPiece:{ Block:{ pct:15 } },
   fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
   img:"img/sets/precise_block.png",
-  desc2:"2p: Block +15%.",
-  desc4:"2p: Block +15%. 4p: Ao bloquear um Power Spike, aumenta o poder deste bloqueio em 20% do atributo Block."
+  desc2:"2p: Increases Block stat by 15%.",
+  desc4:"2p: Increases Block stat by 15%. 4p: When blocking a Power Spike, increases this block's power by 20% of the Block stat."
 },
 {
   id:"set_block_movement",
@@ -1552,8 +1550,8 @@ const setCatalog = [
   twoPiece:{ Block:{ pct:15 } },
   fourPiece:{Block:{ pct:15 }}, // efeito condicional descrito abaixo
   img:"img/sets/block_movement.png",
-  desc2:"2p: Block +15%.",
-  desc4:"2p: Block +15%. 4p: Ao bloquear um spike com outros jogadores do tipo Block na linha da frente, aumenta o poder deste bloqueio em 20% do atributo Block."
+  desc2:"2p: Increases Block stat by 15%.",
+  desc4:"2p: Increases Block stat by 15%. 4p: When blocking a spike with other Block-type players present in the front row, increases this block's power by 20% of the Block stat."
 },
  {
     id:"set_assist_receive",
@@ -1561,8 +1559,8 @@ const setCatalog = [
     twoPiece:{ Receive:{ pct:15 } },
     fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
     img:"img/sets/assist_receive.png",
-    desc2:"2p: Receive +15%.",
-    desc4:"2p: Receive +15%. 4p: Ao conseguir uma recepção PERFEITA, aumenta o poder do PRÓXIMO Spike do seu lado em 30% do atributo Power/Quick Attack do atacante."
+    desc2:"2p: Increases Receive stat by 15%.",
+    desc4:"2p: Increases Receive stat by 15%. 4p: When achieving a PERFECT receive, increases your side's next spike power by 30% of the spiker's Power/Quick Attack stat."
   },
   {
     id:"set_supreme_receive",
@@ -1570,8 +1568,8 @@ const setCatalog = [
     twoPiece:{ Receive:{ pct:15 } },
     fourPiece:{Receive:{ pct:15 }}, // efeito condicional descrito abaixo
     img:"img/sets/supreme_receive.png",
-    desc2:"2p: Receive +15%.",
-    desc4:"2p: Receive +15%. 4p: Ao receber um Quick Spike, aumenta o poder desta recepção em 30% do atributo Receive."
+    desc2:"2p: Increases Receive stat by 15%.",
+    desc4:"2p: Increases Receive stat by 15%. 4p: When receiving a Quick Spike, increases this reception's power by 30% of the Receive stat."
   }
 ];
 let selecionados = [];
