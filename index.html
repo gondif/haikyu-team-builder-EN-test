@@ -871,6 +871,7 @@ object-fit: Save;
     <button id="rotateBtn" title="Rotate clockwise" style="background-color:#222222;color:white;padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;margin-right:8px;">↻</button>
     <button id="saveTeamBtn" title="Salvar Time" style="background-color:#222222;margin-right:8px;">⬇️</button>
     <button id="clearTeamBtn" title="Limpar Time" style="background-color:#222222; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;">🗑️</button>
+    <button id="recommendBtn" title="Recommend best fill"style="background-color:#222222; color:white; padding:6px 10px; border:none; border-radius:5px; font-size:16px; cursor:pointer;"> ⭐ </button>
 </div>
     </div>
 </div>
@@ -3739,6 +3740,270 @@ function transferEquipState(fromEl, toEl){
   updateItemBadge(fromEl);
   updateItemBadge(toEl);
 }
+// ===== Recommend: preenche os slots vazios maximizando sinergias =====
+
+// Soma total dos Stats do personagem
+function sumStats(p){
+  const S = p.Stats || {};
+  let total = 0;
+  for (const k in S) total += (S[k] || 0);
+  return total;
+}
+
+// Coleta nomes atuais (starters e bench)
+function getCurrentTeamNames(){
+  const main = [...document.querySelectorAll('.hex')]
+    .map(s => s.dataset.nome).filter(Boolean);
+  const bench = [...document.querySelectorAll('.bench-slot')]
+    .map(s => s.dataset.nome).filter(Boolean);
+  return { main, bench };
+}
+
+// Quais slots de titulares estão vazios
+function getEmptyStarterSlots(){
+  return [...document.querySelectorAll('.hex')].filter(s => !s.dataset.nome);
+}
+
+// === Índices de sinergias (construídos 1x) ===
+let BOND_INDEX = null;    // { bondName -> Set(nomes) }
+let SCHOOL_INDEX = null;  // { schoolName -> Set(nomes) }
+
+function buildSynergyIndices(){
+  if (BOND_INDEX && SCHOOL_INDEX) return;
+  BOND_INDEX = {};
+  SCHOOL_INDEX = {};
+
+  for (const p of characters){
+    // Schools
+    if (p.School){
+      if (!SCHOOL_INDEX[p.School]) SCHOOL_INDEX[p.School] = new Set();
+      SCHOOL_INDEX[p.School].add(p.nome);
+    }
+    // Bonds (vinculo pode ser string ou array)
+    const vs = Array.isArray(p.vinculo) ? p.vinculo : (p.vinculo ? [p.vinculo] : []);
+    for (const v of vs){
+      if (!BOND_INDEX[v]) BOND_INDEX[v] = new Set();
+      BOND_INDEX[v].add(p.nome);
+    }
+  }
+}
+
+// Conta quantas sinergias ativas (Schools + Bonds) do time final
+// incluem ao menos 1 dos titulares que já estavam no grid (âncora).
+function anchoredSynergyScore(activeSchools, activeBonds, oldMainSet){
+  let score = 0;
+
+  // Schools: se a school ativa tem pelo menos 1 membro já presente no grid original
+  for (const sch of activeSchools){
+    const members = SCHOOL_INDEX[sch];
+    if (!members) continue;
+    for (const name of members){
+      if (oldMainSet.has(name)){
+        score++;
+        break;
+      }
+    }
+  }
+  // Bonds: se o bond ativo tem pelo menos 1 participante que já estava no grid original
+  for (const bond of activeBonds){
+    const members = BOND_INDEX[bond];
+    if (!members) continue;
+    for (const name of members){
+      if (oldMainSet.has(name)){
+        score++;
+        break;
+      }
+    }
+  }
+  return score;
+}
+
+// Conta quantas sinergias ficariam ativas com os nomes passados
+// (mesma regra do updateSynergies: Schools=starter-only com 4+, Bonds=starter+bench com 2+, exceto algumas que pedem 3)
+function computeActivatedSynergyCount(mainNames, benchNames){
+  // Mesmas exceções do seu painel
+  const bondsRequire3 = new Set(["Swimming","Twin Heads"]);  // idem ao updateSynergies
+  const DEFAULT_BOND_MIN = 2;
+  const SCHOOL_MIN = 4;
+
+  const SchoolsCount = {};
+  const vinculosCount = {};
+
+  // Contagem de School: só starters
+  for (const nome of mainNames){
+    const p = characters.find(x => x.nome === nome);
+    if (!p) continue;
+    SchoolsCount[p.School] = (SchoolsCount[p.School] || 0) + 1;
+  }
+
+  // Contagem de Bonds: starters + bench
+  const allForBonds = [...mainNames, ...benchNames];
+  for (const nome of allForBonds){
+    const p = characters.find(x => x.nome === nome);
+    if (!p) continue;
+    const vs = Array.isArray(p.vinculo) ? p.vinculo : (p.vinculo ? [p.vinculo] : []);
+    for (const v of vs){
+      vinculosCount[v] = (vinculosCount[v] || 0) + 1;
+    }
+  }
+
+  let count = 0;
+  const activeSchools = new Set();
+  const activeBonds = new Set();
+
+  // Schools
+  for (const school in SchoolsCount){
+    if (SchoolsCount[school] >= SCHOOL_MIN){
+      count++;
+      activeSchools.add(school);
+    }
+  }
+  // Bonds
+  for (const v in vinculosCount){
+    const required = bondsRequire3.has(v) ? 3 : DEFAULT_BOND_MIN;
+    if (vinculosCount[v] >= required){
+      count++;
+      activeBonds.add(v);
+    }
+  }
+
+  return { count, activeSchools, activeBonds };
+}
+
+// Gera todas as combinações escolhendo 1 candidato por slot (sem repetir nomes)
+function* cartesianByIndex(lists){
+  // lists: array de arrays (candidatos por slot)
+  const idx = lists.map(()=>0);
+  const lens = lists.map(l=>l.length);
+  if (lens.some(len => len===0)) return;
+
+  while (true){
+    // combinação atual
+    const combo = lists.map((l,i)=>l[idx[i]]);
+    // valida duplicados de nomes
+    const names = new Set(combo.map(c=>c.nome));
+    if (names.size === combo.length) yield combo;
+
+    // próximo índice (odômetro)
+    let k = lists.length - 1;
+    while (k >= 0){
+      idx[k]++;
+      if (idx[k] < lens[k]) break;
+      idx[k] = 0;
+      k--;
+    }
+    if (k < 0) break;
+  }
+}
+
+// Principal
+function recommendFill(){
+  buildSynergyIndices();
+  const emptySlots = getEmptyStarterSlots();
+  if (emptySlots.length === 0){
+    alert("No free slots available.");
+    return;
+  }
+
+  const roles = emptySlots.map(s => s.dataset.role || s.getAttribute('data-role') || "");
+  const { main: mainNow, bench: benchNow } = getCurrentTeamNames();
+  const used = new Set([...mainNow, ...benchNow]);
+
+  // Lista de candidatos por índice de slot (respeita função e evita duplicados já em uso)
+  let lists = roles.map(role =>
+    characters.filter(p => p.funcao === role && !used.has(p.nome))
+  );
+
+  // Se faltar candidato pra alguma posição, avisa
+  if (lists.some(l => l.length === 0)){
+    alert("Não há candidatos para pelo menos uma das posições restantes.");
+    return;
+  }
+
+  // Base de sinergias atuais
+  const base = computeActivatedSynergyCount(mainNow, benchNow).count;
+
+  // Heurística de limitação: se <=3 slots vazios, busca exaustiva;
+  // senão, poda pra top-N por potencial + stats pra não explodir combinatórias.
+  const MAX_PER_ROLE = 8;
+  if (emptySlots.length > 3){
+    lists = lists.map(list => {
+      // “delta sozinho”: o quanto ativaria se colocar só este personagem
+      const scored = list.map(p => {
+        const m = [...mainNow, p.nome];
+        const c = computeActivatedSynergyCount(m, benchNow).count - base;
+        return { p, delta: c, stats: sumStats(p) };
+      });
+      scored.sort((a,b) => (b.delta - a.delta) || (b.stats - a.stats));
+      // pega top por delta/Stats; completa com top Stats se necessário
+      const top = scored.slice(0, MAX_PER_ROLE).map(x => x.p);
+      if (top.length < Math.min(MAX_PER_ROLE, list.length)){
+        const restByStats = [...list]
+          .filter(p => !top.includes(p))
+          .sort((a,b)=>sumStats(b)-sumStats(a))
+          .slice(0, MAX_PER_ROLE - top.length);
+        return [...top, ...restByStats];
+      }
+      return top;
+    });
+  }
+
+  // Se o produto das listas ficar absurdo, aplica um teto simples
+  const totalComb = lists.reduce((acc, l)=>acc * l.length, 1);
+  if (totalComb > 60000){
+    lists = lists.map(list =>
+      list.sort((a,b)=>sumStats(b)-sumStats(a)).slice(0, MAX_PER_ROLE)
+    );
+  }
+
+  // Busca melhor combinação
+  let best = { improvement: -Infinity, stats: -Infinity, combo: null };
+
+  for (const combo of cartesianByIndex(lists)){
+  if (combo.some(p => used.has(p.nome))) continue;
+
+  const newMain = [...mainNow, ...combo.map(c=>c.nome)];
+  const res = computeActivatedSynergyCount(newMain, benchNow);
+  const improvement = res.count - base;
+  const stats = combo.reduce((s,p)=>s+sumStats(p),0);
+  const anchored = anchoredSynergyScore(res.activeSchools, res.activeBonds, new Set(mainNow));
+
+  // ordem de prioridade: 1) melhoria de sinergias  2) sinergias ancoradas  3) soma de stats
+  if (
+    improvement > best.improvement ||
+    (improvement === best.improvement && anchored > best.anchored) ||
+    (improvement === best.improvement && anchored === best.anchored && stats > best.stats)
+  ){
+    best = { improvement, stats, combo, res, anchored };
+  }
+}
+
+  if (!best.combo){
+    alert("Não foi possível calcular uma recomendação.");
+    return;
+  }
+
+  // Regra: se não aumentar sinergia, escolhe por maior soma de Stats (já é o desempate acima)
+  // Aplicar no grid
+  best.combo.forEach((person, i) => {
+    const slot = emptySlots[i];
+    const role = roles[i];
+    setCharacter(slot, person, role); // usa sua função; atualiza infos e sinergias automaticamente
+  });
+
+  // Opcional: feedback
+  const picked = best.combo.map(p=>p.nome).join(", ");
+  if (best.improvement > 0){
+    console.log(`Recommend: +${best.improvement} sinergias → ${picked}`);
+  } else {
+    console.log(`Recommend (Stats): ${picked}`);
+  }
+}
+
+
+// Liga o botão
+const $rec = document.getElementById("recommendBtn");
+if ($rec) $rec.addEventListener("click", recommendFill);
 
 
 </script>
