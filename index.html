@@ -3020,22 +3020,61 @@ function topStatKey(stats){
 function recommendSetsByTopStat(ch, allowedSet){
   if (!allowedSet || allowedSet.length === 0) return { set4:null, set2:null };
 
-  const key = topStatKey(ch.Stats);
-  if (!key) return { set4:null, set2:null };
+  // helpers locais
+  const findSetIdByName = (arr, name) => {
+    const n = (name||"").toLowerCase();
+    const hit = arr.find(s =>
+      (s.name && s.name.toLowerCase() === n) ||
+      (s.id   && s.id.toLowerCase()   === n)
+    );
+    return hit ? hit.id : null;
+  };
+  const hasSymbol = (sym) => Array.isArray(ch.symbols) && ch.symbols.includes(sym);
 
-  let best = { set4:null, set2:null, pct:-1 };
-
-  for (const A of allowedSet){
-    const p2A = pctOf(A.twoPiece,  key);   // 2p embutido ao equipar 4p A
-    const p4A = pctOf(A.fourPiece, key);   // 4p A
-
-    // melhor 2p B com B≠A (mesmo que seja 0%, escolhe o "menos pior")
-    let bestB = { obj:null, pct:-1 };
-    for (const B of allowedSet){
-      if (B.id === A.id) continue;
-      const p2B = pctOf(B.twoPiece, key);
-      if (p2B > bestB.pct) bestB = { obj:B, pct:p2B };
+  // escolhe o melhor 4p e 2p para um stat (mantém a sua regra anterior)
+  const bestByStat = (statKey) => {
+    let best4 = null, best4Score = -Infinity;
+    for (const s4 of allowedSet){
+      const score = pctOf(s4.twoPiece, statKey) + pctOf(s4.fourPiece, statKey);
+      if (score > best4Score){ best4Score = score; best4 = s4; }
     }
+    let best2 = null, best2Score = -Infinity;
+    for (const s2 of allowedSet){
+      if (best4 && s2.id === best4.id) continue;      // 2p diferente do 4p
+      const score = pctOf(s2.twoPiece, statKey);
+      if (score > best2Score){ best2Score = score; best2 = s2; }
+    }
+    return { set4: best4?.id || null, set2: best2?.id || null };
+  };
+
+  const role = normalizeRole(ch.funcao); // já existe no seu código
+  const top  = topStatKey(ch.Stats || {}); // já existe no seu código
+
+  // --- Regra 1: Setters (S) têm recomendação fixa
+  if (role === 'S'){ // Ex.: é montado a partir de ch.funcao na abertura do modal
+    const s4 = findSetIdByName(allowedSet, 'Precise Set');
+    const s2 = findSetIdByName(allowedSet, 'Precise Serve');
+    return { set4: s4, set2: (s2 && s2 !== s4) ? s2 : null };
+  }
+
+  // --- Regra 3: maior atributo = Spike -> símbolos "quick" ou "power"
+  if (top === 'Spike'){
+    if (hasSymbol('img/quicksymbol.png')){
+      const s4 = findSetIdByName(allowedSet, 'Rapid Quick Attack');
+      const s2 = findSetIdByName(allowedSet, 'Sharp Sense');
+      if (s4 || s2) return { set4: s4, set2: (s2 && s2 !== s4) ? s2 : null };
+      // se não achar pelos nomes (catálogo diferente), cai no fallback
+    }
+    if (hasSymbol('img/powersymbol.png')){
+      const s4 = findSetIdByName(allowedSet, 'Power Vibe');
+      const s2 = findSetIdByName(allowedSet, 'Power Rise');
+      if (s4 || s2) return { set4: s4, set2: (s2 && s2 !== s4) ? s2 : null };
+    }
+  }
+
+  // --- Regra 2 (fallback): como antes, escolher pelo maior atributo
+  return bestByStat(top || 'Spike'); // se não houver top claro, Spike como padrão
+}
 
     // total que realmente entra no cálculo dos stats
     const total = p2A + p4A + Math.max(0, bestB.pct); // se não houver B, pct fica -1 → 0
