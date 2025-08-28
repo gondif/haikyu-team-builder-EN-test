@@ -2116,7 +2116,7 @@ function updateSynergies() {
     });
 
     if (!algumaSinergia) {
-        synergyListEl.innerHTML = "<li>No active synergies</li>";
+        synergyListEl.innerHTML = "<li>Only Deployment Synergies are displayed.Synergies will only work when players are in court inside the game.</li>";
     }
 }
 // ====== Eventos iniciais (grid principal com detecção de duplo clique) ======
@@ -2222,15 +2222,16 @@ document.querySelectorAll(".menu-link").forEach(btn => {
         e.stopPropagation();
         sidebarContent.innerHTML = `
             <h3>Patch notes</h3>
-            <p>Fixed:</p>
-            <p>Some synergies that required 3 players were not being displayed correctly</p>
-            <p>Some bench rules were not working correctly, EX: couldnt add more than 2 MB's on bench</p>
-            <p>Added:</p>
+            <p>Patch 1.2 Added:</p>
             <p>Drag/drop players to bench and to starting line up</p>
             <p>Filter players by type (quick/power/etc)</p>
             <p>Team recommendations based on most synergies</p>
             <p>Memory and potential sets on character</p>
             <p>School page with all characters from each school and its buff</p>
+            <p>Fixed:</p>
+            <p>Some synergies that required 3 players were not being displayed correctly</p>
+            <p>Some bench rules were not working correctly, EX: couldnt add more than 2 MB's on bench</p>
+            <p>Added:</p>
             <p>Double click opens character details</p>
             <p>Bench filter per positions</p>
             <p>Side menu</p>
