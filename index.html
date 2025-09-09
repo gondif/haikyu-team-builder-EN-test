@@ -1021,6 +1021,101 @@ body.planner-collapsed .planner-wrap{ grid-template-columns: 1fr !important; }
 
 /* Lista de personagens "faltando" (fora do time) */
 .missing-char{color:#ff5c5c;font-style:italic}
+/* Deixa o planner idêntico aos outros botões do menu */
+#sidebar #openPlannerBtn,
+#openPlannerBtn.menu-link.bond-btn{
+  background-color:#444;
+  color:#fff;
+  border:1px solid #666;
+  border-radius:6px;
+  padding:4px 8px;
+  font-size:14px;
+  cursor:pointer;
+  transition:background-color .2s, transform .2s;
+  box-shadow:none;
+  font-weight:normal;
+}
+#sidebar #openPlannerBtn:hover{ background-color:#666; transform:scale(1.05); }
+#sidebar #openPlannerBtn:active{ background-color:#888; transform:scale(.98); }
+/* === Planner em tela cheia === */
+#pagePlanner{
+  position: fixed;      /* vira um overlay */
+  inset: 0;             /* top/right/bottom/left = 0 */
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 16px clamp(12px,2vw,24px) 24px;
+  background: #121212;  /* use a cor do seu tema, se tiver variável */
+  z-index: 999;         /* acima do restante da UI */
+  overflow: auto;       /* rolagem interna */
+}
+
+/* evita “caixa” estreita por max-width herdado */
+#pagePlanner .container,
+#pagePlanner .planner-box,
+#pagePlanner .planner-wrap,
+#pagePlanner .planner-grid{
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* mantém cabeçalho/toolbar visível enquanto rola o planner */
+#pagePlanner .planner-header{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: inherit;
+  padding-bottom: 8px;
+}
+
+/* quando o planner está aberto, trava o scroll do body atrás */
+body.planner-open{ overflow: hidden; }
+/* ===== Planner: layout em duas colunas ===== */
+#pagePlanner .planner-two-col{
+  display: grid;
+  grid-template-columns: minmax(640px, 1fr) minmax(360px, 30vw);
+  gap: 16px;
+  align-items: start;
+}
+
+/* permite o conteúdo da coluna esquerda encolher corretamente */
+#pagePlanner .planner-main{ min-width: 0; }
+
+/* Simulação fixa ao rolar (dentro do overlay fullscreen) */
+#pagePlanner .planner-sim{
+  position: sticky;
+  top: 12px;                 /* ajuste se tiver header fixo maior */
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  /* aparência opcional */
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* cards/linhas de mês ocupam toda a largura disponível */
+#plannerMonths > *{ width: 100%; }
+
+/* responsivo: empilha em telas menores */
+@media (max-width: 1100px){
+  #pagePlanner .planner-two-col{
+    grid-template-columns: 1fr;
+  }
+  #pagePlanner .planner-sim{
+    position: static;
+    max-height: none;
+  }
+}
+.banner-card{
+  width: 320px;          /* mesma idea do .rebanner-card */
+  margin: 0 auto;        /* centraliza dentro da coluna */
+  flex: 0 0 320px;       /* evita “esticar” */
+}
+@media (max-width: 1200px){
+  .banner-card{ width: 280px; } /* opcional, igual aos rebanners menores */
+}
+
 </style>
 </head>
 <body>
@@ -1035,19 +1130,14 @@ body.planner-collapsed .planner-wrap{ grid-template-columns: 1fr !important; }
         <li><button class="menu-link bond-btn" data-section="characters">🔍 Characters</button></li>
         <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
-    </ul>
+        <li><button id="openPlannerBtn" class="menu-link bond-btn">💎 Planejador de Recursos</button></li>
+      </ul>
     <div id="sidebar-content">
         <p>Select an option above.</p>
     </div>
 </div>
 
 <h1>Haikyu Fly High - Team Builder by Devoy Aces</h1>
-<div id="plannerTopBar" class="hide-when-planner" style="margin:10px 0 6px; display:flex; justify-content:center; gap:8px;">
-  <button id="openPlannerBtn" type="button" 
-    style="background:#40f06a;color:#000;font-weight:800;border:0;border-radius:10px;padding:8px 14px;cursor:pointer">
-    💎 Planejador de Recursos
-  </button>
-</div>
 
 <div id="multiTeams" class="multi-teams">
   <div id="teamTabs" class="team-tabs"></div>
@@ -5535,50 +5625,102 @@ function initMultiTeams(){
   #simTable th, #simTable td{ border-bottom:1px solid #3a3a3a; padding:8px; text-align:right; }
   #simTable th{ text-align:center; background:#1f1f1f; }
   #simTable td:first-child, #simTable th:first-child{ text-align:left; }
+  /* === Planner em tela cheia === */
+#pagePlanner{
+  position: fixed;      /* vira um overlay */
+  inset: 0;             /* top/right/bottom/left = 0 */
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 16px clamp(12px,2vw,24px) 24px;
+  background: #121212;  /* use a cor do seu tema, se tiver variável */
+  z-index: 999;         /* acima do restante da UI */
+  overflow: auto;       /* rolagem interna */
+}
+
+/* evita “caixa” estreita por max-width herdado */
+#pagePlanner .container,
+#pagePlanner .planner-box,
+#pagePlanner .planner-wrap,
+#pagePlanner .planner-grid{
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* mantém cabeçalho/toolbar visível enquanto rola o planner */
+#pagePlanner .planner-header{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: inherit;
+  padding-bottom: 8px;
+}
+
+/* quando o planner está aberto, trava o scroll do body atrás */
+body.planner-open{ overflow: hidden; }
+#simInputs small.muted{opacity:.9}
+#simTable tfoot{ display:none; }
+#simTable .neg{ color:#ff5c5c; font-weight:700; }
+/* Caixa numérica padrão do planner (usar em Saldo Inicial, Tickets e Memórias) */
+.planner-input{
+  width: 140px;      /* ajuste conforme seu layout */
+  padding: 6px 10px;
+  background:#111;
+  color:#fff;
+  border:1px solid #444;
+  border-radius:8px;
+  outline:none;
+}
+.planner-input:focus{ border-color:#777; }
+.sim-extras{
+  border-top:1px solid #333;
+  padding-top:8px;
+  font-weight:600;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 16px;
+}
+.sim-extras .pill{
+  background:#1d1d1d;
+  border:1px solid #444;
+  border-radius:999px;
+  padding:4px 10px;
+}
+
 </style>
 
 <!-- Página do Planejador -->
 
 
 
-<!-- =================== FIM DO PLANEJADOR =================== -->
-<script>
-// Reposiciona o botão de Planejador logo após o <h1> (melhor visibilidade)
-(function(){
-  function movePlannerTopBar(){
-    var bar = document.getElementById('plannerTopBar');
-    var h1 = document.querySelector('h1');
-    if(bar && h1 && !bar.__moved){
-      h1.insertAdjacentElement('afterend', bar);
-      bar.__moved = true;
-    }
-  }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', movePlannerTopBar);
-  } else {
-    movePlannerTopBar();
-  }
-})();
-</script>
-
-
 
 <!-- ===================== PLANEJADOR DE RECURSOS (NOVA PÁGINA) ===================== -->
-<section id="pagePlanner" class="page" style="display:none; text-align:left; max-width:1200px; margin:10px auto;">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+<section id="pagePlanner" class="page"
+  style="display:none; text-align:left; position:fixed; inset:0; width:100vw; height:100vh; margin:0; padding:16px 20px; background:#121212; overflow:auto; z-index:999;">
+
+  <!-- Cabeçalho -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
     <h3 style="margin:0;">Planejamento de Banners</h3>
-    <button id="btnVoltarBuilder" class="btn" type="button" 
-      style="background:#444;border:1px solid #777;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer">← Voltar ao Builder</button>
+    <button id="btnVoltarBuilder" class="btn" type="button"
+      style="background:#444;border:1px solid #777;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer">
+      ← Voltar ao Builder
+    </button>
   </div>
 
-  <div class="planner-wrap" style="display:grid; grid-template-columns: 420px 1fr; gap:16px;">
+  <!-- Duas colunas principais: Fontes (esq) | Painel de Banners+Simulação (dir) -->
+  <div class="planner-wrap" style="display:grid; grid-template-columns: 420px 1fr; gap:16px; align-items:start;">
+
     <!-- Coluna ESQUERDA: Fontes de diamantes -->
     <div class="panel sources" style="background:#2a2a2a;border:1px solid #444;border-radius:10px;padding:10px;">
       <h3 style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
         Fontes de Diamantes (editáveis)
-        <button id="toggleSources" class="btn mini" type="button" style="background:#555;border:1px solid #777;color:#fff;">Minimizar</button>
+        <button id="toggleSources" class="btn mini" type="button"
+          style="background:#555;border:1px solid #777;color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer">
+          Minimizar
+        </button>
       </h3>
 
+      <!-- FREE -->
       <div style="font-weight:700;opacity:.9;margin-top:6px;">Fontes FREE</div>
       <table id="tblFree" class="grid-table" style="width:100%;border-collapse:separate;border-spacing:6px 6px;">
         <thead>
@@ -5586,60 +5728,121 @@ function initMultiTeams(){
         </thead>
         <tbody></tbody>
       </table>
-      <button id="addFree" class="btn" type="button" style="background:#40f06a;color:#000;border:0;border-radius:8px;padding:6px 10px;">+ Fonte FREE</button>
+      <button id="addFree" class="btn" type="button"
+        style="background:#3a6bd4;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer">+ Fonte FREE</button>
 
-      <div style="font-weight:700;opacity:.9;margin-top:12px;">Fontes CASH</div>
+      <!-- CASH -->
+      <div style="font-weight:700;opacity:.9;margin-top:14px;">Fontes CASH</div>
       <table id="tblCash" class="grid-table" style="width:100%;border-collapse:separate;border-spacing:6px 6px;">
         <thead>
-          <tr><th>Usar</th><th class="col-sistema">Sistema</th><th>Diamantes/dia</th><th>Dias</th><th></th></tr>
+          <tr><th>Usar</th><th class="col-sistema">Sistema</th><th>Quantidade</th><th>Frequência</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>
-      <button id="addCash" class="btn" type="button" style="background:#40f06a;color:#000;border:0;border-radius:8px;padding:6px 10px;">+ Fonte CASH</button>
+      <button id="addCash" class="btn" type="button"
+        style="background:#3a6bd4;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer">+ Fonte CASH</button>
+
+      <!-- (qualquer outro bloco/observação que você já tinha pode ficar aqui) -->
     </div>
 
-    <!-- Coluna DIREITA: Banners -->
+    <!-- Coluna DIREITA: Controles + Banners (esq) | Simulação (dir) -->
     <div class="panel" style="background:#2a2a2a;border:1px solid #444;border-radius:10px;padding:10px;">
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <label>Saldo Inicial: <input id="saldoInicial" type="number" value="0" style="width:120px;background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;"></label>
-        <label>Nome do Planejamento: <input id="nomePlano" type="text" value="" style="min-width:220px;background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;"></label>
-        <select id="slotsPlanos" style="background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;"><option value="">(selecione um plano salvo)</option></select>
-        <button id="btnSalvarPlano" class="btn" style="background:#28a745;color:#000;border:0;border-radius:8px;padding:6px 10px;">Salvar / Atualizar</button>
-        <button id="btnNovoPlano" class="btn" style="background:#666;color:#fff;border:0;border-radius:8px;padding:6px 10px;">Novo</button>
-        <button id="btnExcluirPlano" class="btn" style="background:#c0392b;color:#fff;border:0;border-radius:8px;padding:6px 10px;">Excluir</button>
+
+      <!-- Controles do plano -->
+
+        <label>Nome do Planejamento:
+          <input id="nomePlano" type="text"
+            style="background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;min-width:220px;">
+        </label>
+
+        <select id="slotsPlanos"
+          style="background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:6px;">
+          <option value="">(selecione um plano salvo)</option>
+        </select>
+
+        <button id="btnSalvarPlano" class="btn"
+          style="background:#3a6bd4;color:#fff;border:0;border-radius:8px;padding:6px 10px;">Salvar / Atualizar</button>
+        <button id="btnNovoPlano" class="btn"
+          style="background:#555;color:#fff;border:0;border-radius:8px;padding:6px 10px;">Novo</button>
+        <button id="btnExcluirPlano" class="btn"
+          style="background:#b63a3a;color:#fff;border:0;border-radius:8px;padding:6px 10px;">Excluir</button>
       </div>
 
-      <h4 style="margin:12px 0 6px;text-align:center;">Ordem dos Banners (fixa)</h4>
-      <div id="bannersCards"></div>
+      <!-- Grid interno: Banners (esquerda) + Simulação (direita/sticky) -->
+      <div class="planner-right-grid"
+        style="display:grid; grid-template-columns: 1fr minmax(360px, 28vw); gap:12px; align-items:start; margin-top:10px;">
 
-      <div id="extrasSummary" class="sub" style="margin-top:12px;font-weight:700;"></div>
+        <!-- BANNERS POR MÊS (ESQUERDA) -->
+        <section id="bannersPane">
+          <h4 style="margin:12px 0 6px;text-align:center;">Ordem dos Banners (fixa)</h4>
+          <div id="bannersCards"></div>
+        </section>
 
-      <h4 style="margin:16px 0 6px;text-align:center;">Simulação</h4>
-      <table id="simTable" style="width:100%;border-collapse:separate;border-spacing:6px 6px;">
-        <thead>
-          <tr>
-            <th>Banner</th><th>Dias</th><th>Ganhos (FREE+CASH)</th><th>Gasto Bruto</th>
-            <th>Cashback</th><th>Custo Líquido</th><th>Saldo Início</th><th>Saldo Final</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <tr style="font-weight:800;">
-            <td>Total</td>
-            <td></td>
-            <td class="right" id="tGanhos">0</td>
-            <td class="right" id="tGastoBruto">0</td>
-            <td class="right" id="tCashback">0</td>
-            <td class="right" id="tLiquido">0</td>
-            <td></td>
-            <td class="right" id="tSaldoFinal">0</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+        <!-- SIMULAÇÃO (DIREITA, STICKY) -->
+        <aside id="simPane" style="position:sticky; top:12px; max-height:calc(100vh - 120px); overflow:auto;">
+          <h4 style="margin:12px 0 6px;text-align:center;">Simulação</h4>
+          <!-- Inputs iniciais (agora dentro da Simulação) -->
+<div id="simInputs" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
+
+  <label style="display:flex; gap:8px; align-items:center;">
+    <span style="min-width:130px;">Saldo Inicial (cristais):</span>
+    <input id="saldoInicial" type="number" inputmode="numeric" min="0"
+      style="flex:1; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
+  </label>
+
+  <label style="display:flex; gap:8px; align-items:center;">
+    <span style="min-width:130px;">Tickets iniciais:</span>
+    <input id="ticketsInic" type="number" inputmode="numeric" min="0"
+      style="width:120px; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
+    <small class="muted">×150 = <b><span id="ticketsInicCrystals">0</span></b> cristais</small>
+  </label>
+
+  <div style="display:flex; gap:8px;">
+    <button id="openSourcesBtn" class="bond-btn" type="button">+ Recursos de cristais</button>
   </div>
-  <button id="reopenSources" type="button">Mostrar Fontes</button>
+  
+</div>
+          <table id="simTable" style="width:100%;border-collapse:separate;border-spacing:6px 6px;">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                
+                <th>Ganhos (FREE+CASH)</th>
+                <th>Gasto Bruto</th>
+                <th>Cashback</th>
+                <th>Custo Líquido</th>
+                <th>Saldo Início</th>
+                <th>Saldo Final</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr style="font-weight:800;">
+                <td>Total</td>
+                <td></td>
+                <td class="right" id="tGanhos">0</td>
+                <td class="right" id="tGastoBruto">0</td>
+                <td class="right" id="tCashback">0</td>
+                <td class="right" id="tLiquido">0</td>
+                <td></td>
+                <td class="right" id="tSaldoFinal">0</td>
+              </tr>
+            </tfoot>
+          </table>
+          <div id="simExtras" class="sim-extras"></div>
+        </aside>
+
+      </div><!-- /planner-right-grid -->
+    </div><!-- /panel direita -->
+  </div><!-- /planner-wrap -->
+
+  <!-- Botão para reabrir fontes quando minimizadas -->
+  <button id="reopenSources" type="button"
+    style="display:none; position:fixed; left:12px; bottom:12px; background:#555;border:1px solid #777;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer">
+    Mostrar Fontes
+  </button>
 </section>
+
 <!-- =================== FIM DO PLANEJADOR =================== -->
 
 
@@ -5870,15 +6073,21 @@ function initMultiTeams(){
     row.className='month-row';
 
     const mkLinesHTML = (b)=>{
-      const pulls=(+b.t150||0)+(+b.m100||0);
-      const cb=cashbackMilestones(pulls);
-      const gasto=150*(+b.t150||0)+100*(+b.m100||0);
-      const auto=cb.cashbackDiamonds + Math.round((+b.cashback||0)/100*gasto);
-      return `<div class="banner-lines">
-        <span>Tickets: ${(+b.t150||0).toLocaleString('pt-BR')}</span>
-        <span>Memórias: ${(+b.m100||0).toLocaleString('pt-BR')}</span>
-        <span>Cashback (auto): ${auto.toLocaleString('pt-BR')}</span>
-      </div>`;
+      const t150 = +b.t150 || 0;
+const m100 = +b.m100 || 0;
+
+// cashback de marcos e %: **apenas para tickets**
+const gastoTickets   = 150 * t150;
+const cbMilTickets   = cashbackMilestones(t150); // só tickets contam
+const cashbackPerc   = Math.round(gastoTickets * ((+b.cashback || 0)/100));
+const cashbackTotal  = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
+
+return `<div class="banner-lines">
+  <span>Tickets: ${t150.toLocaleString('pt-BR')}</span>
+  <span>Memórias: ${m100.toLocaleString('pt-BR')}</span>
+  <span>Cashback: ${cashbackTotal.toLocaleString('pt-BR')}</span>
+</div>`;
+
     };
     const mkCard=(b,label)=>{
       const el=document.createElement('div'); el.className='banner-card';
@@ -5888,8 +6097,8 @@ function initMultiTeams(){
         ${imgSrc?`<img src="${imgSrc}" onerror="this.style.display='none'>`:
           `<div style="height:210px;border:1px dashed #444;border-radius:10px;display:flex;align-items:center;justify-content:center;opacity:.7">Sem imagem</div>`}
         <div class="banner-fields">
-          <label>Tickets (150): <input type="number" data-id="${b.id}" data-k="t150" min="0" step="1" value="${b.t150||0}"></label>
-          <label>Memórias (100): <input type="number" data-id="${b.id}" data-k="m100" min="0" step="1" value="${b.m100||0}"></label>
+          <label>Tickets (150): <input type="number" class="planner-input" data-id="${b.id}" data-k="t150" min="0" step="1" value="${b.t150||0}"></label>
+          <label>Memórias (100): <input type="number" class="planner-input" data-id="${b.id}" data-k="m100" min="0" step="1" value="${b.m100||0}"></label>
         </div>
         ${mkLinesHTML(b)}
       `;
@@ -5943,65 +6152,149 @@ function initMultiTeams(){
   function recalc(){ simular(); persistTemp(); }
 
   function simular(){
-    const tbody = $('#simTable tbody'); if(!tbody) return;
-    tbody.innerHTML = '';
-    let saldo = +($('#saldoInicial').value || 0);
-    let totalGanhos=0, totalGastoBruto=0, totalCashback=0, totalLiquido=0;
-    const extrasTot = { ssrBox:0, milk:0, copy:0 };
-    const cashRest = planner.cash.map(c=>({usar:c.usar, porDia:c.porDia, dias:c.dias}));
+  const tbody = $('#simTable tbody'); if(!tbody) return;
+  tbody.innerHTML = '';
 
-    planner.banners.forEach((b)=>{
-      const dias = +b.dias || 0;
-      const gFree = ganhosFreePorDia() * dias;
-      let gCash = 0;
-      cashRest.forEach(c=>{
-        if(!c.usar || c.dias<=0) return;
-        const d = Math.min(dias, c.dias);
-        gCash += c.porDia * d;
-        c.dias -= d;
-      });
-      const ganhos = Math.round(gFree + gCash);
-      const gastoBruto = 150*(+b.t150||0) + 100*(+b.m100||0);
-      const pulls = (+b.t150||0) + (+b.m100||0);
-      const cb = cashbackMilestones(pulls);
-      const cashbackPerc = Math.round(gastoBruto * ((+b.cashback||0)/100));
-      const cashback = cb.cashbackDiamonds + cashbackPerc;
-      extrasTot.ssrBox += cb.extras.ssrBox;
-      extrasTot.milk   += cb.extras.milk;
-      extrasTot.copy   += cb.extras.copy;
-      const custoLiquido = gastoBruto - cashback;
-      const saldoIni = saldo;
-      saldo = saldo + ganhos - custoLiquido;
-      totalGanhos += ganhos; totalGastoBruto += gastoBruto; totalCashback += cashback; totalLiquido += custoLiquido;
+  // --- 1) util: dias por mês (pt-BR)
+  const DAYS_IN_MONTH = {
+    "janeiro":31,"fevereiro":28,"março":31,"abril":30,"maio":31,"junho":30,
+    "julho":31,"agosto":31,"setembro":30,"outubro":31,"novembro":30,"dezembro":31
+  };
+  const norm = s => String(s||'').trim().toLowerCase();
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          ${b.nome ? b.nome : ''}
-        </td>
-        <td class="right">${(dias||0).toLocaleString('pt-BR')}</td>
-        <td class="right">${ganhos.toLocaleString('pt-BR')}</td>
-        <td class="right">${gastoBruto.toLocaleString('pt-BR')}</td>
-        <td class="right">${cashback.toLocaleString('pt-BR')}</td>
-        <td class="right">${custoLiquido.toLocaleString('pt-BR')}</td>
-        <td class="right">${saldoIni.toLocaleString('pt-BR')}</td>
-        <td class="right">${saldo.toLocaleString('pt-BR')}</td>
-      `;
-      tbody.appendChild(tr);
+  // --- 2) ordem cronológica dos meses que existem nos banners
+  const order = [];
+  const seen = new Set();
+  (planner.banners||[]).forEach(b=>{
+    const m = norm(b.mes);
+    if(m && !seen.has(m)){ seen.add(m); order.push(m); }
+  });
+
+  // --- 3) agrega GASTOS por mês (somando banners do mês) e coleta extras/cashback
+  const byMonth = new Map();
+  const extrasTot = { ssrBox:0, milk:0, copy:0 };
+  
+
+  (planner.banners||[]).forEach(b=>{
+    const m = norm(b.mes); if(!m) return;
+    if(!byMonth.has(m)){
+      byMonth.set(m, { mes:m, gastoBruto:0, cashback:0, custoLiquido:0, extras:{ssrBox:0,milk:0,copy:0} });
+    }
+    // dentro do loop que agrega por banner → mês
+const t150 = +b.t150 || 0;
+const m100 = +b.m100 || 0;
+
+const pullsTotal   = t150 + m100;                      // para EXTRAS
+const gastoBruto   = 150*t150 + 100*m100;              // custo total
+
+const cbMilExtras  = cashbackMilestones(pullsTotal);   // EXTRAS (milk/copy/box) a partir do total
+const cbMilTickets = cashbackMilestones(t150);         // CASHBACK só com tickets
+
+// % cashback só sobre tickets
+const cashbackPerc = Math.round((150*t150) * ((+b.cashback || 0)/100));
+const cashback     = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
+
+const custoLiquido = gastoBruto - cashback;
+
+// agrega no mês
+const mm = byMonth.get(m);
+mm.gastoBruto   += gastoBruto;
+mm.cashback     += cashback;
+mm.custoLiquido += custoLiquido;
+
+// soma os EXTRAS do mês e do total
+mm.extras.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
+mm.extras.milk   += (cbMilExtras.extras?.milk   || 0);
+mm.extras.copy   += (cbMilExtras.extras?.copy   || 0);
+
+extrasTot.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
+extrasTot.milk   += (cbMilExtras.extras?.milk   || 0);
+extrasTot.copy   += (cbMilExtras.extras?.copy   || 0);
+
+  });
+
+  // --- 4) ganhos por mês
+  const ganhoDiaFREE = ganhosFreePorDia();  // sua função existente
+
+  // prepara consumo de CASH (dias remanescentes por item, na ordem declarada)
+  const cashRest = (planner.cash||[]).map(c => ({
+    usar: !!c.usar,
+    porDia: +c.porDia || 0,
+    dias: +c.dias || 0
+  }));
+
+  function ganhosCashDoMes(diasMes){
+    let sum = 0;
+    cashRest.forEach(c=>{
+      if(!c.usar || c.dias<=0 || !c.porDia) return;
+      const consume = Math.min(c.dias, diasMes);
+      if(consume>0){
+        sum += consume * c.porDia;
+        c.dias -= consume;
+      }
     });
-
-    $('#tGanhos').textContent = totalGanhos.toLocaleString('pt-BR');
-    $('#tGastoBruto').textContent = totalGastoBruto.toLocaleString('pt-BR');
-    $('#tCashback').textContent = totalCashback.toLocaleString('pt-BR');
-    $('#tLiquido').textContent = totalLiquido.toLocaleString('pt-BR');
-    $('#tSaldoFinal').textContent = saldo.toLocaleString('pt-BR');
-
-    const ex = [];
-    if(extrasTot.ssrBox) ex.push(`${extrasTot.ssrBox}× Caixa SSR selecionável`);
-    if(extrasTot.milk)   ex.push(`${extrasTot.milk}× Vale Leite`);
-    if(extrasTot.copy)   ex.push(`${extrasTot.copy}× Cópia do Personagem`);
-    const el = $('#extrasSummary'); if(el) el.textContent = ex.length ? `Prêmios extras (não abatidos): ${ex.join(' • ')}` : '';
+    return sum;
   }
+
+  // --- 5) render: uma linha por mês
+let saldoCristais = +($('#saldoInicial').value || 0);
+let saldoTickets  = +($('#ticketsInic').value || 0) * 150;
+let saldo = saldoCristais + saldoTickets;   let totalGanhos=0, totalGastoBruto=0, totalCashback=0, totalLiquido=0;
+
+  order.forEach(m=>{
+    const diasMes = DAYS_IN_MONTH[m] ?? 30; // fallback seguro
+    const mm = byMonth.get(m) || { gastoBruto:0, cashback:0, custoLiquido:0 };
+
+    const gFree = Math.round(ganhoDiaFREE * diasMes);
+    const gCash = Math.round(ganhosCashDoMes(diasMes));
+    const ganhos = gFree + gCash;
+
+    const saldoIni = saldo;
+    saldo = saldo + ganhos - mm.custoLiquido;
+    
+
+    const pretty = m.charAt(0).toUpperCase()+m.slice(1); // Agosto, Setembro...
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${pretty}</td>
+      <td class="right">${ganhos.toLocaleString('pt-BR')}</td>
+      <td class="right">${(mm.gastoBruto||0).toLocaleString('pt-BR')}</td>
+      <td class="right">${(mm.cashback||0).toLocaleString('pt-BR')}</td>
+      <td class="right">${(mm.custoLiquido||0).toLocaleString('pt-BR')}</td>
+      <td class="right">${saldoIni.toLocaleString('pt-BR')}</td>
+      <td class="right">${saldo.toLocaleString('pt-BR')}</td>
+    `;
+    tbody.appendChild(tr);
+
+    totalGanhos     += ganhos;
+    totalGastoBruto += (mm.gastoBruto||0);
+    totalCashback   += (mm.cashback||0);
+    totalLiquido    += (mm.custoLiquido||0);
+  });
+  const simEl = document.getElementById('simExtras');
+if (simEl) {
+  simEl.innerHTML = `
+    <div><b>Extras Totais</b> —
+      SSR Box: <b>${extrasTot.ssrBox}</b> •
+      Milk: <b>${extrasTot.milk}</b> •
+      Copy: <b>${extrasTot.copy}</b>
+    </div>`;
+}
+
+
+  // --- 6) totais e extras
+  $('#tGanhos').textContent     = totalGanhos.toLocaleString('pt-BR');
+  $('#tGastoBruto').textContent = totalGastoBruto.toLocaleString('pt-BR');
+  $('#tCashback').textContent   = totalCashback.toLocaleString('pt-BR');
+  $('#tLiquido').textContent    = totalLiquido.toLocaleString('pt-BR');
+  $('#tSaldoFinal').textContent = (saldo).toLocaleString('pt-BR');
+
+  $('#extrasSummary').innerHTML = `
+    <div>Extras Totais: <b>${extrasTot.ssrBox}</b> SSR Box, <b>${extrasTot.milk}</b> Milk, <b>${extrasTot.copy}</b> Copy</div>
+  `;
+}
+
+   
 
   // ===== Persistência =====
   function savePlan(name){
@@ -6048,17 +6341,27 @@ function initMultiTeams(){
   }
 
   // ===== Navegação =====
-  function showPlanner(){ document.body.classList.add('show-planner'); document.getElementById('pagePlanner').style.display='block'; }
-  function showBuilder(){ document.body.classList.remove('show-planner'); document.getElementById('pagePlanner').style.display='none'; }
+  function showPlanner(){ document.body.classList.add('show-planner'); document.getElementById('pagePlanner').style.display='block';document.body.classList.add('planner-open');}
+  function showBuilder(){ document.body.classList.remove('show-planner'); document.getElementById('pagePlanner').style.display='none';document.body.classList.remove('planner-open'); }
 
   window.hqShowPlanner = showPlanner;
   window.hqShowBuilder = showBuilder;
 
+  
   // ===== Boot =====
   function boot(){
     const btnOpen = document.getElementById('openPlannerBtn'); if(btnOpen) btnOpen.addEventListener('click', showPlanner);
     const btnBack = document.getElementById('btnVoltarBuilder'); if(btnBack) btnBack.addEventListener('click', showBuilder);
 
+    const btnOpenSources = document.getElementById('openSourcesBtn');
+    if (btnOpenSources){
+    btnOpenSources.addEventListener('click', ()=>{
+    // Se estiver colapsado por CSS, descolapsa primeiro
+    if (document.body.classList.contains('planner-collapsed')) setCollapsed(false);
+    const panel = document.querySelector('.panel.sources');
+    if (panel) panel.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+}
     const btnToggle = document.getElementById('toggleSources');
     if(btnToggle){ btnToggle.addEventListener('click', ()=> setCollapsed(!document.body.classList.contains('planner-collapsed'))); }
     const btnReopen = document.getElementById('reopenSources');
@@ -6067,7 +6370,7 @@ function initMultiTeams(){
 
     const saldoEl = document.getElementById('saldoInicial'); if(saldoEl) saldoEl.addEventListener('input', ()=>{ planner.saldoInicial = +(saldoEl.value||0); recalc(); });
     const nomeEl  = document.getElementById('nomePlano');    if(nomeEl)  nomeEl.addEventListener('input', ()=>{ planner.nomePlano = nomeEl.value||''; persistTemp(); });
-
+    
     const bSave = document.getElementById('btnSalvarPlano'); if(bSave) bSave.addEventListener('click', ()=>{
       const name = (document.getElementById('nomePlano').value||'').trim() || 'Plano';
       savePlan(name);
@@ -6332,6 +6635,37 @@ function openStatsBondsModal(){
     });
   }
 })();
+(() => {
+  const btn = document.getElementById('openPlannerBtn');
+  if (btn) btn.classList.add('bond-btn','menu-link');
+})();
+
+(function bindInitials(){
+  const t = document.getElementById('ticketsInic');
+  const out = document.getElementById('ticketsInicCrystals');
+  if(t && out){
+    const upd = ()=>{ const v = Math.max(0, +t.value||0); out.textContent = (v*150).toLocaleString('pt-BR'); };
+    t.addEventListener('input', ()=>{ upd(); recalc && recalc(); });
+    upd();
+  }
+  const s = document.getElementById('saldoInicial');
+  if(s){ s.addEventListener('input', ()=>{ recalc && recalc(); }); }
+})();
+(function bindOpenSources(){
+  const btn = document.getElementById('openSourcesBtn');
+  if(!btn) return;
+  btn.addEventListener('click', ()=>{
+    const panel = document.querySelector('.panel.sources'); // sua coluna esquerda
+    if(panel){
+      panel.style.display = '';           // garante visível
+      panel.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    // se você usa algum “minimizar”/“reabrir”:
+    const reopen = document.getElementById('reopenSources');
+    if(reopen) reopen.style.display = 'none';
+  });
+})();
+
 </script>
 
 </body>
