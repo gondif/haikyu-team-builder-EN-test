@@ -5803,6 +5803,51 @@ body.planner-open{ overflow: hidden; }
   box-sizing: border-box;   /* evita “estourar” a metade direita */
   /* já deve existir overflow:auto; mantenha */
 }
+/* ---------- Desktop (já existente): duas colunas ---------- */
+/* (mantenha como estiver hoje; não precisa mexer) */
+
+
+/* ---------- Mobile: <= 980px ---------- */
+@media (max-width: 980px){
+
+  /* A grade vira 1 coluna, e controlamos a ordem com áreas */
+  #pagePlanner .planner-right-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "sim"
+      "banners";
+    row-gap: 14px;
+  }
+
+  /* Nomear as áreas */
+  #bannersPane{ grid-area: banners; }
+  #simPane{ grid-area: sim; }
+
+  /* A Simulação NÃO deve ser sticky no mobile: mostra tudo */
+  #simPane{
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: var(--sim-gutter, 12px); /* mantém o leve recuo que fizemos */
+    box-sizing: border-box;
+  }
+
+  /* Cards de banner ocupam 100% da linha para caber bem */
+  .month-row{
+    grid-template-columns: 1fr;   /* 1 por linha */
+    gap: 12px;
+  }
+  .banner-card,
+  .rebanner-card{
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Inputs da Simulação não estourarem largura */
+  #simPane #simInputs label{ display:flex; align-items:center; gap:10px; }
+  #simPane #simInputs input{ max-width: 240px; }
+}
 
 
 </style>
