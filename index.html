@@ -1161,6 +1161,15 @@ body.modal-open{ overflow: hidden; }
   align-items: start;
 }
 .rebanner-card{ width: var(--card-w); }
+/* Reduz larguras só nos campos do painel de Simulação */
+#simPane #simInputs label { display: flex; align-items: center; gap: 10px; }
+
+/* Garante que estes inputs não ocupem 100% da coluna */
+#simPane #simInputs input { width: auto; }
+
+/* Larguras finais: número e data */
+#simPane #simInputs .planner-input[type="number"] { width: 140px; }   /* Saldo inicial */
+#simPane #simInputs .planner-input[type="date"]   { width: 170px; }   /* Data de início */
 
 </style>
 </head>
@@ -5759,18 +5768,44 @@ body.planner-open{ overflow: hidden; }
 @media (max-width: 1700px){
   :root{ --card-w: 280px; }
 }
-#pagePlanner .planner-right-grid{
-  grid-template-columns: minmax(0,1fr) clamp(340px,26vw,380px);
-  gap: 10px;                /* um pouquinho menos de gap entre as colunas */
+
+/* === 50% | 50%: Banners (esq) e Simulação (dir) === */
+#pagePlanner .planner-right-grid,
+#pagePlanner .planner-two-col{
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* META: meio a meio */
+  gap: 12px;
   align-items: start;
 }
 
+/* Simulação fixa visível e scrollável dentro da metade direita (opcional) */
+#simPane{
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+}
+
+/* Em telas menores, caia para 1 coluna para não esmagar conteúdo */
+@media (max-width: 1200px){
+  #pagePlanner .planner-right-grid,
+  #pagePlanner .planner-two-col{
+    grid-template-columns: 1fr;
+  }
+}
+/* Gutter (recuo) à direita da aba Simulação */
+:root{
+  --sim-gutter: clamp(8px, 1vw, 16px); /* ajuste aqui se quiser mais/menos */
+}
+
+#simPane{
+  padding-right: calc(var(--sim-gutter) + env(safe-area-inset-right, 0px));
+  box-sizing: border-box;   /* evita “estourar” a metade direita */
+  /* já deve existir overflow:auto; mantenha */
+}
+
+
 </style>
-
-<!-- Página do Planejador -->
-
-
-
 
 <!-- ===================== PLANEJADOR DE RECURSOS (NOVA PÁGINA) ===================== -->
 <section id="pagePlanner" class="page"
@@ -5847,8 +5882,7 @@ body.planner-open{ overflow: hidden; }
       </div>
 
       <!-- Grid interno: Banners (esquerda) + Simulação (direita/sticky) -->
-      <div class="planner-right-grid"
-        style="display:grid; grid-template-columns: 1fr minmax(360px, 28vw); gap:12px; align-items:start; margin-top:10px;">
+      <div class="planner-right-grid">
 
         <!-- BANNERS POR MÊS (ESQUERDA) -->
         <section id="bannersPane">
@@ -5870,25 +5904,15 @@ body.planner-open{ overflow: hidden; }
 <div id="simInputs" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
 
   <label style="display:flex; gap:8px; align-items:center;">
-    <span style="min-width:130px;">Saldo Inicial (cristais):</span>
-    <input id="saldoInicial" type="number" inputmode="numeric" min="0"
-      style="flex:1; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
-  </label>
-
-  <label style="display:flex; gap:8px; align-items:center;">
-    <span style="min-width:130px;">Tickets iniciais:</span>
-    <input id="ticketsInic" type="number" inputmode="numeric" min="0"
-      style="width:120px; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
-    <small class="muted">×150 = <b><span id="ticketsInicCrystals">0</span></b> cristais</small>
-  </label>
-
-  <label style="display:flex; gap:8px; align-items:center;">
-  <span style="min-width:130px;">Data de início:</span>
-  <input id="planStartDate" type="date"
-         style="flex:1; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
-  <button id="startTodayBtn" class="bond-btn" type="button">Hoje</button>
+    <label>Saldo Inicial (cristais):
+  <input id="saldoInicial" type="number" class="planner-input" inputmode="numeric">
 </label>
-<small class="muted">O primeiro mês é proporcional a partir da data de início.</small>
+
+  <label style="display:flex; gap:8px; align-items:center;">
+  <label>Data de início:
+  <input id="planStartDate" type="date" class="planner-input">
+  <button id="startTodayBtn" class="btn mini" type="button">Hoje</button>
+</label>
 
   <div style="display:flex; gap:8px;">
     <button id="openSourcesBtn" class="bond-btn" type="button">+ Recursos de cristais</button>
@@ -6462,9 +6486,12 @@ function getPlanStartDate(){
   tbody.innerHTML = '';
 
   // --- 0) saldos iniciais (cristais + tickets*150)
-  let saldoCristais = +($('#saldoInicial').value || 0);
-  let saldoTickets  = +($('#ticketsInic').value || 0) * 150;
-  let saldo = saldoCristais + saldoTickets;
+  // --- 0) saldos iniciais (cristais + tickets*150) — com casting seguro
+const num = (id)=> Math.max(0, +(document.getElementById(id)?.value || 0));
+const saldoCristais = num('saldoInicial');
+const saldoTickets  = num('ticketsInic') * 150;
+let saldo = saldoCristais + saldoTickets;
+
 
   // --- 1) ordem cronológica de meses a partir dos banners
   const order = [];
@@ -7005,16 +7032,41 @@ function openStatsBondsModal(){
 })();
 
 (function bindInitials(){
-  const t = document.getElementById('ticketsInic');
+  const t   = document.getElementById('ticketsInic');
   const out = document.getElementById('ticketsInicCrystals');
-  if(t && out){
-    const upd = ()=>{ const v = Math.max(0, +t.value||0); out.textContent = (v*150).toLocaleString('pt-BR'); };
-    t.addEventListener('input', ()=>{ upd(); recalc && recalc(); });
-    upd();
+  if (t && out){
+    const upd = ()=>{
+      const v = Math.max(0, +t.value || 0);
+      out.textContent = (v * 150).toLocaleString('pt-BR');
+    };
+    const fire = ()=>{ upd(); recalc && recalc(); };
+    t.addEventListener('input',  fire);
+    t.addEventListener('change', fire);   // <— garante recálculo em todos os casos
+    fire();                               // <— recalc já na carga
   }
+  const totalOut = document.getElementById('saldoInicialTotal');
+if (totalOut && t){
   const s = document.getElementById('saldoInicial');
-  if(s){ s.addEventListener('input', ()=>{ recalc && recalc(); }); }
+  const updTotal = ()=>{
+    const saldo = (Math.max(0, +s?.value||0)) + (Math.max(0, +t.value||0) * 150);
+    totalOut.textContent = saldo.toLocaleString('pt-BR');
+  };
+  t.addEventListener('input',  updTotal);
+  t.addEventListener('change', updTotal);
+  s?.addEventListener('input',  updTotal);
+  s?.addEventListener('change', updTotal);
+  updTotal();
+}
+
+
+  const s = document.getElementById('saldoInicial');
+  if (s){
+    const fire = ()=>{ recalc && recalc(); };
+    s.addEventListener('input',  fire);
+    s.addEventListener('change', fire);
+  }
 })();
+
 // ===== Modal de Recursos (FREE/CASH) =====
 (function(){
   const openBtn   = document.getElementById('openSourcesBtn');
