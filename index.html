@@ -6775,7 +6775,14 @@ const ganhos = gFree + Math.round(gCash);
     if(btnToggle){ btnToggle.addEventListener('click', ()=> setCollapsed(!document.body.classList.contains('planner-collapsed'))); }
     const btnReopen = document.getElementById('reopenSources');
     if(btnReopen){ btnReopen.addEventListener('click', ()=> setCollapsed(false)); }
-    setCollapsed(localStorage.getItem(COLLAPSE_KEY)==='1');
+    const prev = localStorage.getItem(COLLAPSE_KEY);
+// 1ª visita: mantém colapsado; visitas seguintes: respeita o salvo
+if (prev === null) {
+  setCollapsed(true);
+} else {
+  setCollapsed(prev === '1');
+}
+
 
     const saldoEl = document.getElementById('saldoInicial'); if(saldoEl) saldoEl.addEventListener('input', ()=>{ planner.saldoInicial = +(saldoEl.value||0); recalc(); });
     const nomeEl  = document.getElementById('nomePlano');    if(nomeEl)  nomeEl.addEventListener('input', ()=>{ planner.nomePlano = nomeEl.value||''; persistTemp(); });
