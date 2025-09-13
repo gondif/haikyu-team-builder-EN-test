@@ -6513,9 +6513,11 @@ let saldo = saldoCristais + saldoTickets;
     const t150 = +b.t150 || 0;
     const m100 = +b.m100 || 0;
 
-    const pullsTotal   = t150 + m100;                 // para EXTRAS
-    const gastoBruto   = 150*t150 + 100*m100;         // custo total
-    const cbMilExtras  = cashbackMilestones(pullsTotal);
+    // custo total continua somando tudo
+  const gastoBruto  = 150*t150 + 100*m100;
+
+// ⚠️ EXTRAS agora contam SÓ tickets (150), sem memórias (100)
+  const cbMilExtras = cashbackMilestones(t150);
 
     // cashback só com tickets
     const cbMilTickets = cashbackMilestones(t150);
