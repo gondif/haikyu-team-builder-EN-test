@@ -949,9 +949,6 @@ body.planner-collapsed .planner-wrap { grid-template-columns: 1fr !important; }
 .month-group{ margin:14px 0 18px; }
 .month-title{ font-weight:800; margin:0 0 8px; opacity:.9; }
 
-/* 2 colunas + um slot central opcional para rebanner */
-.month-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 24px 36px; align-items:start; }
-.month-row.has-rebanner{ grid-template-columns: 1fr 1fr; }
 
 /* cartão */
 .banner-card{
@@ -963,7 +960,6 @@ body.planner-collapsed .planner-wrap { grid-template-columns: 1fr !important; }
 .banner-fields input{ width:100%; background:#1d1d1d; color:#fff; border:1px solid #555; border-radius:8px; padding:6px 8px; }
 
 .rebanner-col{ grid-column: 1 / -1; display:flex; justify-content:center; }
-.rebanner-card{ width:320px; }
 /* Reabrir fontes quando colapsado */
 #reopenSources {
   position: fixed; left: 14px; bottom: 18px; z-index: 10000;
@@ -975,7 +971,6 @@ body.planner-collapsed #reopenSources { display:block; }
 
 /* Coluna central de rebanners pode ter 1..N cartões empilhados */
 .rebanner-col { grid-column: 1 / -1; display:flex; flex-direction:column; gap:18px; align-items:center; }
-.rebanner-card { width:320px; }
 
 /* Linhas informativas (Tickets/Memórias/Cashback) no cartão */
 .banner-lines { margin-top:10px; font-weight:700; line-height:1.6; }
@@ -983,10 +978,9 @@ body.planner-collapsed #reopenSources { display:block; }
 
 .banner-card img{ display:block; margin:0 auto; }
 body.planner-collapsed .panel.sources{ display:none !important; }
-body.planner-collapsed .planner-wrap{ grid-template-columns: 1fr !important; }
-.month-row{ display:grid; grid-template-columns: 1fr auto 1fr; gap:24px 36px; align-items:start; }
+body.planner-collapsed .planner-wrap{ grid-template-columns: 1fr  }
+
 .rebanners-row{ display:flex; gap:18px; justify-content:center; }
-.rebanner-card{ width:280px; } /* ajuste se quiser */
 /* Alinha o botão à direita no cabeçalho do painel */
 #synergy-panel .synergy-header{ justify-content: space-between; }
 
@@ -1115,6 +1109,58 @@ body.planner-open{ overflow: hidden; }
 @media (max-width: 1200px){
   .banner-card{ width: 280px; } /* opcional, igual aos rebanners menores */
 }
+/* ===== Modal genérica ===== */
+.modal-overlay{
+  position: fixed; inset: 0; display: none;
+  align-items: center; justify-content: center;
+  z-index: 2000;  /* acima do planner */
+}
+.modal-overlay.open{ display: flex; }
+.modal-backdrop{
+  position: absolute; inset: 0; background: rgba(0,0,0,.55);
+}
+.modal-dialog{
+  position: relative;
+  width: clamp(780px, 80vw, 1100px);
+  max-height: 90vh;
+  background: #1b1b1b;
+  border: 1px solid #333; border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.modal-header{
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; background: #222; border-bottom: 1px solid #333;
+  position: sticky; top: 0; z-index: 1;
+}
+.modal-body{
+  padding: 12px; overflow: auto;
+  max-height: calc(90vh - 56px);
+}
+
+/* trava scroll atrás da modal */
+body.modal-open{ overflow: hidden; }
+
+/* quando o painel está dentro da modal, deixe ele ocupar 100% */
+.modal-body .panel.sources{ margin: 0; width: 100%; box-sizing: border-box; }
+/* Alternador de servidor (JP / CN) */
+.server-switch{
+  display:flex; gap:8px; justify-content:center; margin:6px 0 12px;
+}
+.server-btn{
+  background:#2a2a2a; color:#ddd; border:1px solid #444;
+  padding:6px 12px; border-radius:10px; cursor:pointer; font-weight:700;
+}
+.server-btn:hover{ background:#333; border-color:#666; color:#fff; }
+.server-btn.active{ background:#3a3a3a; border-color:#777; color:#fff; }
+/* Grade fluida: cabe 1 ou 2 cards por linha conforme espaço disponible */
+.month-row{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-w), 1fr));
+  gap: 16px 24px;               /* gap menor ajuda a fechar com a Simulação */
+  align-items: start;
+}
+.rebanner-card{ width: var(--card-w); }
 
 </style>
 </head>
@@ -2769,8 +2815,8 @@ function updateSynergies() {
     // === CONFIG: which bonds need 3 to activate ===
     // Put the EXACT vinculo names here (case-sensitive).
     const bondsRequire3 = new Set([
-      "Natação",  
-     "Cabeça dos Gêmeos", 
+      "Swimming",  
+     "Twin Heads", 
     ]);
 
     const DEFAULT_BOND_MIN = 2; // all bonds default to 2 unless listed above
@@ -4846,7 +4892,7 @@ function anchoredSynergyScore(activeSchools, activeBonds, oldMainSet){
 // (mesma regra do updateSynergies: Schools=starter-only com 4+, Bonds=starter+bench com 2+, exceto algumas que pedem 3)
 function computeActivatedSynergyCount(mainNames, benchNames){
   // Mesmas exceções do seu painel
-  const bondsRequire3 = new Set(["Natação","Cabeça dos Gêmeos"]);  // idem ao updateSynergies
+  const bondsRequire3 = new Set(["Swimming","Twin Heads"]);  // idem ao updateSynergies
   const DEFAULT_BOND_MIN = 2;
   const SCHOOL_MIN = 4;
 
@@ -4957,7 +5003,7 @@ function synergyProgressFromCounts(cnt){
 }
 function bondRequired(b){
   const k = String(b||'').trim().toLowerCase();
-  return (k === 'Natação' || k === 'Cabeça dos Gêmeos') ? 3 : 2;
+  return (k === 'swimming' || k === 'twin heads') ? 3 : 2;
 }
 // ==================== Recommend 2.0 ====================
 const RecommendCfg = {
@@ -5686,6 +5732,38 @@ body.planner-open{ overflow: hidden; }
   border-radius:999px;
   padding:4px 10px;
 }
+/* ===== Planner: 2 colunas mais equilibradas ===== */
+
+
+/* Simulação (direita) garante que não estoure a largura */
+#pagePlanner .planner-sim{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Evita qualquer overflow horizontal do planner */
+#pagePlanner{ overflow-x: hidden; }
+
+/* ===== Cartões de banner mais enxutos ===== */
+/* use uma “variável” pra controlar o tamanho dos cards */
+:root{ --card-w: 200px; }          /* antes: 320px */
+.banner-card,
+.rebanner-card{
+  width: var(--card-w);
+  flex: 0 0 var(--card-w);         /* não estica */
+  margin: 0 auto;
+}
+.month-row > div{ min-width: 0; }  /* impede que colunas internas forcem largura */
+
+/* Em telas um pouco menores, encolhe mais um pouco os cards */
+@media (max-width: 1700px){
+  :root{ --card-w: 280px; }
+}
+#pagePlanner .planner-right-grid{
+  grid-template-columns: minmax(0,1fr) clamp(340px,26vw,380px);
+  gap: 10px;                /* um pouquinho menos de gap entre as colunas */
+  align-items: start;
+}
 
 </style>
 
@@ -5774,8 +5852,15 @@ body.planner-open{ overflow: hidden; }
 
         <!-- BANNERS POR MÊS (ESQUERDA) -->
         <section id="bannersPane">
-          <h4 style="margin:12px 0 6px;text-align:center;">Ordem dos Banners (fixa)</h4>
-          <div id="bannersCards"></div>
+          <h4 style="margin:12px 0 6px;text-align:center;">Ordem dos Banners</h4>
+<!-- NOVO: alternador de servidor -->
+<div id="serverSwitch" class="server-switch">
+  <button id="serverJPBtn" class="server-btn active" type="button">Japão</button>
+  <button id="serverCNBtn" class="server-btn" type="button">China</button>
+</div>
+
+<!-- já existente -->
+<div id="bannersCards"></div>
         </section>
 
         <!-- SIMULAÇÃO (DIREITA, STICKY) -->
@@ -5796,6 +5881,14 @@ body.planner-open{ overflow: hidden; }
       style="width:120px; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
     <small class="muted">×150 = <b><span id="ticketsInicCrystals">0</span></b> cristais</small>
   </label>
+
+  <label style="display:flex; gap:8px; align-items:center;">
+  <span style="min-width:130px;">Data de início:</span>
+  <input id="planStartDate" type="date"
+         style="flex:1; background:#1d1d1d;color:#fff;border:1px solid #555;border-radius:8px;padding:4px 6px;">
+  <button id="startTodayBtn" class="bond-btn" type="button">Hoje</button>
+</label>
+<small class="muted">O primeiro mês é proporcional a partir da data de início.</small>
 
   <div style="display:flex; gap:8px;">
     <button id="openSourcesBtn" class="bond-btn" type="button">+ Recursos de cristais</button>
@@ -5836,20 +5929,31 @@ body.planner-open{ overflow: hidden; }
     </div><!-- /panel direita -->
   </div><!-- /planner-wrap -->
 
-  <!-- Botão para reabrir fontes quando minimizadas -->
-  <button id="reopenSources" type="button"
-    style="display:none; position:fixed; left:12px; bottom:12px; background:#555;border:1px solid #777;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer">
-    Mostrar Fontes
-  </button>
+
+  <!-- Modal de Recursos (FREE/CASH) -->
+<div id="sourcesModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-backdrop" data-close="1"></div>
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="sourcesTitle">
+    <div class="modal-header">
+      <h3 id="sourcesTitle">Recursos de cristais</h3>
+      <button id="closeSourcesBtn" class="bond-btn">Fechar</button>
+    </div>
+    <div id="sourcesModalBody" class="modal-body">
+      <!-- o painel .panel.sources será movido pra cá ao abrir -->
+    </div>
+  </div>
+</div>
+
 </section>
 
 <!-- =================== FIM DO PLANEJADOR =================== -->
 
 
 <script>
+  
 (function(){
   // ===== Configurações =====
-  const MONTHS = ['Agosto','Setembro','Outubro','Novembro','Dezembro','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const FREQS  = ['Diário','Semanal','Quinzenal','Mensal'];
   const TYPE_ORDER = { 'Banner 1': 0, 'Rebanner': 1, 'Banner 2': 2 };
   const COLLAPSE_KEY = 'hqPlannerSourcesCollapsed';
@@ -5880,16 +5984,17 @@ body.planner-open{ overflow: hidden; }
 
   // ===== Cronograma da planilha (por mês) =====
   const BANNER_SHEET = {
-    'Agosto':   { b1:'Ushijima UR',      rebs:[],                           b2:'Kuro UR' },
-    'Setembro': { b1:'Oikawa UR',        rebs:['Kuro UR'],                 b2:'Bokuto UR' },
+    'Agosto':   { b1:'Ushijima UR',      rebs:[],                           b2:'Kuroo UR' },
+    'Setembro': { b1:'Oikawa UR',        rebs:[],                           b2:'Bokuto UR' },
     'Outubro':  { b1:'Miya Atsumu UR',   rebs:[],                           b2:'Miya Osamu UR' },
-    'Novembro': { b1:'Korai UR',         rebs:['Hirugami UR','Oikawa UR'],  b2:'Hirugami UR' },
-    'Dezembro': { b1:'Kageyama UR',      rebs:['Bokuto UR','Korai UR'],     b2:'Hinata SP' },
+    'Novembro': { b1:'Korai UR',         rebs:[],                           b2:'Hirugami UR' },
+    'Dezembro': { b1:'Kageyama UR',      rebs:['Oikawa UR'],                b2:'Hinata SP' },
     'Janeiro':  { b1:'Kenma SP',         rebs:['Hirugami UR'],              b2:'Nishinoya SP' },
-    'Fevereiro':{ b1:'Sugawara SP',      rebs:['Kuro UR'],                 b2:'Bokuto SP' },
-    'Março':    { b1:'Akaashi SP',       rebs:['Kuro UR','Kageyama UR'],   b2:'Aone SP' },
-    'Abril':    { b1:'Hayaseiomi UR',        rebs:['Osamu UR'],                 b2:'Komori UR' },
-    'Maio':     { b1:'Tsuki SP',         rebs:[],                           b2:'Kuro SP' },
+    'Fevereiro':{ b1:'Sugawara SP',      rebs:['Kuroo UR'],                 b2:'Bokuto SP' },
+    'Março':    { b1:'Akaashi SP',       rebs:['Kuroo UR','Kageyama UR'],   b2:'Aone SP' },
+    'Abril':    { b1:'Hayaseiomi UR',    rebs:['Osamu UR'],                 b2:'Komori UR' },
+    'Maio':     { b1:'Tsuki SP',         rebs:[],                           b2:'Kuroo SP' },
+    'Junho':    { b1:'Kunimi SP',        rebs:[],                             b2:'Koganegawa SP' },
   };
 
   // ===== Estado =====
@@ -5906,6 +6011,36 @@ body.planner-open{ overflow: hidden; }
   const $$ = (s, el=document)=>Array.from(el.querySelectorAll(s));
   const fmt = n => (Math.round((+n||0))).toLocaleString('pt-BR');
 
+  // liga a data de início ao render dos banners e à simulação
+(function bindPlanStartDate(){
+  const dateEl = document.getElementById('planStartDate');
+  const btnToday = document.getElementById('startTodayBtn');
+  if(!dateEl) return;
+
+  // quando mudar a data, re-renderiza e recalcula
+  const onChange = ()=>{
+    if (typeof renderBanners === 'function') renderBanners();
+    if (typeof recalc === 'function') recalc();
+  };
+  dateEl.addEventListener('change', onChange);
+
+  // botão "Hoje"
+  if(btnToday){
+    btnToday.addEventListener('click', ()=>{
+      const now = new Date();
+      dateEl.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      onChange();
+    });
+  }
+
+  // define um valor padrão (hoje) se estiver vazio ao abrir
+  if(!dateEl.value){
+    const now = new Date();
+    dateEl.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  }
+})();
+
+
   function setCollapsed(on){
     document.body.classList.toggle('planner-collapsed', !!on);
     const btn = document.getElementById('toggleSources');
@@ -5914,12 +6049,15 @@ body.planner-open{ overflow: hidden; }
   }
 
   function sortBannersFixed(){
-    planner.banners.sort((a,b)=>{
-      const am = MONTHS.indexOf(a.mes), bm = MONTHS.indexOf(b.mes);
-      if(am !== bm) return am - bm;
-      return (TYPE_ORDER[a.tipo]??99) - (TYPE_ORDER[b.tipo]??99);
-    });
-  }
+  const monthsSeq = Object.keys(BANNER_SHEET);
+  planner.banners.sort((a,b)=>{
+    const am = monthsSeq.indexOf(a.mes);
+    const bm = monthsSeq.indexOf(b.mes);
+    if (am !== bm) return am - bm;                    // ordem da planilha
+    return (TYPE_ORDER[a.tipo] ?? 99) - (TYPE_ORDER[b.tipo] ?? 99); // dentro do mês
+  });
+}
+
 
   // Geração de caminho de imagem a partir do nome
   function nameToImgCandidates(nome){
@@ -5968,25 +6106,28 @@ body.planner-open{ overflow: hidden; }
   // Seed banners from sheet
   function uid(){ return 'b' + Math.random().toString(36).slice(2,9); }
   function seedBannersFromSheet(){
-    planner.banners = [];
-    for(const mes of MONTHS){
-      const row = BANNER_SHEET[mes]; if(!row) continue;
-      if(row.b1){
-        const img = getBannerImage({nome: row.b1});
-        planner.banners.push({ id: uid(), mes, tipo:'Banner 1', nome: row.b1, img, dias:14, t150:0, m100:0, cashback:0 });
-      }
-      if(Array.isArray(row.rebs)){
-        row.rebs.forEach(nome=>{
-          const img = getBannerImage({nome});
-          planner.banners.push({ id: uid(), mes, tipo:'Rebanner', nome, img, dias:14, t150:0, m100:0, cashback:0 });
-        });
-      }
-      if(row.b2){
-        const img = getBannerImage({nome: row.b2});
-        planner.banners.push({ id: uid(), mes, tipo:'Banner 2', nome: row.b2, img, dias:14, t150:0, m100:0, cashback:0 });
-      }
+  planner.banners = [];
+  // Ordem = a ordem de inserção em BANNER_SHEET
+  for (const mes of Object.keys(BANNER_SHEET)) {
+    const row = BANNER_SHEET[mes]; if(!row) continue;
+
+    if (row.b1){
+      const img = getBannerImage({nome: row.b1});
+      planner.banners.push({ id: uid(), mes, tipo:'Banner 1', nome: row.b1, img, dias:14, t150:0, m100:0, cashback:0 });
+    }
+    if (Array.isArray(row.rebs)){
+      row.rebs.forEach(nome=>{
+        const img = getBannerImage({nome});
+        planner.banners.push({ id: uid(), mes, tipo:'Rebanner', nome, img, dias:14, t150:0, m100:0, cashback:0 });
+      });
+    }
+    if (row.b2){
+      const img = getBannerImage({nome: row.b2});
+      planner.banners.push({ id: uid(), mes, tipo:'Banner 2', nome: row.b2, img, dias:14, t150:0, m100:0, cashback:0 });
     }
   }
+}
+
 
   // ===== Renderers =====
   function renderFree(){
@@ -6050,16 +6191,55 @@ body.planner-open{ overflow: hidden; }
       tb.appendChild(tr);
     });
   }
-
+  
   function renderBanners(){
-  sortBannersFixed();
+  // === helpers para normalizar mês (sem acento / minúsculo) e obter índice 1..12 ===
+  const rmAccents = (s)=> String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const norm = (s)=> rmAccents(s).trim().toLowerCase();
+  const MONTH_IDX = {
+    "janeiro":1, "fevereiro":2, "marco":3, "março":3, "abril":4, "maio":5, "junho":6,
+    "julho":7, "agosto":8, "setembro":9, "outubro":10, "novembro":11, "dezembro":12
+  };
+  // ————— util para data de início e rotação de meses —————
+function getPlanStartMonth(){
+  const el = document.getElementById('planStartDate');
+  if(!el || !el.value) return 8; // padrão Agosto (ou ajuste)
+  const dt = new Date(el.value + 'T00:00:00');
+  const m = dt.getMonth()+1;
+  return (m>=1 && m<=12) ? m : 8;
+}
+  // 1) setup padrão (mantido)
+  
   const wrap = document.getElementById('bannersCards'); if(!wrap) return;
   wrap.innerHTML='';
 
+  // 2) agrupar banners por mês (mantido)
   const byMonth={};
-  planner.banners.forEach(b=>{ if(!b||!b.mes) return; (byMonth[b.mes] ||= []).push(b); });
+  (planner.banners||[]).forEach(b=>{
+    if(!b||!b.mes) return;
+    (byMonth[b.mes] ||= []).push(b);
+  });
 
-  Object.keys(byMonth).sort((a,b)=> MONTHS.indexOf(a)-MONTHS.indexOf(b)).forEach(mes=>{
+  // 3) determinar mês de início a partir de #planStartDate (fallback = mês atual)
+  let startMonth = (new Date()).getMonth() + 1; // 1..12
+  const startEl = document.getElementById('planStartDate');
+  if (startEl && startEl.value){
+    const d = new Date(startEl.value + 'T00:00:00');
+    if (!Number.isNaN(d.getTime())) startMonth = d.getMonth() + 1;
+  }
+  // Use a ordem cronológica definida na planilha (BANNER_SHEET) como linha do tempo
+const monthsSeq = Object.keys(BANNER_SHEET);
+
+// Índice de início = primeiro mês cujo número (1..12) >= startMonth
+let startIdx = monthsSeq.findIndex(m => PT_MONTH_INDEX[norm(m)] >= startMonth);
+if (startIdx < 0) startIdx = 0;
+
+// Da data inicial em diante (inclui Janeiro..Junho do “próximo ano”)
+// e ainda filtra para manter só meses que realmente têm banners no dataset atual
+const monthsToRender = monthsSeq.slice(startIdx).filter(m => byMonth[m]);
+
+// ====== A partir daqui renderiza
+monthsToRender.forEach(mes=>{
     const arr = byMonth[mes];
     const b1   = arr.find(x=>x.tipo==='Banner 1');
     const b2   = arr.find(x=>x.tipo==='Banner 2');
@@ -6074,21 +6254,21 @@ body.planner-open{ overflow: hidden; }
 
     const mkLinesHTML = (b)=>{
       const t150 = +b.t150 || 0;
-const m100 = +b.m100 || 0;
+      const m100 = +b.m100 || 0;
 
-// cashback de marcos e %: **apenas para tickets**
-const gastoTickets   = 150 * t150;
-const cbMilTickets   = cashbackMilestones(t150); // só tickets contam
-const cashbackPerc   = Math.round(gastoTickets * ((+b.cashback || 0)/100));
-const cashbackTotal  = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
+      // cashback de marcos e %: **apenas para tickets**
+      const gastoTickets   = 150 * t150;
+      const cbMilTickets   = cashbackMilestones(t150); // só tickets contam
+      const cashbackPerc   = Math.round(gastoTickets * ((+b.cashback || 0)/100));
+      const cashbackTotal  = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
 
-return `<div class="banner-lines">
-  <span>Tickets: ${t150.toLocaleString('pt-BR')}</span>
-  <span>Memórias: ${m100.toLocaleString('pt-BR')}</span>
-  <span>Cashback: ${cashbackTotal.toLocaleString('pt-BR')}</span>
-</div>`;
-
+      return `<div class="banner-lines">
+        <span>Tickets: ${t150.toLocaleString('pt-BR')}</span>
+        <span>Memórias: ${m100.toLocaleString('pt-BR')}</span>
+        <span>Cashback: ${cashbackTotal.toLocaleString('pt-BR')}</span>
+      </div>`;
     };
+
     const mkCard=(b,label)=>{
       const el=document.createElement('div'); el.className='banner-card';
       const imgSrc=getBannerImage(b);
@@ -6106,7 +6286,12 @@ return `<div class="banner-lines">
         inp.addEventListener('input', e=>{
           const it=planner.banners.find(x=>x.id===e.target.getAttribute('data-id'));
           if(!it) return; it[e.target.getAttribute('data-k')]=+e.target.value||0;
-          const old=el.querySelector('.banner-lines'); if(old){ const tmp=document.createElement('div'); tmp.innerHTML=mkLinesHTML(it); old.replaceWith(tmp.firstElementChild); }
+          const old=el.querySelector('.banner-lines');
+          if(old){
+            const tmp=document.createElement('div');
+            tmp.innerHTML=mkLinesHTML(it);
+            old.replaceWith(tmp.firstElementChild);
+          }
           recalc();
         });
       });
@@ -6120,7 +6305,11 @@ return `<div class="banner-lines">
 
     // Coluna do meio: TODOS os rebanners LADO A LADO
     const mid=document.createElement('div'); mid.className='rebanners-row';
-    rebs.forEach((rb,i)=>{ const card=mkCard(rb, `Rebanner ${rebs.length>1?i+1:''}`.trim()); card.classList.add('rebanner-card'); mid.appendChild(card); });
+    rebs.forEach((rb,i)=>{
+      const card=mkCard(rb, `Rebanner ${rebs.length>1?i+1:''}`.trim());
+      card.classList.add('rebanner-card');
+      mid.appendChild(card);
+    });
     if(rebs.length) row.appendChild(mid); else row.appendChild(document.createElement('div')); // mantém 3 colunas
 
     // Coluna direita: Banner 2
@@ -6132,6 +6321,11 @@ return `<div class="banner-lines">
     wrap.appendChild(group);
   });
 }
+
+
+
+
+
 
   // ===== Cálculos =====
   function ganhosFreePorDia(){
@@ -6150,19 +6344,129 @@ return `<div class="banner-lines">
   }
 
   function recalc(){ simular(); persistTemp(); }
+// ===== Alternador de servidor: Japão / China =====
+const SERVER_KEYS = { JP: 'banners_JP', CN: 'banners_CN' };
+
+// Inicializa os datasets por servidor.
+// - Se ainda não existir, semeia JP com a lista atual e CN como cópia vazia (ou a atual, se preferir).
+function initServerBanners(){
+  // garante que planner existe
+  window.planner = window.planner || {};
+  if (!planner.server) planner.server = 'JP';
+
+  // semear JP se vazio
+  if (!localStorage.getItem(SERVER_KEYS.JP)) {
+    localStorage.setItem(SERVER_KEYS.JP, JSON.stringify(planner.banners || []));
+  }
+  // semear CN se vazio (aqui começo igual ao JP; depois você edita a ordem manualmente)
+  if (!localStorage.getItem(SERVER_KEYS.CN)) {
+    localStorage.setItem(SERVER_KEYS.CN, JSON.stringify(planner.banners || []));
+  }
+
+  // carrega o dataset do servidor ativo para planner.banners
+  const activeKey = SERVER_KEYS[planner.server] || SERVER_KEYS.JP;
+  try {
+    const saved = JSON.parse(localStorage.getItem(activeKey) || '[]');
+    planner.banners = Array.isArray(saved) ? saved : [];
+  } catch {
+    planner.banners = planner.banners || [];
+  }
+
+  // estado visual dos botões
+  document.getElementById('serverJPBtn')?.classList.toggle('active', planner.server === 'JP');
+  document.getElementById('serverCNBtn')?.classList.toggle('active', planner.server === 'CN');
+}
+
+// Troca o servidor, salvando o dataset atual e carregando o outro.
+function switchServer(s){
+  if (!SERVER_KEYS[s]) return;
+  if (!window.planner) return;
+
+  // salva banners atuais no slot do servidor corrente
+  const curKey = SERVER_KEYS[planner.server || 'JP'];
+  try { localStorage.setItem(curKey, JSON.stringify(planner.banners || [])); } catch{}
+
+  // carrega banners do novo servidor
+  const nextKey = SERVER_KEYS[s];
+  let next = [];
+  try { next = JSON.parse(localStorage.getItem(nextKey) || '[]'); } catch{}
+  planner.banners = Array.isArray(next) ? next : [];
+  planner.server = s;
+
+  // atualiza UI
+  document.getElementById('serverJPBtn')?.classList.toggle('active', s === 'JP');
+  document.getElementById('serverCNBtn')?.classList.toggle('active', s === 'CN');
+
+  // re-render e recalcula
+  if (typeof renderBanners === 'function') renderBanners();
+  if (typeof recalc === 'function') recalc();
+  if (typeof savePlanner === 'function') savePlanner(); // opcional
+}
+  // DEV: resetar dataset do servidor e reseed a partir da planilha atual
+window.resetServer = function(s='JP'){
+  const key = SERVER_KEYS[s] || SERVER_KEYS.JP;
+  localStorage.removeItem(key);
+  // re-semeia conforme init
+  initServerBanners();
+  renderBanners && renderBanners();
+  recalc && recalc();
+};
+// Liga os botões (chame após montar o Planner)
+function bindServerButtons(){
+  document.getElementById('serverJPBtn')?.addEventListener('click', ()=>switchServer('JP'));
+  document.getElementById('serverCNBtn')?.addEventListener('click', ()=>switchServer('CN'));
+}
+
+// >>> Em algum ponto da inicialização do Planner:
+
+// (se já carrega banners antes, chame initServerBanners() logo depois)
+
+  // meses pt-BR -> 1..12
+const PT_MONTH_INDEX = {
+  "janeiro":1,"fevereiro":2,"março":3,"marco":3,"abril":4,"maio":5,"junho":6,
+  "julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12
+};
+const norm = s => String(s||'').trim().toLowerCase();
+
+// dias reais do mês (considera ano bissexto)
+function daysInMonth(year, month1to12){
+  return new Date(year, month1to12, 0).getDate();
+}
+
+// lê a data do input; se vazio, usa hoje
+function getPlanStartDate(){
+  const el = document.getElementById('planStartDate');
+  const v = el && el.value ? new Date(el.value+'T00:00:00') : new Date();
+  // zera hora
+  return new Date(v.getFullYear(), v.getMonth(), v.getDate());
+}
+
+// atalho p/ “Hoje”
+(function bindStartToday(){
+  const b = document.getElementById('startTodayBtn');
+  const i = document.getElementById('planStartDate');
+  if (b && i){
+    b.addEventListener('click', ()=>{
+      const now = new Date();
+      i.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      if (typeof recalc === 'function') recalc();
+    });
+  }
+  if (i){
+    i.addEventListener('change', ()=>{ if (typeof recalc === 'function') recalc(); });
+  }
+})();
 
   function simular(){
   const tbody = $('#simTable tbody'); if(!tbody) return;
   tbody.innerHTML = '';
 
-  // --- 1) util: dias por mês (pt-BR)
-  const DAYS_IN_MONTH = {
-    "janeiro":31,"fevereiro":28,"março":31,"abril":30,"maio":31,"junho":30,
-    "julho":31,"agosto":31,"setembro":30,"outubro":31,"novembro":30,"dezembro":31
-  };
-  const norm = s => String(s||'').trim().toLowerCase();
+  // --- 0) saldos iniciais (cristais + tickets*150)
+  let saldoCristais = +($('#saldoInicial').value || 0);
+  let saldoTickets  = +($('#ticketsInic').value || 0) * 150;
+  let saldo = saldoCristais + saldoTickets;
 
-  // --- 2) ordem cronológica dos meses que existem nos banners
+  // --- 1) ordem cronológica de meses a partir dos banners
   const order = [];
   const seen = new Set();
   (planner.banners||[]).forEach(b=>{
@@ -6170,90 +6474,124 @@ return `<div class="banner-lines">
     if(m && !seen.has(m)){ seen.add(m); order.push(m); }
   });
 
-  // --- 3) agrega GASTOS por mês (somando banners do mês) e coleta extras/cashback
+  // --- 2) agrega GASTOS/CASHBACK/EXTRAS por mês (somando banners daquele mês)
   const byMonth = new Map();
   const extrasTot = { ssrBox:0, milk:0, copy:0 };
-  
 
   (planner.banners||[]).forEach(b=>{
     const m = norm(b.mes); if(!m) return;
     if(!byMonth.has(m)){
       byMonth.set(m, { mes:m, gastoBruto:0, cashback:0, custoLiquido:0, extras:{ssrBox:0,milk:0,copy:0} });
     }
-    // dentro do loop que agrega por banner → mês
-const t150 = +b.t150 || 0;
-const m100 = +b.m100 || 0;
+    const t150 = +b.t150 || 0;
+    const m100 = +b.m100 || 0;
 
-const pullsTotal   = t150 + m100;                      // para EXTRAS
-const gastoBruto   = 150*t150 + 100*m100;              // custo total
+    const pullsTotal   = t150 + m100;                 // para EXTRAS
+    const gastoBruto   = 150*t150 + 100*m100;         // custo total
+    const cbMilExtras  = cashbackMilestones(pullsTotal);
 
-const cbMilExtras  = cashbackMilestones(pullsTotal);   // EXTRAS (milk/copy/box) a partir do total
-const cbMilTickets = cashbackMilestones(t150);         // CASHBACK só com tickets
+    // cashback só com tickets
+    const cbMilTickets = cashbackMilestones(t150);
+    const cashbackPerc = Math.round((150*t150) * ((+b.cashback || 0)/100));
+    const cashback     = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
 
-// % cashback só sobre tickets
-const cashbackPerc = Math.round((150*t150) * ((+b.cashback || 0)/100));
-const cashback     = (cbMilTickets.cashbackDiamonds || 0) + cashbackPerc;
+    const custoLiquido = gastoBruto - cashback;
 
-const custoLiquido = gastoBruto - cashback;
+    const mm = byMonth.get(m);
+    mm.gastoBruto   += gastoBruto;
+    mm.cashback     += cashback;
+    mm.custoLiquido += custoLiquido;
 
-// agrega no mês
-const mm = byMonth.get(m);
-mm.gastoBruto   += gastoBruto;
-mm.cashback     += cashback;
-mm.custoLiquido += custoLiquido;
+    // extras somam pelos pulls totais
+    mm.extras.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
+    mm.extras.milk   += (cbMilExtras.extras?.milk   || 0);
+    mm.extras.copy   += (cbMilExtras.extras?.copy   || 0);
 
-// soma os EXTRAS do mês e do total
-mm.extras.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
-mm.extras.milk   += (cbMilExtras.extras?.milk   || 0);
-mm.extras.copy   += (cbMilExtras.extras?.copy   || 0);
-
-extrasTot.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
-extrasTot.milk   += (cbMilExtras.extras?.milk   || 0);
-extrasTot.copy   += (cbMilExtras.extras?.copy   || 0);
-
+    extrasTot.ssrBox += (cbMilExtras.extras?.ssrBox || 0);
+    extrasTot.milk   += (cbMilExtras.extras?.milk   || 0);
+    extrasTot.copy   += (cbMilExtras.extras?.copy   || 0);
   });
 
-  // --- 4) ganhos por mês
-  const ganhoDiaFREE = ganhosFreePorDia();  // sua função existente
+  // --- 3) ganhos por mês (FREE + distribuir CASH a partir da data de início)
+  const ganhoDiaFREE = ganhosFreePorDia();
+  const start = getPlanStartDate();
+  const startMonthIdx = start.getMonth()+1; // 1..12
+  const startYear = start.getFullYear();
 
-  // prepara consumo de CASH (dias remanescentes por item, na ordem declarada)
-  const cashRest = (planner.cash||[]).map(c => ({
-    usar: !!c.usar,
-    porDia: +c.porDia || 0,
-    dias: +c.dias || 0
-  }));
+  // encontra o índice do 1º mês que coincide com a data de início;
+  // se não encontrar, usa o primeiro da lista (mês cheio).
+  let idxStart = order.findIndex(m => PT_MONTH_INDEX[m] === startMonthIdx);
+  if (idxStart === -1) idxStart = 0;
 
-  function ganhosCashDoMes(diasMes){
-    let sum = 0;
-    cashRest.forEach(c=>{
-      if(!c.usar || c.dias<=0 || !c.porDia) return;
-      const consume = Math.min(c.dias, diasMes);
-      if(consume>0){
-        sum += consume * c.porDia;
-        c.dias -= consume;
-      }
-    });
-    return sum;
-  }
+  // consumo de CASH: começa na data de início
+  // NÃO queremos mais consumo estadoful:
 
-  // --- 5) render: uma linha por mês
-let saldoCristais = +($('#saldoInicial').value || 0);
-let saldoTickets  = +($('#ticketsInic').value || 0) * 150;
-let saldo = saldoCristais + saldoTickets;   let totalGanhos=0, totalGastoBruto=0, totalCashback=0, totalLiquido=0;
 
-  order.forEach(m=>{
-    const diasMes = DAYS_IN_MONTH[m] ?? 30; // fallback seguro
-    const mm = byMonth.get(m) || { gastoBruto:0, cashback:0, custoLiquido:0 };
 
-    const gFree = Math.round(ganhoDiaFREE * diasMes);
-    const gCash = Math.round(ganhosCashDoMes(diasMes));
-    const ganhos = gFree + gCash;
+  // ano/mês correntes para cada entrada da order (contabiliza virada de ano)
+  let runningYear = startYear;
+  let prevIdx = startMonthIdx;
 
+  // totais
+  let totalGanhos=0, totalGastoBruto=0, totalCashback=0, totalLiquido=0;
+
+  for (let i=0;i<order.length;i++){
+    const label = order[i];
+    const mIdx = PT_MONTH_INDEX[label] || 1;
+
+    // avança o ano quando cruza dezembro->janeiro
+    if (i === 0){
+      // se a lista começa antes do mês de início, ajuste o ano para trás
+      // (opcional: pode deixar como está; não afeta pró-rata)
+    } else if (prevIdx > mIdx){
+      runningYear += 1;
+    }
+    prevIdx = mIdx;
+
+    // dias do mês real
+    const dim = daysInMonth(runningYear, mIdx);
+
+    // se o mês é anterior à data de início → pula (sem ganhos, sem custos)
+    // Obs: se NÃO quiser pular custos de meses anteriores, troque o 'continue' por 'activeDays=0'.
+    if (i < idxStart){
+      continue;
+    }
+
+    // dias ativos: pró-rata no primeiro mês útil, cheios nos demais
+    const activeDays = (i === idxStart)
+      ? (mIdx === startMonthIdx ? Math.max(0, dim - (start.getDate() - 1)) : dim) // se o label for o mesmo mês da data
+      : dim;
+
+    // ganhos FREE + CASH desse mês (CASH consome 'activeDays' sequencialmente)
+    // FREE do mês (mantém)
+const gFree = Math.round(ganhoDiaFREE * activeDays);
+
+// CASH do mês: Quantidade (por dia) × min(Frequência, dias ativos no mês)
+let gCash = 0;
+(planner.cash || []).forEach(c=>{
+  if(!c || !c.usar) return;
+
+  // Compat: alguns planos antigos usam c.porDia; no UI atual, a coluna é "Quantidade" => c.qtd
+  const perDay = (+c.qtd || +c.porDia || 0);
+
+  // "Frequência" agora significa "dias ativos no mês" (ex.: 30 = mês inteiro)
+  const diasAtivosNoMes = Math.min(activeDays, +c.dias || 0);
+
+  gCash += perDay * diasAtivosNoMes;
+});
+
+const ganhos = gFree + Math.round(gCash);
+
+
+    // custos agregados daquele mês (se não houver, zero)
+    const mm = byMonth.get(label) || { gastoBruto:0, cashback:0, custoLiquido:0 };
+
+    // saldo
     const saldoIni = saldo;
     saldo = saldo + ganhos - mm.custoLiquido;
-    
 
-    const pretty = m.charAt(0).toUpperCase()+m.slice(1); // Agosto, Setembro...
+    // render linha
+    const pretty = label.charAt(0).toUpperCase() + label.slice(1);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${pretty}</td>
@@ -6264,35 +6602,40 @@ let saldo = saldoCristais + saldoTickets;   let totalGanhos=0, totalGastoBruto=0
       <td class="right">${saldoIni.toLocaleString('pt-BR')}</td>
       <td class="right">${saldo.toLocaleString('pt-BR')}</td>
     `;
+    // pinta saldo final negativo
+    const saldoCell = tr.querySelector('td:last-child');
+    if (saldoCell) saldoCell.classList.toggle('neg', saldo < 0);
+
     tbody.appendChild(tr);
 
+    // totais (se mantiver rodapé)
     totalGanhos     += ganhos;
     totalGastoBruto += (mm.gastoBruto||0);
     totalCashback   += (mm.cashback||0);
     totalLiquido    += (mm.custoLiquido||0);
-  });
+  }
+
+  // atualiza rodapé se você ainda estiver usando <tfoot> (se não, pode remover)
+  const el = (id)=>document.getElementById(id);
+  if (el('tGanhos'))      el('tGanhos').textContent      = totalGanhos.toLocaleString('pt-BR');
+  if (el('tGastoBruto'))  el('tGastoBruto').textContent  = totalGastoBruto.toLocaleString('pt-BR');
+  if (el('tCashback'))    el('tCashback').textContent    = totalCashback.toLocaleString('pt-BR');
+  if (el('tLiquido'))     el('tLiquido').textContent     = totalLiquido.toLocaleString('pt-BR');
+  if (el('tSaldoFinal')){ el('tSaldoFinal').textContent  = saldo.toLocaleString('pt-BR');
+                          el('tSaldoFinal').classList.toggle('neg', saldo < 0); }
+
+  // extras (se estiver usando a caixa abaixo da tabela)
   const simEl = document.getElementById('simExtras');
-if (simEl) {
-  simEl.innerHTML = `
-    <div><b>Extras Totais</b> —
-      SSR Box: <b>${extrasTot.ssrBox}</b> •
-      Milk: <b>${extrasTot.milk}</b> •
-      Copy: <b>${extrasTot.copy}</b>
-    </div>`;
+  if (simEl) {
+    simEl.innerHTML = `
+      <div><b>Extras Totais</b> —
+        SSR Box: <b>${extrasTot.ssrBox}</b> •
+        Milk: <b>${extrasTot.milk}</b> •
+        Copy: <b>${extrasTot.copy}</b>
+      </div>`;
+  }
 }
 
-
-  // --- 6) totais e extras
-  $('#tGanhos').textContent     = totalGanhos.toLocaleString('pt-BR');
-  $('#tGastoBruto').textContent = totalGastoBruto.toLocaleString('pt-BR');
-  $('#tCashback').textContent   = totalCashback.toLocaleString('pt-BR');
-  $('#tLiquido').textContent    = totalLiquido.toLocaleString('pt-BR');
-  $('#tSaldoFinal').textContent = (saldo).toLocaleString('pt-BR');
-
-  $('#extrasSummary').innerHTML = `
-    <div>Extras Totais: <b>${extrasTot.ssrBox}</b> SSR Box, <b>${extrasTot.milk}</b> Milk, <b>${extrasTot.copy}</b> Copy</div>
-  `;
-}
 
    
 
@@ -6352,16 +6695,8 @@ if (simEl) {
   function boot(){
     const btnOpen = document.getElementById('openPlannerBtn'); if(btnOpen) btnOpen.addEventListener('click', showPlanner);
     const btnBack = document.getElementById('btnVoltarBuilder'); if(btnBack) btnBack.addEventListener('click', showBuilder);
-
-    const btnOpenSources = document.getElementById('openSourcesBtn');
-    if (btnOpenSources){
-    btnOpenSources.addEventListener('click', ()=>{
-    // Se estiver colapsado por CSS, descolapsa primeiro
-    if (document.body.classList.contains('planner-collapsed')) setCollapsed(false);
-    const panel = document.querySelector('.panel.sources');
-    if (panel) panel.scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-}
+    
+    
     const btnToggle = document.getElementById('toggleSources');
     if(btnToggle){ btnToggle.addEventListener('click', ()=> setCollapsed(!document.body.classList.contains('planner-collapsed'))); }
     const btnReopen = document.getElementById('reopenSources');
@@ -6379,6 +6714,10 @@ if (simEl) {
       planner = { saldoInicial:0, nomePlano:'', free:JSON.parse(JSON.stringify(DEFAULT_FREE)), cash:JSON.parse(JSON.stringify(DEFAULT_CASH)), banners:[] };
       document.getElementById('saldoInicial').value = 0; document.getElementById('nomePlano').value='';
       seedBannersFromSheet();
+      // 1) garante dados base (JP) em memória
+if (!planner.banners || !planner.banners.length) seedBannersFromSheet();
+
+
       renderFree(); renderCash(); renderBanners(); recalc(); fillSlots(''); persistTemp();
     });
     const bDel = document.getElementById('btnExcluirPlano'); if(bDel) bDel.addEventListener('click', ()=>{
@@ -6393,9 +6732,34 @@ if (simEl) {
     }
 
     fillSlots(planner?.nomePlano || '');
-
+    initServerBanners();     // <— COLE AQUI
+    bindServerButtons();
     renderFree(); renderCash(); renderBanners(); recalc();
   }
+  // === BIND: + Fonte FREE / + Fonte CASH ===
+const $addFree = document.getElementById('addFree');
+if ($addFree) {
+  $addFree.addEventListener('click', () => {
+    // linha nova FREE (usar/nome/qtd/freq)
+    planner.free = planner.free || [];
+    planner.free.push({ usar: true, nome: 'Nova fonte FREE', qtd: 0, freq: 'Mensal' });
+    renderFree && renderFree();
+    recalc && recalc();
+    savePlanner && savePlanner();
+  });
+}
+
+const $addCash = document.getElementById('addCash');
+if ($addCash) {
+  $addCash.addEventListener('click', () => {
+    // linha nova CASH (usar/nome/diamantes por dia/dias)
+    planner.cash = planner.cash || [];
+    planner.cash.push({ usar: true, nome: 'Nova fonte CASH', qtd: 0, dias: 30 });
+    renderCash && renderCash();
+    recalc && recalc();
+    savePlanner && savePlanner();
+  });
+}
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
@@ -6651,20 +7015,122 @@ function openStatsBondsModal(){
   const s = document.getElementById('saldoInicial');
   if(s){ s.addEventListener('input', ()=>{ recalc && recalc(); }); }
 })();
-(function bindOpenSources(){
-  const btn = document.getElementById('openSourcesBtn');
-  if(!btn) return;
-  btn.addEventListener('click', ()=>{
-    const panel = document.querySelector('.panel.sources'); // sua coluna esquerda
-    if(panel){
-      panel.style.display = '';           // garante visível
-      panel.scrollIntoView({behavior:'smooth', block:'start'});
-    }
-    // se você usa algum “minimizar”/“reabrir”:
-    const reopen = document.getElementById('reopenSources');
-    if(reopen) reopen.style.display = 'none';
+// ===== Modal de Recursos (FREE/CASH) =====
+(function(){
+  const openBtn   = document.getElementById('openSourcesBtn');
+  const modal     = document.getElementById('sourcesModal');
+  const closeBtn  = document.getElementById('closeSourcesBtn');
+  const bodySlot  = document.getElementById('sourcesModalBody');
+
+  if(!openBtn || !modal || !bodySlot) return;
+
+  let prevParent = null, prevNext = null; // onde devolver o painel ao fechar
+
+  function openSourcesModal(){
+  document.body.classList.remove('planner-collapsed');
+
+  const panel = document.querySelector('.panel.sources');
+  if(panel){
+    prevParent = panel.parentNode;
+    prevNext   = panel.nextSibling;
+    bodySlot.appendChild(panel);
+    panel.style.removeProperty('display');
+
+    // ESCONDE o botão antigo de fechar/minimizar quando o painel está na modal
+    const oldToggle = panel.querySelector('#toggleSources');
+    if (oldToggle) oldToggle.style.display = 'none';
+  }
+  modal.classList.add('open');
+  document.body.classList.add('modal-open');
+  closeBtn?.focus();
+}
+
+
+
+  function closeSourcesModal(){
+  const panel = document.querySelector('.modal-body .panel.sources');
+  if (panel && prevParent){
+    if (prevNext) prevParent.insertBefore(panel, prevNext);
+    else          prevParent.appendChild(panel);
+    panel.style.display = 'none';          // mantém oculto no layout base
+    const oldToggle = panel.querySelector('#toggleSources');
+    if (oldToggle) oldToggle.style.display = 'none'; // evita UI antiga
+  }
+  modal.classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+
+
+  openBtn.addEventListener('click', openSourcesModal);
+  closeBtn?.addEventListener('click', closeSourcesModal);
+
+  // clicar fora fecha
+  modal.addEventListener('click', (e)=>{
+    if(e.target && e.target.getAttribute('data-close')) closeSourcesModal();
+  });
+
+  // ESC fecha
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('open')) closeSourcesModal();
   });
 })();
+
+// forma esperada dos itens (exemplo mínimo):
+// { id, mes: 'Setembro', tipo: 'Banner 1'|'Banner 2'|'Rebanner', nome: 'Oikawa UR', t150:0, m100:0, cashback:0 }
+
+// forma esperada dos itens (exemplo mínimo):
+// { id, mes: 'Setembro', tipo: 'Banner 1'|'Banner 2'|'Rebanner', nome: 'Oikawa UR', t150:0, m100:0, cashback:0 }
+
+(function setCNOrder(){
+  const cnList = [
+  { id:'cn-agosto-banner-1-ushijima-ur', mes:'Agosto',   tipo:'Banner 1', nome:'Ushijima UR',    t150:0, m100:0, cashback:0 },
+  { id:'cn-agosto-banner-2-kuro-ur',     mes:'Agosto',   tipo:'Banner 2', nome:'Kuro UR',        t150:0, m100:0, cashback:0 },
+
+  { id:'cn-setembro-banner-1-oikawa-ur', mes:'Setembro', tipo:'Banner 1', nome:'Oikawa UR',      t150:0, m100:0, cashback:0 },
+  { id:'cn-setembro-banner-2-bokuto-ur', mes:'Setembro', tipo:'Banner 2', nome:'Bokuto UR',      t150:0, m100:0, cashback:0 },
+
+  { id:'cn-outubro-banner-1-miya-atsumu-ur', mes:'Outubro', tipo:'Banner 1', nome:'Miya Atsumu UR', t150:0, m100:0, cashback:0 },
+  { id:'cn-outubro-rebanner-1-kuroo-ur',     mes:'Outubro', tipo:'Rebanner', nome:'Kuroo UR',       t150:0, m100:0, cashback:0 },
+  { id:'cn-outubro-banner-2-miya-osamu-ur',  mes:'Outubro', tipo:'Banner 2', nome:'Miya Osamu UR',  t150:0, m100:0, cashback:0 },
+
+  { id:'cn-novembro-banner-1-korai-ur',   mes:'Novembro', tipo:'Banner 1', nome:'Korai UR',       t150:0, m100:0, cashback:0 },
+  { id:'cn-novembro-banner-2-hirugami-ur',mes:'Novembro', tipo:'Banner 2', nome:'Hirugami UR',    t150:0, m100:0, cashback:0 },
+
+  { id:'cn-dezembro-banner-1-kageyama-ur', mes:'Dezembro', tipo:'Banner 1', nome:'Kageyama UR',   t150:0, m100:0, cashback:0 },
+  { id:'cn-dezembro-rebanner-1-oikawa-ur', mes:'Dezembro', tipo:'Rebanner', nome:'Oikawa UR',     t150:0, m100:0, cashback:0 },
+  { id:'cn-dezembro-banner-2-hinata-sp',   mes:'Dezembro', tipo:'Banner 2', nome:'Hinata SP',     t150:0, m100:0, cashback:0 },
+
+  { id:'cn-janeiro-banner-1-kenma-sp',     mes:'Janeiro', tipo:'Banner 1', nome:'Kenma SP',       t150:0, m100:0, cashback:0 },
+  { id:'cn-janeiro-banner-2-nishinoya-sp', mes:'Janeiro', tipo:'Banner 2', nome:'Nishinoya SP',   t150:0, m100:0, cashback:0 },
+
+  { id:'cn-fevereiro-banner-1-sugawara-sp', mes:'Fevereiro', tipo:'Banner 1', nome:'Sugawara SP', t150:0, m100:0, cashback:0 },
+  { id:'cn-fevereiro-banner-2-bokuto-sp',   mes:'Fevereiro', tipo:'Banner 2', nome:'Bokuto SP',   t150:0, m100:0, cashback:0 },
+
+  { id:'cn-marco-banner-1-akaashi-sp',  mes:'Março', tipo:'Banner 1', nome:'Akaashi SP',         t150:0, m100:0, cashback:0 },
+  { id:'cn-marco-banner-2-aone-sp',     mes:'Março', tipo:'Banner 2', nome:'Aone SP',            t150:0, m100:0, cashback:0 },
+
+  { id:'cn-abril-banner-1-hayaseiomi-ur', mes:'Abril', tipo:'Banner 1', nome:'Hayaseiomi UR',    t150:0, m100:0, cashback:0 },
+  { id:'cn-abril-banner-2-komori-ur',     mes:'Abril', tipo:'Banner 2', nome:'Komori UR',        t150:0, m100:0, cashback:0 },
+
+  { id:'cn-maio-banner-1-tsuki-sp',  mes:'Maio', tipo:'Banner 1', nome:'Tsuki SP',               t150:0, m100:0, cashback:0 },
+  { id:'cn-maio-banner-2-kuro-sp',   mes:'Maio', tipo:'Banner 2', nome:'Kuro SP',                t150:0, m100:0, cashback:0 },
+
+  { id:'cn-junho-banner-1-kunimi-sp',      mes:'Junho', tipo:'Banner 1', nome:'Kunimi SP',       t150:0, m100:0, cashback:0 },
+  { id:'cn-junho-banner-2-koganegawa-sp',  mes:'Junho', tipo:'Banner 2', nome:'Koganegawa SP',   t150:0, m100:0, cashback:0 },
+];
+
+// salvar & aplicar na UI (CN)
+localStorage.setItem('banners_CN', JSON.stringify(cnList));
+if (window.planner){
+  planner.server = 'CN';
+  planner.banners = cnList.slice();
+  renderBanners && renderBanners();
+  recalc && recalc();
+  savePlanner && savePlanner();
+}
+})();
+
+
 
 </script>
 
