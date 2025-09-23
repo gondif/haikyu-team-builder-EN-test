@@ -2584,6 +2584,7 @@ function showBenchMenuByRole(role) {
   }
 
   scrollMenu.style.display = 'flex';
+  notifyTeamChanged();
 }
 document.querySelectorAll(".bench-quick-btn").forEach(btn => {
   btn.addEventListener("click", (e) => {
@@ -2690,6 +2691,7 @@ slot.dataset.role = role;
 
     selecionados.push(personagem);
     updateSynergies();
+    notifyTeamChanged();
 }
 
 function removeCharacter(slot) {
@@ -2716,6 +2718,7 @@ function removeCharacter(slot) {
     updateSynergies();
     if (typeof afterRemoveCharacter === "function") afterRemoveCharacter(slot);
   }
+  notifyTeamChanged();
 }
 
 function updateSynergies() {
@@ -3743,6 +3746,7 @@ localStorage.setItem("savedTeams", JSON.stringify(teams));
       e.stopPropagation();
       rotateMainGridClockwise();
     });
+    notifyTeamChanged();
   }
 /* mostra lista de times salvos no painel lateral */
 function showSavedTeams() {
@@ -4431,11 +4435,13 @@ window.afterAssignCharacter = function(slotEl, charName){
   slotEl.dataset.charName = charName;
   updateItemBadge(slotEl);
   ensureItemGear(slotEl); // botão ⚙️ para abrir o modal (não conflita com dblclick de detalhes)
+  notifyTeamChanged();
 };
 window.afterRemoveCharacter = function(slotEl){
   delete slotEl.dataset.charName;   // mantém compatibilidade com suas badges
   clearSlotEquip(slotEl);           // <- limpa Map + badges/engrenagem
   updateItemBadge(slotEl);          // defensivo (como já faz no assign)
+  notifyTeamChanged();
 };
 
 // Guarda por slot, mas também salva o nome do char para restaurar por nome
@@ -4598,7 +4604,7 @@ function moveBetweenSlots(srcEl, dstEl){
   // Atualiza badges/engrenagem (seu fluxo atual)
   if (typeof updateItemBadge === 'function') { updateItemBadge(srcEl); updateItemBadge(dstEl); }
   if (typeof ensureItemGear   === 'function') { ensureItemGear(srcEl); ensureItemGear(dstEl); }
-  document.dispatchEvent(new CustomEvent('team:changed'));
+  notifyTeamChanged();
 }
 
   function decorateDropTarget(slot){
@@ -7310,6 +7316,41 @@ if (window.planner){
   savePlanner && savePlanner();
 }
 })();
+
+
+  // Coleta o estado atual do time (titulares + banco)
+  function collectTeamState(){
+    const starters = [...document.querySelectorAll('.hex')].map(s => s.dataset.nome || null);
+    const bench    = [...document.querySelectorAll('.bench-slot')].map(s => s.dataset.nome || null);
+    return { starters, bench };
+  }
+
+  // Notificação com debounce (evita spammar a planilha)
+  function debouncedNotify(){
+    clearTimeout(window.__notifyT);
+    window.__notifyT = setTimeout(async () => {
+      const payload = collectTeamState();
+      try{
+        // Troque pela sua URL do Apps Script (Web App)
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzSkhxOzzFzJ2MkGzT_eKuWeJrFuB6sb7T5e_uJ3wlvC82fyFW1-9A6Ube9rkujtmKlFg/exec';
+        await fetch(GAS_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ type:'team_update', data: payload })
+        });
+      }catch(e){
+        console.warn('Falha ao notificar GAS', e);
+      }
+    }, 300);
+  }
+
+  // Hooks já existentes no seu código: só anexamos
+  window.afterAssignCharacter = function(slot, nome){
+    debouncedNotify();
+  };
+  window.afterRemoveCharacter = function(slot){
+    debouncedNotify();
+  };
 
 
 
