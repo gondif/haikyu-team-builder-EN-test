@@ -1171,6 +1171,41 @@ body.modal-open{ overflow: hidden; }
 #simPane #simInputs .planner-input[type="number"] { width: 140px; }   /* Saldo inicial */
 #simPane #simInputs .planner-input[type="date"]   { width: 170px; }   /* Data de início */
 
+
+/* WIN 999 DIAMONDS */
+.win-diamonds-btn {
+  position: fixed;       /* recalculo a posição perto do grid via JS */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  height: 64px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1ee196 0%, #12b886 100%);
+  color: #0b0b0b;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .3px;
+  border: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.25);
+  cursor: pointer;
+  z-index: 9999;
+  transition: transform .08s ease, box-shadow .08s ease, opacity .2s ease;
+}
+.win-diamonds-btn:hover { transform: translateY(-1px); }
+.win-diamonds-btn:active { transform: translateY(0); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+
+@media (max-width: 900px){
+  /* em telas menores, fixa no canto inferior direito */
+  .win-diamonds-btn {
+    right: 16px !important;
+    bottom: 16px !important;
+    left: auto !important;
+    top: auto !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2265,6 +2300,7 @@ function isAllowedForStarterSlot(slotRole, charRole) {
 function showMenu(role, slot) {
   const scrollMenu = document.getElementById("scrollMenu");
   scrollMenu.innerHTML = '';
+  window.__lastMenuCtx = { role, slot };
   scrollMenu.style.display = 'flex';
   scrollMenu.style.flexDirection = 'column';
 
@@ -2946,11 +2982,159 @@ document.querySelectorAll(".menu-link").forEach(btn => {
     });
 });
 
+// === Meme Version (acrescenta personagens extras à lista) ===
+window.MEME_VERSION_ON = window.MEME_VERSION_ON || false;
+
+/**
+ * Preencha aqui os seus novos personagens.
+ * Mantém o mesmo shape de "characters": { nome, funcao, School, img, symbols, Stats, data }
+ */
+window.MEME_CHARACTERS = window.MEME_CHARACTERS || [
+  // EXEMPLO:
+   {
+   nome: "Hinata (Meme) UR",
+   funcao: "WS",
+   School: "Karasuno",
+   img: "img/personagens/hinata_meme.png",
+   symbols: ["img/quicksymbol.png","img/powersymbol.png"],
+   Stats: { Serve: 100, Spike: 999, Set: 0, Receive: 123, Block: 45, Save: 67 },
+   data: "12/31/25"
+  }
+];
+
+// Guarda a base original para podermos voltar quando o toggle estiver OFF
+window.__BASE_CHARACTERS = window.__BASE_CHARACTERS || characters.slice();
+
+/** Recalcula o array global "characters" de acordo com o toggle */
+function syncCharactersWithToggle(){
+  const base = window.__BASE_CHARACTERS;
+  const out  = base.slice(); // cópia da base
+
+  if (window.MEME_VERSION_ON && Array.isArray(window.MEME_CHARACTERS)) {
+    const baseNames = new Set(base.map(p => p?.nome));
+    for (const p of window.MEME_CHARACTERS) {
+      if (p && !baseNames.has(p.nome)) out.push(p); // só acrescenta se for NOVO
+    }
+  }
+
+  // IMPORTANTE: muta o array "characters" sem trocar a referência
+  characters.splice(0, characters.length, ...out);
+}
+
+// Garante que o site já comece consistente com o estado do toggle
+syncCharactersWithToggle();
+updateWinDiamondsBtn(); 
+// ---- helpers do menu do grid (scrollMenu) ----
+function isGridMenuOpen(){
+  const el = document.getElementById('scrollMenu');
+  return !!(el && getComputedStyle(el).display !== 'none' && el.childElementCount > 0);
+}
+
+function refreshGridMenu(){ // atualiza sem fechar
+  const ctx = window.__lastMenuCtx;
+  if (!ctx) return;
+  // salva o scroll do menu, se existir
+  const el = document.getElementById('scrollMenu');
+  const keepScroll = el ? el.scrollTop : 0;
+
+  // se o slot ainda está no DOM, reabre
+  if (document.body.contains(ctx.slot)) {
+    showMenu(ctx.role, ctx.slot);
+    const el2 = document.getElementById('scrollMenu');
+    if (el2) el2.scrollTop = keepScroll; // restaura posição
+  }
+}
+
+function closeGridMenu(){ // fecha o menu do grid
+  const el = document.getElementById('scrollMenu');
+  if (!el) return;
+  el.innerHTML = '';
+  el.style.display = 'none';
+}
+// ===== WIN 999 DIAMONDS =====
+const WIN_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeTFIekmM_fEn_Ch1lv26WLtuCPto_opjiTx8pme180oZk6EQ/viewform";
+
+/** tenta achar o container do grid principal para ancorar a posição do botão */
+function __findGridEl(){
+  // coloque primeiro os ids/candidatos que existem no seu HTML
+  const candidates = [
+    '#mainGrid', '#gridContainer', '#court', '#grid', '#pageBuilder',
+    '.grid', '.court'
+  ];
+  for (const sel of candidates){
+    const el = document.querySelector(sel);
+    if (el) return el;
+  }
+  return null;
+}
+
+/** posiciona o botão à direita do grid (fallback: canto direito da tela) */
+function __positionWinBtn(btn){
+  const grid = __findGridEl();
+  if (!btn) return;
+
+  if (grid){
+    const r = grid.getBoundingClientRect(); // relativo à viewport
+    const left = Math.min(window.innerWidth - 300, r.right + 16);
+    const top  = Math.max(16, r.top + 60);
+    btn.style.left = left + 'px';
+    btn.style.top  = top  + 'px';
+    btn.style.right = 'auto';
+    btn.style.bottom = 'auto';
+  } else {
+    // fallback
+    btn.style.right = '24px';
+    btn.style.top   = '120px';
+    btn.style.left = 'auto';
+    btn.style.bottom = 'auto';
+  }
+}
+
+/** cria o botão se não existir e mostra */
+function showWinDiamondsBtn(){
+  if (document.getElementById('winDiamondsBtn')) {
+    const btn = document.getElementById('winDiamondsBtn');
+    btn.style.display = 'inline-flex';
+    __positionWinBtn(btn);
+    return;
+  }
+  const btn = document.createElement('button');
+  btn.id = 'winDiamondsBtn';
+  btn.className = 'win-diamonds-btn';
+  btn.type = 'button';
+  btn.textContent = 'WIN 999 DIAMONDS 💎';
+  btn.addEventListener('click', () => window.open(WIN_URL, '_blank', 'noopener'));
+  document.body.appendChild(btn);
+  __positionWinBtn(btn);
+
+  // reposiciona ao redimensionar/rolar
+  const reposition = () => __positionWinBtn(btn);
+  window.addEventListener('resize', reposition);
+  window.addEventListener('scroll', reposition);
+}
+
+/** esconde (não remove) */
+function hideWinDiamondsBtn(){
+  const btn = document.getElementById('winDiamondsBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+/** decide mostrar/ocultar conforme o toggle */
+function updateWinDiamondsBtn(){
+  if (window.MEME_VERSION_ON) showWinDiamondsBtn();
+  else hideWinDiamondsBtn();
+}
+// ============================================
+
+
 /* ====== LISTA / FILTROS DE characters (mantida com stopPropagation nos clicks) ====== */
 function showCharacterList() {
-    const funcoes = [...new Set(characters.map(p => p.funcao))];
-    const escolas = [...new Set(characters.map(p => p.School))];
-    const StatsKeys = [...new Set(characters.flatMap(p => Object.keys(p.Stats || {})))];
+    const POOL = characters;
+
+    const funcoes   = [...new Set(POOL.map(p => p.funcao))];
+    const escolas   = [...new Set(POOL.map(p => p.School))];
+    const StatsKeys = [...new Set(POOL.flatMap(p => Object.keys(p.Stats || {})))];
+
     function symbolToType(sym){
   const s = String(sym||"").toLowerCase();
   if (s.includes("quicksymbol"))   return "quick";
@@ -2965,58 +3149,80 @@ function showCharacterList() {
 
 // tipos únicos lendo characters[*].symbols
 const allTypes = [...new Set(
-  characters.flatMap(p => (Array.isArray(p.symbols) ? p.symbols : [])
+  POOL.flatMap(p => (Array.isArray(p.symbols) ? p.symbols : [])
     .map(symbolToType).filter(Boolean))
 )].sort();
 
-    let html = `
-    <h3>Characters</h3>
-    <div class="filtros">
-        <div>
-            <label>Role:</label>
-            <select id="filtroFuncao">
-                <option value="">All</option>
-                ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
-            </select>
-        </div>
-        <div>
-            <label>School:</label>
-            <select id="filtroEscola">
-                <option value="">All</option>
-                ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
-            </select>
-        </div>
-        <div>
-            <label>Stats:</label>
-            <select id="filtroStats">
-                <option value="">All</option>
-                ${StatsKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-        </div>
-                <div>
-            <label>Expected Release Date:</label>
-            <select id="filtroDataOrdem" title="Ordenar pela data (ignora quem não tem data)">
-                <option value="">Ignorar</option>
-                <option value="asc">Ascendente (MM/DD/YY)</option>
-                <option value="desc">Descendente (MM/DD/YY)</option>
-            </select>
-        </div>
-        <div>
-             <label>Type:</label>
-             <div id="filtroType">
-             ${allTypes.map(t => `
-             <label style="display:inline-flex;align-items:center;gap:6px;margin:2px 8px 2px 0;">
-             <input type="checkbox" name="typeFilter" value="${t}"> ${t.toUpperCase()}
-             </label>
-             `).join("")}
-             </div>
-        </div>
-<button id="limparFiltros">Limpar</button>
+let html = `
+  <h3>Characters</h3>
+  <div class="filtros">
+    <div>
+      <label>Role:</label>
+      <select id="filtroFuncao">
+        <option value="">All</option>
+        ${funcoes.map(f => `<option value="${f}">${f}</option>`).join('')}
+      </select>
     </div>
-<div class='char-list' id="charList"></div>
-    `;
+    <div>
+      <label>School:</label>
+      <select id="filtroEscola">
+        <option value="">All</option>
+        ${escolas.map(e => `<option value="${e}">${e}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label>Stats:</label>
+      <select id="filtroStats">
+        <option value="">All</option>
+        ${StatsKeys.map(s => `<option value="${s}">${s}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label>Expected Release Date:</label>
+      <select id="filtroDataOrdem" title="Ordenar pela data (ignora quem não tem data)">
+        <option value="">Ignorar</option>
+        <option value="asc">Ascendente (MM/DD/YY)</option>
+        <option value="desc">Descendente (MM/DD/YY)</option>
+      </select>
+    </div>
+    <div>
+      <label>Type:</label>
+      <div id="filtroType">
+        ${allTypes.map(t => `
+          <label style="display:inline-flex;align-items:center;gap:6px;margin:2px 8px 2px 0;">
+            <input type="checkbox" name="typeFilter" value="${t}"> ${t.toUpperCase()}
+          </label>
+        `).join("")}
+      </div>
+    </div>
+
+    <button id="limparFiltros">Limpar</button>
+  </div>
+
+  <div id="memeToggleRow" style="display:flex;align-items:center;gap:8px;margin:6px 0;">
+    <input type="checkbox" id="memeToggle" ${window.MEME_VERSION_ON ? 'checked' : ''}>
+    <div>Meme Version</div>
+  </div>
+
+  <div class="char-list" id="charList"></div>
+`;
+
 
     sidebarContent.innerHTML = html;
+    const memeTg = document.getElementById('memeToggle');
+if (memeTg){
+  memeTg.addEventListener('change', (e)=>{
+    window.MEME_VERSION_ON = !!e.target.checked;
+    syncCharactersWithToggle();   // <-- atualiza o array characters
+    showCharacterList();          // <-- reconstrói a UI
+    updateWinDiamondsBtn(); 
+    // Mantém o toggle do topo sincronizado (se existir)
+    const top = document.getElementById('memeToggleTop');
+    if (top && top.checked !== window.MEME_VERSION_ON) top.checked = window.MEME_VERSION_ON;
+  });
+}
+
+
     const list = document.getElementById('charList');
 if (list) list.classList.remove('is-hidden');
     enableCloseOutsideCharList();
@@ -3063,11 +3269,13 @@ if (typeBox) typeBox.addEventListener('change', renderLista);
   if (StatsSel.toLowerCase() === "todos") StatsSel = "";
 
   // 1) filtro base
-  let filtrados = characters.filter(p =>
-    (funcaoSel === "" || p.funcao === funcaoSel) &&
-    (escolaSel === "" || p.School === escolaSel) &&
-    (typeSel.length === 0 || typeSel.every(t => getCharTypes(p).includes(t)))
-  );
+  const BASE = POOL; // usa a pool ativa
+let filtrados = BASE.filter(p =>
+  (funcaoSel === "" || p.funcao === funcaoSel) &&
+  (escolaSel === "" || p.School === escolaSel) &&
+  (typeSel.length === 0 || typeSel.every(t => getCharTypes(p).includes(t)))
+);
+
 
   // 2) ordenar por data quando escolhido (e ignorar sem data)
   if (dataOrdem === "asc" || dataOrdem === "desc") {
@@ -6532,6 +6740,62 @@ const gains = gFree + Math.round(gCash);
     const btnReopen = document.getElementById('reopenSources');
     if(btnReopen){ btnReopen.addEventListener('click', ()=> setCollapsed(false)); }
     const prev = localStorage.getItem(COLLAPSE_KEY);
+
+  // === Toggle "Meme Version" no topo, ao lado do + Team ===
+(function placeTopMemeToggle(){
+  const addBtn = document.getElementById('addTeamBtn');
+  if (!addBtn || document.getElementById('memeToggleTop')) return; // já colocado
+
+  const wrap = document.createElement('div');
+  wrap.style.display = 'inline-flex';
+  wrap.style.alignItems = 'center';
+  wrap.style.gap = '10px';
+  wrap.style.marginLeft = '10px';
+
+  const label = document.createElement('label');
+  label.style.display = 'inline-flex';
+  label.style.alignItems = 'center';
+  label.style.gap = '6px';
+  label.innerHTML = `
+    <input id="memeToggleTop" type="checkbox" ${window.MEME_VERSION_ON ? 'checked' : ''}>
+    <div>Meme Version</div>
+  `;
+
+  // Insere imediatamente depois do botão + Team
+  addBtn.parentNode.insertBefore(wrap, addBtn.nextSibling);
+  wrap.appendChild(label);
+
+  // Listener do toggle do topo
+  const top = label.querySelector('#memeToggleTop');
+  top.addEventListener('change', (e)=>{
+    window.MEME_VERSION_ON = !!e.target.checked;
+syncCharactersWithToggle(); // atualiza lista global "characters"
+updateWinDiamondsBtn();
+
+// se a lista do grid estiver aberta, reconstrói imediatamente
+if (isGridMenuOpen()) {
+  refreshGridMenu();
+}
+
+// manter os dois toggles sincronizados
+const otherId = this.id === 'memeToggle' ? 'memeToggleTop' : 'memeToggle';
+const other = document.getElementById(otherId);
+if (other && other.checked !== window.MEME_VERSION_ON) {
+  other.checked = window.MEME_VERSION_ON;
+}
+
+
+    // Se a aba Characters estiver aberta, re-renderiza
+    if (document.getElementById('charList')) {
+      showCharacterList();
+    }
+
+    // Sincroniza com o toggle da lateral (se existir)
+    const side = document.getElementById('memeToggle');
+    if (side && side.checked !== window.MEME_VERSION_ON) side.checked = window.MEME_VERSION_ON;
+  });
+})();
+
 // 1ª visita: mantém colapsado; visitas seguintes: respeita o salvo
 if (prev === null) {
   setCollapsed(true);
