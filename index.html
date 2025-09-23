@@ -1170,6 +1170,7 @@ body.modal-open{ overflow: hidden; }
 /* Larguras finais: número e data */
 #simPane #simInputs .planner-input[type="number"] { width: 140px; }   /* Saldo inicial */
 #simPane #simInputs .planner-input[type="date"]   { width: 170px; }   /* Data de início */
+#globalRankingList .bond-btn { padding: 6px 10px; }
 
 </style>
 </head>
@@ -1186,6 +1187,7 @@ body.modal-open{ overflow: hidden; }
         <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
         <li><button id="openPlannerBtn" class="menu-link bond-btn">💎 Resource Planner</button></li>
+        <li><button class="menu-link bond-btn" data-section="global">🌐 Global Ranking</button></li>      
       </ul>
     <div id="sidebar-content">
         <p>Select an option above.</p>
@@ -2194,6 +2196,168 @@ let teams = window.teams || [];            // se já existir, reutiliza
 let currentTeamIndex = window.currentTeamIndex || 0;
 let __mtAdding = false;                    // lock anti-duplo clique
 
+document.querySelectorAll(".menu-link").forEach(btn => { 
+  /* ====== GLOBAL RANKING: CONFIG & HELPERS ====== */
+const METRICS_OPTIN_KEY = 'metrics_optin_v1';
+const ANON_ID_KEY = 'anon_id_v1';
+const RANKING_API = 'https://script.google.com/macros/s/AKfycbzSkhxOzzFzJ2MkGzT_eKuWeJrFuB6sb7T5e_uJ3wlvC82fyFW1-9A6Ube9rkujtmKlFg/exec'; // <-- troque
+/* ====== COMMENTS (apenas a partir do ranking) ====== */
+const COMMENTS_API = 'https://script.google.com/macros/s/AKfycbzSkhxOzzFzJ2MkGzT_eKuWeJrFuB6sb7T5e_uJ3wlvC82fyFW1-9A6Ube9rkujtmKlFg/exec'; // <-- troque
+
+function getDeleteTokens(){
+  try { return JSON.parse(localStorage.getItem('deleteTokens')||'{}'); }
+  catch { return {}; }
+}
+function setDeleteToken(id, token){
+  const map = getDeleteTokens();
+  map[id] = token;
+  localStorage.setItem('deleteTokens', JSON.stringify(map));
+}
+
+async function postComment(teamHash, content, parentId=''){
+  const payload = { teamHash, anonId: getAnonId(), content, parentId };
+  const res = await fetch(COMMENTS_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if (res.ok && data.deleteToken) setDeleteToken(data.id, data.deleteToken);
+  return data;
+}
+async function loadComments(teamHash, afterId=0, limit=50){
+  const u = new URL(COMMENTS_API);
+  u.searchParams.set('teamHash', teamHash);
+  u.searchParams.set('afterId', String(afterId));
+  u.searchParams.set('limit', String(limit));
+  const r = await fetch(u);
+  return r.ok ? r.json() : [];
+}
+async function deleteMyComment(id){
+  const token = getDeleteTokens()[id];
+  if (!token) return { error:'no_token' };
+  const u = new URL(COMMENTS_API);
+  u.searchParams.set('id', String(id));
+  u.searchParams.set('token', token);
+  const r = await fetch(u, { method:'DELETE' });
+  if (r.ok){
+    const map = getDeleteTokens(); delete map[id]; localStorage.setItem('deleteTokens', JSON.stringify(map));
+  }
+  return r.json();
+}
+
+// Abre a área de comentários para um teamHash (só usada pelo Ranking)
+async function openCommentsForHash(teamHash){
+  const area = document.getElementById('commentsArea');
+  const label = document.getElementById('commentsHashLabel');
+  const list = document.getElementById('commentsList');
+  const form = document.getElementById('commentForm');
+  const textarea = document.getElementById('commentText');
+
+  if (!area || !label || !list || !form) return;
+
+  label.textContent = teamHash.slice(0,12)+'…';
+  area.style.display = '';
+
+  async function render(){
+    list.innerHTML = '<em>Loading comments…</em>';
+    const rows = await loadComments(teamHash, 0, 100);
+    if (!rows.length){ list.innerHTML = '<em>No comments.</em>'; return; }
+    list.innerHTML = '';
+    for (const c of rows){
+      const card = document.createElement('div');
+      card.style.cssText = 'border:1px solid #444;border-radius:8px;padding:8px;background:#232323';
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+          <small>${c.createdAt}</small>
+          <div>
+            <button class="bond-btn" data-del="${c.id}">Delete</button>
+          </div>
+        </div>
+        <div style="white-space:pre-wrap;margin-top:6px;">${c.content}</div>
+      `;
+      card.querySelector('[data-del]')?.addEventListener('click', async (ev)=>{
+        ev.preventDefault();
+        const id = Number(ev.currentTarget.dataset.del);
+        const r = await deleteMyComment(id);
+        if (!r.error) render();
+        else alert('Could not delete (token missing/mismatch).');
+      });
+      list.appendChild(card);
+    }
+  }
+
+  await render();
+
+  form.onsubmit = async (e)=>{
+    e.preventDefault();
+    const text = (textarea.value || '').trim();
+    if (!text) return;
+    const resp = await postComment(teamHash, text);
+    if (resp?.error){ alert('Error posting comment'); return; }
+    textarea.value = '';
+    render();
+  };
+}
+
+function getAnonId(){
+  let id = localStorage.getItem(ANON_ID_KEY);
+  if (!id){ id = crypto?.randomUUID?.() || String(Math.random()).slice(2); localStorage.setItem(ANON_ID_KEY, id); }
+  return id;
+}
+
+// Segunda-feira 00:00 na America/Sao_Paulo (YYYY-MM-DD)
+function getWeekStartISO(tz='America/Sao_Paulo', base=new Date()){
+  const wd = new Intl.DateTimeFormat('en-US',{timeZone:tz,weekday:'short'}).format(base);
+  const idx = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(wd);
+  const d = new Date(base);
+  d.setDate(d.getDate() - idx);
+  return new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+}
+
+// Hash SHA-256 de um objeto (retorna hex)
+async function sha256Hex(obj){
+  const canonical = JSON.stringify(obj);
+  const bytes = new TextEncoder().encode(canonical);
+  const buf = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// Extrai um "estado" canônico do time atual e calcula o hash
+async function computeTeamHashFromCurrent(){
+  if (typeof collectTeamState !== 'function') return null;
+  const st = collectTeamState(teams?.[currentTeamIndex]?.name || `Team ${currentTeamIndex+1}`);
+  const canon = {
+    starters: st.starters || {},
+    bench: st.bench || [],
+    // IMPORTANTE: não incluir 'equip' no hash global (para preservar privacidade / estabilidade)
+  };
+  return sha256Hex(canon);
+}
+
+// Envia evento de uso para o ranking global (contagem semanal)
+async function sendUsageEventForCurrentTeam(source='switch', mode=null){
+  try{
+    if (localStorage.getItem(METRICS_OPTIN_KEY) !== 'yes') return; // respeita opt-in
+    const teamHash = await computeTeamHashFromCurrent();
+    if (!teamHash) return;
+    const anonId = getAnonId();
+    const weekStart = getWeekStartISO();
+    await fetch(RANKING_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ anonId, teamHash, weekStart, mode, source })
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+// Busca leaderboard da semana
+async function fetchLeaderboard(limit=20){
+  const u = new URL(RANKING_API);
+  u.searchParams.set('weekStart', getWeekStartISO());
+  u.searchParams.set('limit', String(Math.min(limit, 50)));
+  const r = await fetch(u).catch(()=>null);
+  if (!r || !r.ok) return [];
+  return r.json(); // [{teamHash, uses}]
+}
+
+});
 /* ====== FUNÇÕES ORIGINAIS (mantidas) ====== */
 function addBenchSlot() {
     const benchRow = document.getElementById("bench-row");
@@ -2887,6 +3051,91 @@ document.querySelectorAll(".menu-link").forEach(btn => {
             menuBtn.style.display = "none";
         });
     });
+        } else if (section === "global") {
+      // UI básica do ranking
+      sidebarContent.innerHTML = `
+        <h3>🌐 Weekly Global Ranking</h3>
+        <div id="rankOptin" style="margin:6px 0 10px 0;"></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button id="refreshRankingBtn" class="bond-btn">Refresh</button>
+        </div>
+        <div id="globalRankingList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+        <hr style="margin:14px 0;border-color:#444;">
+        <div id="commentsArea" style="display:none;">
+          <h4>Comments for <code id="commentsHashLabel"></code></h4>
+          <div id="commentsList" style="display:flex;flex-direction:column;gap:10px;margin:8px 0;"></div>
+          <form id="commentForm" style="display:flex;gap:8px;align-items:flex-start;">
+            <textarea id="commentText" rows="3" placeholder="Add a comment..."
+              style="flex:1;resize:vertical;background:#1f1f1f;color:#fff;border:1px solid #555;border-radius:8px;padding:8px;"></textarea>
+            <button type="submit" class="bond-btn">Post</button>
+          </form>
+        </div>
+      `;
+
+      // opt-in
+      const optinBox = document.getElementById('rankOptin');
+      if (localStorage.getItem(METRICS_OPTIN_KEY) !== 'yes'){
+        optinBox.innerHTML = `
+          <div style="background:#222;padding:8px;border:1px solid #555;border-radius:8px">
+            <p style="margin:0 0 6px 0;">Coletar métricas anônimas (hash do time) para exibir o ranking global?</p>
+            <button id="enableMetrics" class="bond-btn">Ativar</button>
+          </div>`;
+        document.getElementById('enableMetrics').addEventListener('click', ()=>{
+          localStorage.setItem(METRICS_OPTIN_KEY,'yes');
+          optinBox.innerHTML = `<small>Métricas ativas ✅</small>`;
+        });
+      } else {
+        optinBox.innerHTML = `<small>Métricas ativas ✅</small>`;
+      }
+
+      async function renderGlobalRanking(){
+        const list = document.getElementById('globalRankingList');
+        list.textContent = 'Loading...';
+        const data = await fetchLeaderboard(20);
+        if (!data.length){
+          list.textContent = 'No data this week.';
+          return;
+        }
+        list.innerHTML = '';
+        // tenta resolver hashes que coincidam com times locais do usuário
+        const localMap = new Map();
+        for (let i=0;i<teams.length;i++){
+          const st = collectTeamState(teams[i].name);
+          const canon = { starters: st.starters||{}, bench: st.bench||[] };
+          // eslint-disable-next-line no-await-in-loop
+          const h = await sha256Hex(canon);
+          localMap.set(h, teams[i].name);
+        }
+
+        for (const {teamHash, uses} of data){
+          const name = localMap.get(teamHash) || `Team ${teamHash.slice(0,6)}…`;
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #444;border-radius:8px;padding:8px;background:#1e1e1e';
+
+          row.innerHTML = `
+            <div>
+              <div style="font-weight:700">${name}</div>
+              <div><small><code>${teamHash.slice(0,12)}…</code> • ${uses} use(s) this week</small></div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="bond-btn" data-action="comment" data-hash="${teamHash}">💬</button>
+            </div>
+          `;
+          list.appendChild(row);
+        }
+
+        // abrir área de comentários somente a partir do ranking
+        list.addEventListener('click', (e)=>{
+          const btn = e.target.closest('[data-action="comment"]');
+          if (!btn) return;
+          const hash = btn.dataset.hash;
+          openCommentsForHash(hash);
+        }, { once: true }); // um bind por render
+      }
+
+      document.getElementById('refreshRankingBtn').addEventListener('click', renderGlobalRanking);
+      renderGlobalRanking(); // inicial
 
     // Botão Credits
     document.getElementById("patchBtn").addEventListener("click", (e) => {
@@ -5237,6 +5486,16 @@ function renderTeamTabs(){
   if (!tabs) return;
   tabs.innerHTML = '';
 
+  b.addEventListener('click', ()=>{
+  if (b.classList.contains('editing')) return;
+  if (i === currentTeamIndex) return;
+  saveCurrentTeam();
+  currentTeamIndex = i;
+  applyTeamState(teams[i]);
+  renderTeamTabs();
+});
+
+
   teams.forEach((t, i)=>{
     const b = document.createElement('button');
     b.className = 'team-tab' + (i===currentTeamIndex ? ' active' : '');
@@ -5293,6 +5552,8 @@ function renderTeamTabs(){
     tabs.appendChild(b);
   });
 }
+  // contabiliza uso p/ ranking global (troca de time)
+  sendUsageEventForCurrentTeam('switch', teams[i]?.type || null);
 
 // Inicializa a barra de times
 function initMultiTeams(){
