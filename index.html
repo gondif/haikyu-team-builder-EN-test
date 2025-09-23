@@ -1394,7 +1394,6 @@ const characters = [
   {nome:"Corner of the Iron Wall", descricao:"While Koganegawa is on the court, at the start of a rally, ally members with Reflex ≥200% gain +10% Attack Technique and +10% Defense Technique. When allies perform a 2- or 3-man block, or when an ally's block skill activates, gain 1 stack of Create Iron Wall (max 12). If stacks ≥3: allies' Awareness and Reflex +20%, and Koganegawa's Awareness and Reflex +30%. If stacks ≥7: at the start of a rally, allies' front-row Block increases by Koganegawa's Block × 12% (cap 800/900/1000). If stacks ≥10: allies with Awareness >100% gain +15% Power, and allies with Reflex >100% gain +25% Mental for 1 set."},
   {nome:"High Wall", descricao:"Performs a block with power Block × 260%/275%/290%/305%/320%. If this is a 2- or 3-person block, Koganegawa's Reflex +40%. If High Wall is not on cooldown, when another ally block Special Move activates, that block's power increases by the blocking member's Block × 100%, then High Wall enters cooldown."}
 ], symbols: [ "img/blocksymbol.png","img/settersymbol.png"] }
-    
 ];
 
 const descricoesSinergia = {
@@ -2987,19 +2986,27 @@ window.MEME_VERSION_ON = window.MEME_VERSION_ON || false;
 window.MEME_CHARACTERS = window.MEME_CHARACTERS || [
   // EXEMPLO:
    {
-   { nome: "Ennoshita SP", funcao: "WS", img: "img/MEMEennoshitaSP.png", School: "Karasuno", vinculo: ["Graduation Ceremony"], Stats:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, habilidades:[
+   nome: "Hinata (Meme) UR",
+   funcao: "WS",
+   School: "Karasuno",
+   img: "img/personagens/hinata_meme.png",
+   symbols: ["img/quicksymbol.png","img/powersymbol.png"],
+   Stats: { Serve: 100, Spike: 999, Set: 0, Receive: 123, Block: 45, Save: 67 },
+   data: "12/31/25"
+  },
+    { 
+     nome: "Ennoshita SP", 
+     funcao: "WS", img: "img/MEMEennoshitaSP.png", 
+     School: "Karasuno", vinculo: ["Graduation Ceremony"], 
+     Stats:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, 
+     habilidades:[
   {nome:"Anchor Receive", descricao:"Performs a receive that nullifies 1 incoming spike or serve (guaranteed once per rally). He will also grant himself a 20% buff on his [Receive] + [Save], lasting 2 rallies."},
   {nome:"Adaptive Spike", descricao:"Performs a spike that scales with [Block] stats of opponent's front row by 20%. He will also have 40% chance to reduce enemy block by 10% for 2 rallies. This percentage will increase to 30% if he scores"},
   {nome:"Unshakable Resolve", descricao:"Whenever an ally receive is not PERFECT, he will gain a stack of [Resolving], each stack grants him 10% [Receive] and [Save]. Maximum 4 stacks."},
   {nome:"Captain’s Burden", descricao:"Can activate anytime. Removes all allies debuff and grants all allies 20% boost in Attack and Defense Technique. If any ally is below 50% stamina, granting them 30% more. This effect lasts 3 rallies."}
-], symbols: [ "img/receivesymbol.png","img/powersymbol.png"] },
-    { nome: "Kaito SP", funcao: "OP", img: "img/MEMEennoshitaSP.png", School: "Karasuno", vinculo: ["Graduation Ceremony"], Stats:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, habilidades:[
-  {nome:"Anchor Receive", descricao:"Performs a receive that nullifies 1 incoming spike or serve (guaranteed once per rally). He will also grant himself a 20% buff on his [Receive] + [Save], lasting 2 rallies."},
-  {nome:"Adaptive Spike", descricao:"Performs a spike that scales with [Block] stats of opponent's front row by 20%. He will also have 40% chance to reduce enemy block by 10% for 2 rallies. This percentage will increase to 30% if he scores"},
-  {nome:"Unshakable Resolve", descricao:"Whenever an ally receive is not PERFECT, he will gain a stack of [Resolving], each stack grants him 10% [Receive] and [Save]. Maximum 4 stacks."},
-  {nome:"Captain’s Burden", descricao:"Can activate anytime. Removes all allies debuff and grants all allies 20% boost in Attack and Defense Technique. If any ally is below 50% stamina, granting them 30% more. This effect lasts 3 rallies."}
-], symbols: [ "img/receivesymbol.png","img/powersymbol.png"] }
-  }
+], 
+    symbols: [ "img/receivesymbol.png","img/powersymbol.png"] 
+    }
 ];
 
 // Guarda a base original para podermos voltar quando o toggle estiver OFF
