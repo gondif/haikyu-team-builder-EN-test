@@ -4598,6 +4598,7 @@ function moveBetweenSlots(srcEl, dstEl){
   // Atualiza badges/engrenagem (seu fluxo atual)
   if (typeof updateItemBadge === 'function') { updateItemBadge(srcEl); updateItemBadge(dstEl); }
   if (typeof ensureItemGear   === 'function') { ensureItemGear(srcEl); ensureItemGear(dstEl); }
+  document.dispatchEvent(new CustomEvent('team:changed'));
 }
 
   function decorateDropTarget(slot){
@@ -6830,10 +6831,67 @@ if (!planner.banners || !planner.banners.length) seedBannersFromSheet();
     }
 
     fillSlots(planner?.nomePlano || '');
-    initServerBanners();     // <— COLE AQUI
-    bindServerButtons();
-    renderFree(); renderCash(); renderBanners(); recalc();
-  }
+
+/* ===================== GLOBAL RANKING: autosend em mudanças no grid ===================== */
+/* Debounce + dedupe: envia evento (source:'edit') quando o time atual fica “estável” por 3s
+   e tem pelo menos 6 titulares preenchidos. Respeita o opt-in (metrics_optin_v1 === 'yes'). */
+(function setupAutoSendOnGridChanges(){
+  let tDebounce;
+
+  // expõe global para você chamar de handlers existentes (drag/drop, remove, swap, etc.)
+  window.notifyTeamChanged = function notifyTeamChanged(){
+    if (localStorage.getItem('metrics_optin_v1') !== 'yes') return;
+    clearTimeout(tDebounce);
+    tDebounce = setTimeout(async ()=>{
+      try{
+        if (typeof collectTeamState !== 'function') return;
+        const st = collectTeamState(teams?.[currentTeamIndex]?.name || `Team ${currentTeamIndex+1}`);
+        const filled = Object.values(st.starters||{}).filter(Boolean).length;
+        if (filled >= 6) {
+          await sendUsageEventForCurrentTeam('edit', teams?.[currentTeamIndex]?.type || null);
+        }
+      }catch(e){}
+    }, 3000); // 3 segundos sem novas mudanças
+  };
+
+  // 1) Hook geral: sempre que você disparar este CustomEvent, vai contar
+  document.addEventListener('team:changed', ()=> window.notifyTeamChanged());
+
+  // 2) MutationObserver: observa alterações visuais nas áreas dos slots/bench e dispara o debounce
+  try{
+    const gridRoot  = document.querySelector('#court') || document;           // ajuste se seu root tiver outro id
+    const benchRoot = document.querySelector('#bench') || document;           // ajuste se seu bench tiver outro id
+    const obs = new MutationObserver((muts)=>{
+      // Qualquer mudança estrutural relevante nos slots/bench dispara o debounce
+      for (const m of muts){
+        if (m.type === 'childList' || (m.type === 'attributes' && /data-|src|style/.test(m.attributeName||''))){
+          window.notifyTeamChanged();
+          break;
+        }
+      }
+    });
+    const obsCfg = { childList: true, subtree: true, attributes: true, attributeFilter: ['data-nome','src','style'] };
+    gridRoot  && obs.observe(gridRoot,  obsCfg);
+    benchRoot && obs.observe(benchRoot, obsCfg);
+  }catch(e){}
+})();
+
+/* Opcional: contar “load/apply” também se ainda não estiverem com wrap em outro lugar */
+if (typeof window.applyTeamState === 'function') {
+  const _origApplyState = window.applyTeamState;
+  window.applyTeamState = function(...args){
+    const out = _origApplyState.apply(this, args);
+    try { window.notifyTeamChanged(); } catch(e){}
+    return out;
+  };
+}
+/* ======================================================================================== */
+
+initServerBanners();
+bindServerButtons();
+renderFree(); renderCash(); renderBanners(); recalc();
+}
+
   // === BIND: + Fonte FREE / + Fonte CASH ===
 const $addFree = document.getElementById('addFree');
 if ($addFree) {
