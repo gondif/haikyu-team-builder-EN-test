@@ -1228,6 +1228,10 @@ body.modal-open{ overflow: hidden; }
 </div>
 
 <h1>Haikyu Fly High - Team Builder by Devoy Aces</h1>
+<div id="view-stats" style="display:flex;gap:16px;justify-content:center;align-items:center;margin-top:6px;opacity:.95">
+  <span>Daily Views: <strong id="visits-today">—</strong></span>
+  <span>Total: <strong id="visits-total">—</strong></span>
+</div>
 
 <div id="multiTeams" class="multi-teams">
   <div id="teamTabs" class="team-tabs"></div>
@@ -1393,7 +1397,13 @@ const characters = [
   {nome:"Shortest Distance Setup", descricao:"Koganegawa tosses with power Toss × 140%/160%/180%. During the first ally spike (Power Attack / Quick Attack) after this activates, the spiking member's Awareness +10% and Power Attack / Quick Attack +15% for 2 net crossings. Additionally, the team's morale +6."},
   {nome:"Corner of the Iron Wall", descricao:"While Koganegawa is on the court, at the start of a rally, ally members with Reflex ≥200% gain +10% Attack Technique and +10% Defense Technique. When allies perform a 2- or 3-man block, or when an ally's block skill activates, gain 1 stack of Create Iron Wall (max 12). If stacks ≥3: allies' Awareness and Reflex +20%, and Koganegawa's Awareness and Reflex +30%. If stacks ≥7: at the start of a rally, allies' front-row Block increases by Koganegawa's Block × 12% (cap 800/900/1000). If stacks ≥10: allies with Awareness >100% gain +15% Power, and allies with Reflex >100% gain +25% Mental for 1 set."},
   {nome:"High Wall", descricao:"Performs a block with power Block × 260%/275%/290%/305%/320%. If this is a 2- or 3-person block, Koganegawa's Reflex +40%. If High Wall is not on cooldown, when another ally block Special Move activates, that block's power increases by the blocking member's Block × 100%, then High Wall enters cooldown."}
-], symbols: [ "img/blocksymbol.png","img/settersymbol.png"] }
+], symbols: [ "img/blocksymbol.png","img/settersymbol.png"] },
+    { nome: "Oikawa SP", funcao: "S", img: "img/oikawaSP.png", School: "Aoba Johsai", vinculo: ["Cultural Festival"], Stats:{Serve:1,Spike:1,Set:1,Receive:1,Block:1,Save:1}, habilidades:[
+  {nome:"100% Performance", descricao:"xxx"},
+  {nome:"Sniper serve", descricao:"xxx"},
+  {nome:"Command tower", descricao:"xxx"},
+  {nome:"Perfect toss", descricao:"xxx"}
+], symbols: [ "img/powersymbol.png","img/settersymbol.png"] }
 ];
 
 const descricoesSinergia = {
@@ -3006,7 +3016,16 @@ window.MEME_CHARACTERS = window.MEME_CHARACTERS || [
   {nome:"Captain’s Burden", descricao:"Can activate anytime. Removes all allies debuff and grants all allies 20% boost in Attack and Defense Technique. If any ally is below 50% stamina, granting them 30% more. This effect lasts 3 rallies."}
 ], 
     symbols: [ "img/receivesymbol.png","img/powersymbol.png"] 
-    }
+    },
+    {
+   nome: "Atsumu SP",
+   funcao: "S",
+   School: "Inarizaki", vinculo: ["Freaky Holiday"], 
+   img: "img/MEMEatsumusantaSP.png",
+   symbols: ["img/quicksymbol.png","img/settersymbol.png"],
+   Stats: { Serve: 9999, Spike: 0, Set: 9999, Receive: 0, Block: 0, Save: 0 },
+   data: "12/31/25"
+  }
 ];
 
 // Guarda a base original para podermos voltar quando o toggle estiver OFF
@@ -7265,6 +7284,40 @@ if (window.planner){
 
 
 
+</script>
+<script>
+(function () {
+  // === configure ===
+  const ENDPOINT = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLg183IrqwRzvqDFUrhvG5l2JiDdCUNh0nRSEjBg0CyaMT6itVEZUwBu-quUsrCJJbcchyBnOwij7C3tDNE_ghR-g5F6p6xyZ7wbq_HCsBvlX6baM67RNZIyQfVE_lgXnv0kB0Pvj6qARyoSHdS0WV0OPm3DaZdfZv4EzLEaGN0iiKngNqcl8hSGOrrtNn_0x1DZRYzGT8cZT7gmzDUjcuvfqN9Kg-qYsgDY1cOLqGsSDJ6m_njQB-QKbN8NwtBwqyk42WQN-b9UaSoUMpV6xZ_ffp6iz3WbUDVomw1D&lib=M2i22KiyUSTq82YH7JNXGlMggnXhFUlq3'; // ex.: https://script.google.com/macros/s/XXX/exec
+  // =================
+
+  async function updateCounters() {
+    try {
+      // Conta visitas repetidas: sempre incrementa a cada carregamento
+      const res = await fetch(ENDPOINT + '?inc=1', { cache: 'no-store' });
+      const data = await res.json();
+
+      // Atualiza a UI se existir (não quebra se você mover/ocultar o bloco)
+      const t = document.getElementById('visits-today');
+      const g = document.getElementById('visits-total');
+      if (data && !data.error) {
+        if (t) t.textContent = data.todayCount ?? '0';
+        if (g) g.textContent = data.total ?? '0';
+      } else {
+        console.warn('Counter API error:', data && data.error);
+      }
+    } catch (err) {
+      console.error('View counter fetch failed:', err);
+    }
+  }
+
+  // Dispara quando o DOM estiver pronto (não interfere no seu JS atual)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateCounters);
+  } else {
+    updateCounters();
+  }
+})();
 </script>
 
 </body>
