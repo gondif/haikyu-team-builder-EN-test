@@ -1215,12 +1215,33 @@ body.modal-open{ overflow: hidden; }
     <button class="close-btn" id="closeSidebar">×</button>
     <h2>Side Menu</h2>
     <ul>
+      <div id="view-stats" style="display:flex;gap:16px;justify-content:center;align-items:center;margin-top:6px;opacity:.95">
+  <span>Daily Views: <strong id="visits-today">—</strong></span>
+  <span>Total: <strong id="visits-total">—</strong></span>
+</div>
         <!-- substituí EStatísticas por Save/Load -->
         <li><button class="menu-link bond-btn" data-section="save">💾 Save & Load Teams</button></li>
         <li><button class="menu-link bond-btn" data-section="characters">🔍 Characters</button></li>
         <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
         <li><button id="openPlannerBtn" class="menu-link bond-btn">💎 Resource Planner</button></li>
+        <div id="rankingBox" class="panel" style="margin:12px 0; padding:10px;">
+  <div id="rankingBox" style="margin:12px 0; padding:10px; border:1px solid #333; border-radius:10px;">
+  <div style="display:flex; gap:18px; flex-wrap:wrap;">
+    <div style="min-width:220px;">
+      <b>Top Teams (7d)</b>
+      <ol id="topWeek" style="margin:6px 0;"></ol>
+    </div>
+    <div style="min-width:220px;">
+      <b>Top Teams (All)</b>
+      <ol id="topAll" style="margin:6px 0;"></ol>
+    </div>
+    <div style="min-width:220px;">
+      <b>Top Characters</b>
+      <ol id="topChars" style="margin:6px 0;"></ol>
+    </div>
+  </div>
+</div>
       </ul>
     <div id="sidebar-content">
         <p>Select an option above.</p>
@@ -1228,10 +1249,7 @@ body.modal-open{ overflow: hidden; }
 </div>
 
 <h1>Haikyu Fly High - Team Builder by Devoy Aces</h1>
-<div id="view-stats" style="display:flex;gap:16px;justify-content:center;align-items:center;margin-top:6px;opacity:.95">
-  <span>Daily Views: <strong id="visits-today">—</strong></span>
-  <span>Total: <strong id="visits-total">—</strong></span>
-</div>
+
 
 <div id="multiTeams" class="multi-teams">
   <div id="teamTabs" class="team-tabs"></div>
@@ -2233,6 +2251,361 @@ let teams = window.teams || [];            // se já existir, reutiliza
 let currentTeamIndex = window.currentTeamIndex || 0;
 let __mtAdding = false;                    // lock anti-duplo clique
 
+// ===== Backend (Apps Script) =====
+const API = 'https://script.google.com/macros/s/AKfycbwSnplPmw7Agru5gA7bU1Gk9_tAQSw8j3ma1WEFOMmlUXqXVBp-Qe4Ey-5xMxMRASS-/exec'; // o mesmo usado no contador de views
+
+// sesssion_id estável por navegador (para cooldown de comentários e analytics)
+const SESSION_KEY = 'hqSessionIdV1';
+const SESSION_ID = (() => {
+  let id = localStorage.getItem(SESSION_KEY);
+  if (!id) { id = 's_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(SESSION_KEY, id); }
+  return id;
+})();
+
+// idioma da página -> "ptbr" ou "en"
+function currentLang(){
+  const h = (document.documentElement.lang || '').toLowerCase();
+  if (h.includes('pt')) return 'ptbr';
+  return 'en';
+}
+
+async function apiGet(params){
+  const url = API + (API.includes('?') ? '&' : '?') + params;
+  const r = await fetch(url, {method:'GET', mode:'cors'});
+  return r.json();
+}
+async function apiPost(action, payload){
+  const url = API + (API.includes('?') ? '&' : '?') + 'action=' + encodeURIComponent(action);
+  const body = new URLSearchParams({ payload: JSON.stringify(payload) });
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body
+  });
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { return { ok:false, raw:text }; }
+}
+
+
+
+// considera “completo” quando os 6 titulares estão preenchidos
+function isTeamComplete(team){
+  const filled = (team.main || []).filter(Boolean).length;
+  return filled === 6; // ajuste se quiser exigir bench também
+}
+
+// serialização dos itens (fallback caso não exista no arquivo)
+function serializeTeamItemsSafe(){
+  try { return (typeof serializeTeamItems === 'function') ? serializeTeamItems() : {}; }
+  catch(e){ return {}; }
+}
+
+// evita spam: só envia se mudou
+let __lastSentHash = null;
+let __sendTimer = null;
+
+async function sendTeamIfComplete(){
+  const team = getCurrentTeamByName();         // { main:[...], bench:[...] }
+  if (!isTeamComplete(team)) return;
+
+  const payload = {
+    session_id: SESSION_ID,
+    team: { ...team, items: serializeTeamItemsSafe() } // inclui items
+  };
+
+  const hash = JSON.stringify(payload);        // hash simples
+  if (hash === __lastSentHash) return;
+  __lastSentHash = hash;
+
+  // debouncing curto: várias trocas seguidas viram 1 envio
+  clearTimeout(__sendTimer);
+  __sendTimer = setTimeout(async ()=>{
+    try{
+      const res = await apiPost('setteam', payload);
+      // opcional: guardar o id retornado para abrir comentários desse time
+      if (res?.ok && res.team_id) window.__lastTeamId = res.team_id;
+      // console.log('setteam:', res);
+    }catch(e){ console.warn('setteam failed', e); }
+  }, 400);
+}
+
+// pluga nos hooks globais que você já expõe (sem mexer em setCharacter)
+(function hookSends(){
+  const oldAfterAssign = window.afterAssignCharacter;
+  window.afterAssignCharacter = function(el, nome){
+    if (typeof oldAfterAssign === 'function') oldAfterAssign(el, nome);
+    sendTeamIfComplete();
+  };
+  const oldAfterRemove = window.afterRemoveCharacter;
+  window.afterRemoveCharacter = function(el){
+    if (typeof oldAfterRemove === 'function') oldAfterRemove(el);
+    sendTeamIfComplete();
+  };
+})();
+async function loadRankings(){
+  try{
+    const week = await apiGet('action=top_week&days=7');
+    const allT = await apiGet('action=top_alltime');
+    const topC = await apiGet('action=top_chars&topN=20');
+
+    const $w = document.getElementById('topWeek');
+    const $a = document.getElementById('topAll');
+    const $c = document.getElementById('topChars');
+
+    const fmtTeam = (t)=> {
+      const names = (t.team?.slots ? t.team.slots.map(s=>s.id) : (t.main||[])).filter(Boolean).join(' / ');
+      const cnt   = t.count ?? t.hits ?? 0;
+      return `
+        <li style="margin:2px 0;">
+          <span>${names || '—'}</span>
+          <small> &nbsp; x${cnt}</small>
+          <button data-import="${t.team_id}" style="margin-left:8px;">Import</button>
+          <button data-comments="${t.team_id}" title="Comments">💬</button>
+        </li>`;
+    };
+
+    $w.innerHTML = (week?.top||[]).slice(0,10).map(fmtTeam).join('') || '<li>—</li>';
+    $a.innerHTML = (allT?.top||[]).slice(0,10).map(fmtTeam).join('') || '<li>—</li>';
+    $c.innerHTML = (topC?.top||[]).slice(0,15).map(x=>`<li>${x.name} <small>x${x.count}</small></li>`).join('') || '<li>—</li>';
+  }catch(e){
+    console.warn('loadRankings error', e);
+  }
+}
+
+// --------- delegação de eventos (Import / Comments) ----------
+document.addEventListener('click', async (ev)=>{
+  const imp = ev.target.closest('#rankingBox [data-import]');
+  if (imp){
+    const id = imp.getAttribute('data-import');
+    try {
+      const r = await apiGet('action=getteam&team_id='+encodeURIComponent(id));
+      if (!r?.ok || !r.team){ console.warn('getteam fail', r); alert('Não foi possível carregar esse time.'); return; }
+      applyTeamFromServer(r.team);           // <<< preenche o grid
+    } catch (e) {
+      console.error('import error', e);
+      alert('Erro ao importar time.');
+    }
+    return;
+  }
+
+  const com = ev.target.closest('#rankingBox [data-comments]');
+  if (com){
+    const id = com.getAttribute('data-comments');
+    if (typeof openCommentsUI === 'function') openCommentsUI(id);
+    else alert('Módulo de comentários ainda não foi carregado.');
+  }
+});
+
+// aplica um time vindo da API ao teu grid
+// ===== helpers =====
+const POS_FALLBACK_ORDER = ['S','MB','WS','L','WS','MB','OP']; // usado só se não acharmos rótulos
+
+function norm(s){
+  return String(s||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ').trim().toLowerCase();
+}
+
+function findCharByAnyName(name){
+  const t = norm(name);
+  const L = window.characters || [];
+  return (
+    L.find(c => norm(c.nome)    === t) ||
+    L.find(c => norm(c.name)    === t) ||
+    L.find(c => norm(c.display) === t) ||
+    L.find(c => norm(c.id)      === t) || null
+  );
+}
+
+// tenta achar o elemento .hex do slot que TEM rótulo == pos (S,MB,WS,L,OP)
+function getSlotElByPos(pos){
+  const hexes = [...document.querySelectorAll('.hex')];
+  // seletores comuns de rótulos sob/ao lado do slot – testamos vários
+  const labelSelectors = ['.pos', '.role', '.slot-role', '.slot-label', '.position', '.label'];
+  for (const el of hexes){
+    const parent = el.closest('.slot, .slot-wrap, .slot-container, .grid-cell, .hex-wrap') || el.parentElement;
+    if (!parent) continue;
+    let labelText = '';
+    for (const sel of labelSelectors){
+      const lab = parent.querySelector(sel);
+      if (lab){ labelText = (lab.textContent||'').trim().toUpperCase(); if (labelText) break; }
+    }
+    // fallback: se o texto do próximo irmão é só "S"/"MB"/etc
+    if (!labelText && el.nextElementSibling){
+      const txt = (el.nextElementSibling.textContent||'').trim().toUpperCase();
+      if (/^(S|MB|WS|L|OP)$/.test(txt)) labelText = txt;
+    }
+    if (labelText === pos) return el;
+  }
+  // não achou por rótulo: tenta por índice fixo (ordem visual)
+  const idx = POS_FALLBACK_ORDER.findIndex(p => p === pos);
+  return hexes[idx] || null;
+}
+
+function safeSetCharacter(el, ch, pos){
+  try {
+    if (typeof setCharacter === 'function') {
+      setCharacter(el, ch, ch.funcao || ch.role || pos);
+      return true;
+    }
+  } catch(e){ console.warn('setCharacter falhou', e); }
+  try {
+    el.innerHTML = `<img src="${ch.img}" alt="${ch.nome || ch.name}">`;
+    el.dataset.nome = ch.nome || ch.name || ch.id;
+    if (typeof updateSynergies === 'function') updateSynergies();
+    return true;
+  } catch(_) {}
+  return false;
+}
+
+// ===== import principal =====
+function applyTeamFromServer(team){
+  console.groupCollapsed('[Import] Aplicando time do servidor');
+  const slots = team.slots || [];
+  const bench = team.bench || [];
+  let applied = 0;
+
+  // titulares
+  for (const s of slots){
+    const pos  = (s.pos || '').toUpperCase();
+    const name = s.id || s.name || '';
+    const el   = getSlotElByPos(pos);
+    if (!el) { console.warn('slot não encontrado para', pos, name); continue; }
+
+    const ch = findCharByAnyName(name);
+    if (!ch){ console.warn('personagem não encontrado na sua lista:', name); continue; }
+
+    if (safeSetCharacter(el, ch, pos)) applied++;
+  }
+
+  // banco (se você usa 3 slots com classe .bench-slot)
+  const benchEls = [...document.querySelectorAll('.bench-slot')];
+  bench.forEach((name, i)=>{
+    const el = benchEls[i];
+    if (!el) return;
+    if (!name){ el.innerHTML=''; delete el.dataset.nome; return; }
+    const ch = findCharByAnyName(name);
+    if (ch) safeSetCharacter(el, ch, 'BENCH');
+  });
+
+  // itens (opcional)
+  try { if (typeof applyTeamItems === 'function') applyTeamItems(team.items||{}); } catch(_){}
+
+  if (typeof updateSynergies==='function') updateSynergies();
+
+  console.log(`[Import] Aplicado: ${applied} titulares`);
+  console.groupEnd();
+
+  // dispara o envio automático para contar no ranking
+  emitTeamChanged();
+}
+
+
+
+document.addEventListener('DOMContentLoaded', loadRankings);
+setInterval(loadRankings, 60000);
+async function openCommentsUI(team_id){
+  const wrap = document.createElement('div');
+  wrap.className = 'item-modal-backdrop';
+  const box = document.createElement('div');
+  box.className  = 'item-modal';
+  wrap.appendChild(box);
+
+  box.innerHTML = `
+    <h3>Comments</h3>
+    <div id="cList" style="max-height:260px; overflow:auto; border:1px solid #444; padding:8px; border-radius:8px; background:#1e1e1e;"></div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <input id="cNick" placeholder="Nick" style="flex:0 0 160px; padding:6px;">
+      <input id="cMsg"  placeholder="Message..." style="flex:1; padding:6px;">
+      <button id="cSend" class="item-btn">Send</button>
+      <button id="cClose" class="item-btn">Close</button>
+    </div>
+  `;
+
+  async function load(){
+    const lang = currentLang(); // "ptbr" | "en"
+    const r = await apiGet(`action=comments&team_id=${encodeURIComponent(team_id)}&limit=100&lang=${lang}`);
+    const list = (r?.comments||[]);
+    const html = list.map(c=>`<div style="padding:6px 4px;border-bottom:1px solid #333;"><b>${c.nick}</b> — <small>${(c.created_at||'').replace('T',' ')}</small><br>${c.message}</div>`).join('') || '<i>No comments yet.</i>';
+    box.querySelector('#cList').innerHTML = html;
+    // nick lembrado
+    const saved = localStorage.getItem('hqNick');
+    if(saved) box.querySelector('#cNick').value = saved;
+  }
+
+  box.querySelector('#cSend').addEventListener('click', async ()=>{
+    const nick = (box.querySelector('#cNick').value || '').trim().slice(0,20);
+    const message = (box.querySelector('#cMsg').value || '').trim().slice(0,300);
+    if(!message){ box.querySelector('#cMsg').focus(); return; }
+    localStorage.setItem('hqNick', nick || 'Anon');
+    const res = await apiPost('addcomment', { team_id, nick: (nick||'Anon'), message, lang: currentLang(), session_id: SESSION_ID });
+    if(res?.ok){
+      box.querySelector('#cMsg').value = '';
+      load(); // aparece sem recarregar a página
+    }else if(res?.error === 'cooldown'){
+      alert(`Aguarde ${res.seconds_left||120}s para comentar novamente.`);
+    }else{
+      alert('Falha ao enviar comentário.');
+    }
+  });
+  box.querySelector('#cClose').addEventListener('click', ()=> wrap.remove());
+
+  document.body.appendChild(wrap);
+  load();
+}
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms);} }
+function emitTeamChanged(){ window.dispatchEvent(new Event('team:changed')); }
+function setupAutoSendObservers(){
+  const sendDebounced = debounce(()=>{ try{ sendTeamIfComplete(); }catch(e){ console.warn(e);} }, 300);
+
+  // 2a) observar alterações nos slots titulares e bench
+  const mo = new MutationObserver(sendDebounced);
+  document.querySelectorAll('.hex, .bench-slot').forEach(el=>{
+    mo.observe(el, {
+      attributes:true,
+      attributeFilter:['data-nome','src'],
+      childList:true,
+      subtree:false
+    });
+  });
+
+  // 2b) escutar um evento global (vamos emitir em vários lugares)
+  window.addEventListener('team:changed', sendDebounced);
+
+  // 2c) integrar com hooks já existentes (se existirem)
+  const oldAfterAssign = window.afterAssignCharacter;
+  window.afterAssignCharacter = function(el, nome){
+    if (typeof oldAfterAssign === 'function') oldAfterAssign(el, nome);
+    emitTeamChanged();
+  };
+  const oldAfterRemove = window.afterRemoveCharacter;
+  window.afterRemoveCharacter = function(el){
+    if (typeof oldAfterRemove === 'function') oldAfterRemove(el);
+    emitTeamChanged();
+  };
+
+  // 2d) primeira checagem (página já pode abrir com time completo)
+  setTimeout(sendDebounced, 500);
+}
+
+document.addEventListener('DOMContentLoaded', setupAutoSendObservers);
+function applyTeamFromServer(t){
+  // ... seu código que posiciona titulares/banco ...
+  try { if (typeof applyTeamItems === 'function') applyTeamItems(t.items||{}); } catch(_){}
+  emitTeamChanged(); // <<< dispara envio automático
+}
+
+// se existir função que carrega time salvo ao trocar “Team 1/2/3…”
+const oldLoadSaved = window.loadSavedTeam;
+window.loadSavedTeam = function(...args){
+  const r = oldLoadSaved ? oldLoadSaved.apply(this, args) : undefined;
+  emitTeamChanged();
+  return r;
+};
+
+// se o botão “+ Team” limpa/muda o grid:
+const plus = document.querySelector('[data-action="add-team"], .btn-add-team, .plus-team');
+if (plus) plus.addEventListener('click', ()=> setTimeout(emitTeamChanged, 200));
 /* ====== FUNÇÕES ORIGINAIS (mantidas) ====== */
 function addBenchSlot() {
     const benchRow = document.getElementById("bench-row");
@@ -7288,7 +7661,7 @@ if (window.planner){
 <script>
 (function () {
   // === configure ===
-  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyN60xk81yZ6aeMoFsx0QSQtHTuQUNqpnuByVvs4Jw_IwNGsYQoKAHfS8Uteal18kJy/exec'; // ex.: https://script.google.com/macros/s/XXX/exec
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbwSnplPmw7Agru5gA7bU1Gk9_tAQSw8j3ma1WEFOMmlUXqXVBp-Qe4Ey-5xMxMRASS-/exec'; // ex.: https://script.google.com/macros/s/XXX/exec
   // =================
 
   async function updateCounters() {
