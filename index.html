@@ -1205,6 +1205,11 @@ body.modal-open{ overflow: hidden; }
     top: auto !important;
   }
 }
+.mini-line{ display:inline-flex; gap:4px; vertical-align:middle; margin-right:6px; }
+.mini-char{ width:24px; height:32px; object-fit:cover; border-radius:4px; box-shadow:0 0 0 1px #444; }
+.top-row-li{ display:flex; align-items:center; gap:6px; justify-content:center; }
+.btn-more{ background:#2a2a2a; color:#ddd; border:1px solid #555; border-radius:8px; padding:2px 8px; cursor:pointer; }
+.btn-imp,.btn-cmt{ margin-left:4px; }
 
 </style>
 </head>
@@ -1423,7 +1428,10 @@ const characters = [
   {nome:"Perfect toss", descricao:"xxx"}
 ], symbols: [ "img/powersymbol.png","img/settersymbol.png"] }
 ];
-
+window.characters = characters;           // <- essencial para o Import
+// (opcional) se quiser cobrir ambos os nomes:
+window.charactersEN = window.characters;
+window.allCharacters = window.characters;
 const descricoesSinergia = {
 "Karasuno": "Increases ALL players’ Power Attack and Quick Attack Stats by 10%",
 "Nekoma": "Increases ALL players’ Receive Stat by 15%",
@@ -2291,7 +2299,7 @@ async function apiPost(action, payload){
 // considera “completo” quando os 6 titulares estão preenchidos
 function isTeamComplete(team){
   const filled = (team.main || []).filter(Boolean).length;
-  return filled === 6; // ajuste se quiser exigir bench também
+  return filled === 7; // ajuste se quiser exigir bench também
 }
 
 // serialização dos itens (fallback caso não exista no arquivo)
@@ -2302,32 +2310,37 @@ function serializeTeamItemsSafe(){
 
 // evita spam: só envia se mudou
 let __lastSentHash = null;
-let __sendTimer = null;
+// === Debounce para enviar o time automaticamente ===
+let sendTimer = null;
+
+function scheduleSendTeam(delay = 300){
+  if (sendTimer) clearTimeout(sendTimer);
+  sendTimer = setTimeout(sendTeamIfComplete, delay);
+}
+
+// chame isto sempre que o grid mudar (adicionar/trocar/remover)
+function onGridChanged(){
+  scheduleSendTeam(300);
+}
+
 
 async function sendTeamIfComplete(){
-  const team = getCurrentTeamByName();         // { main:[...], bench:[...] }
-  if (!isTeamComplete(team)) return;
+  try{
+    const t = getCurrentTeamByName ? getCurrentTeamByName() : null;
+    const main = t?.main || []; // ou t?.slots
+    const bench = t?.bench || [];
+    const complete = main.length >= 7; // ajuste se usar OP/7
+    const payload = { session_id: getSessionId(), team:{ slots: main.map(x=>({id:x.name, pos:x.pos})), bench } };
 
-  const payload = {
-    session_id: SESSION_ID,
-    team: { ...team, items: serializeTeamItemsSafe() } // inclui items
-  };
-
-  const hash = JSON.stringify(payload);        // hash simples
-  if (hash === __lastSentHash) return;
-  __lastSentHash = hash;
-
-  // debouncing curto: várias trocas seguidas viram 1 envio
-  clearTimeout(__sendTimer);
-  __sendTimer = setTimeout(async ()=>{
-    try{
-      const res = await apiPost('setteam', payload);
-      // opcional: guardar o id retornado para abrir comentários desse time
-      if (res?.ok && res.team_id) window.__lastTeamId = res.team_id;
-      // console.log('setteam:', res);
-    }catch(e){ console.warn('setteam failed', e); }
-  }, 400);
+    if (complete){
+      await apiPost('action=setteam', payload);
+    } else {
+      // se ficou incompleto e havia time antes, dispare clear p/ “descontar”
+      await apiPost('action=clearteam', { session_id: getSessionId() });
+    }
+  }catch(e){ console.warn('sendTeamIfComplete error', e); }
 }
+
 
 // pluga nos hooks globais que você já expõe (sem mexer em setCharacter)
 (function hookSends(){
@@ -2342,80 +2355,149 @@ async function sendTeamIfComplete(){
     sendTeamIfComplete();
   };
 })();
-async function loadRankings(){
-  try{
-    const week = await apiGet('action=top_week&days=7');
-    const allT = await apiGet('action=top_alltime');
-    const topC = await apiGet('action=top_chars&topN=20');
+let RANK = { week:[], all:[], chars:[] };
+let SHOWN = { week:5, all:5 };
 
-    const $w = document.getElementById('topWeek');
-    const $a = document.getElementById('topAll');
-    const $c = document.getElementById('topChars');
-
-    const fmtTeam = (t)=> {
-      const names = (t.team?.slots ? t.team.slots.map(s=>s.id) : (t.main||[])).filter(Boolean).join(' / ');
-      const cnt   = t.count ?? t.hits ?? 0;
-      return `
-        <li style="margin:2px 0;">
-          <span>${names || '—'}</span>
-          <small> &nbsp; x${cnt}</small>
-          <button data-import="${t.team_id}" style="margin-left:8px;">Import</button>
-          <button data-comments="${t.team_id}" title="Comments">💬</button>
-        </li>`;
-    };
-
-    $w.innerHTML = (week?.top||[]).slice(0,10).map(fmtTeam).join('') || '<li>—</li>';
-    $a.innerHTML = (allT?.top||[]).slice(0,10).map(fmtTeam).join('') || '<li>—</li>';
-    $c.innerHTML = (topC?.top||[]).slice(0,15).map(x=>`<li>${x.name} <small>x${x.count}</small></li>`).join('') || '<li>—</li>';
-  }catch(e){
-    console.warn('loadRankings error', e);
-  }
+function fmtTeamRow(t){
+  // miniaturas no item (ver item 3 abaixo para CSS/lookup)
+  const imgs = (t.team?.slots||[]).slice(0,6).map(s=>{
+    const ch = findCharByAnyName(s.id);
+    const src = ch?.img || '';
+    const title = s.id;
+    return `<img class="mini-char" src="${src}" alt="${title}" title="${title}">`;
+  }).join('');
+  const cnt = t.count ?? t.hits ?? 0;
+  return `
+    <li class="top-row-li">
+      <span class="mini-line">${imgs}</span>
+      <small>x${cnt}</small>
+      <button data-import="${t.team_id}" class="btn-imp">Import</button>
+      <button data-comments="${t.team_id}" class="btn-cmt" title="Comments">💬</button>
+    </li>`;
 }
 
+function renderTopLists(){
+  const $w = document.getElementById('topWeek');
+  const $a = document.getElementById('topAll');
+  $w.innerHTML = RANK.week.slice(0, SHOWN.week).map(fmtTeamRow).join('') || '<li>—</li>';
+  $a.innerHTML = RANK.all.slice(0, SHOWN.all).map(fmtTeamRow).join('') || '<li>—</li>';
+
+  // botões Ver mais
+  const moreW = (RANK.week.length > SHOWN.week) ? '<button id="wkMore" class="btn-more">Ver mais</button>' : '';
+  const moreA = (RANK.all.length  > SHOWN.all ) ? '<button id="allMore" class="btn-more">Ver mais</button>' : '';
+  if (moreW) $w.insertAdjacentHTML('beforeend', `<li>${moreW}</li>`);
+  if (moreA) $a.insertAdjacentHTML('beforeend', `<li>${moreA}</li>`);
+}
+async function loadRankings(){
+  await ensureCharacterList(); // garante lista p/ thumbs
+  const week = await apiGet('action=top_week&days=7');
+  const allT = await apiGet('action=top_alltime');
+  const topC = await apiGet('action=top_chars&topN=50');
+  RANK.week = week?.top || [];
+  RANK.all  = allT?.top || [];
+  RANK.chars= topC?.top || [];
+  SHOWN.week = 5; SHOWN.all = 5;
+  renderTopLists();
+}
+
+// eventos dos botões “ver mais”
+document.addEventListener('click', (ev)=>{
+  if (ev.target?.id === 'wkMore'){ SHOWN.week += 5; renderTopLists(); }
+  if (ev.target?.id === 'allMore'){ SHOWN.all  += 5; renderTopLists(); }
+});
+async function ensureCharacterList(){
+  if (getCharList().length) return;
+}
 // --------- delegação de eventos (Import / Comments) ----------
 document.addEventListener('click', async (ev)=>{
-  const imp = ev.target.closest('#rankingBox [data-import]');
-  if (imp){
-    const id = imp.getAttribute('data-import');
-    try {
-      const r = await apiGet('action=getteam&team_id='+encodeURIComponent(id));
-      if (!r?.ok || !r.team){ console.warn('getteam fail', r); alert('Não foi possível carregar esse time.'); return; }
-      applyTeamFromServer(r.team);           // <<< preenche o grid
-    } catch (e) {
-      console.error('import error', e);
-      alert('Erro ao importar time.');
-    }
-    return;
-  }
+  const imp = ev.target.closest('[data-import]');  // <- pega em qualquer lugar da página
+  if (!imp) return;
 
-  const com = ev.target.closest('#rankingBox [data-comments]');
-  if (com){
-    const id = com.getAttribute('data-comments');
-    if (typeof openCommentsUI === 'function') openCommentsUI(id);
-    else alert('Módulo de comentários ainda não foi carregado.');
+  const teamId = imp.getAttribute('data-import');
+  try {
+    await ensureCharacterList(); // garante a lista carregada
+    const r = await apiGet('action=getteam&team_id='+encodeURIComponent(teamId));
+    if (!r?.ok || !r.team){ console.warn('getteam fail', r); alert('Não foi possível carregar esse time.'); return; }
+    applyTeamFromServer(r.team); // preenche o grid
+  } catch (e) {
+    console.error('import error', e);
+    alert('Erro ao importar time.');
   }
 });
 
 // aplica um time vindo da API ao teu grid
 // ===== helpers =====
-const POS_FALLBACK_ORDER = ['S','MB','WS','L','WS','MB','OP']; // usado só se não acharmos rótulos
+const POS_ORDER = ['S','MB','WS','L','WS','MB','OP'];
+
+function getHexList(){ return [...document.querySelectorAll('.hex')]; }
+
+function clearGrid(){
+  getHexList().forEach(el => { el.innerHTML=''; delete el.dataset.nome; });
+  document.querySelectorAll('.bench-slot').forEach(el => { el.innerHTML=''; delete el.dataset.nome; });
+  
+}
 
 function norm(s){
-  return String(s||'')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/\s+/g,' ').trim().toLowerCase();
 }
-
-function findCharByAnyName(name){
-  const t = norm(name);
-  const L = window.characters || [];
-  return (
-    L.find(c => norm(c.nome)    === t) ||
-    L.find(c => norm(c.name)    === t) ||
-    L.find(c => norm(c.display) === t) ||
-    L.find(c => norm(c.id)      === t) || null
+function canon(s){
+  return norm(String(s||'')
+    .replace(/\s*-\s*(S|MB|WS|L|OP)\b/gi,'')
+    .replace(/\b(UR|SSR|SP)\b/gi,'')
   );
 }
+function getCharList(){
+  return window.characters || window.charactersEN || window.allCharacters || [];
+}
+function findCharByAnyName(name){
+  const t = canon(name);
+  const L = getCharList();
+  return L.find(c => canon(c.nome)===t) ||
+         L.find(c => canon(c.name)===t) ||
+         L.find(c => canon(c.display)===t) ||
+         L.find(c => canon(c.id)===t) || null;
+}
+
+function nextFreeSlotForPos(pos, usedIdx){
+  const hexes = getHexList();
+
+  // tentar por rótulo do slot
+  for (let i=0;i<hexes.length;i++){
+    if (usedIdx.has(i)) continue;
+    const el = hexes[i];
+    const parent = el.closest('.slot, .slot-wrap, .slot-container, .grid-cell, .hex-wrap') || el.parentElement;
+    const label  = parent && parent.querySelector('.pos, .role, .slot-role, .slot-label, .position, .label');
+    const txt = (label?.textContent || el.nextElementSibling?.textContent || '').trim().toUpperCase();
+    if (['S','MB','WS','L','OP'].includes(txt) && txt === pos) return {el, i};
+  }
+  // fallback por ordem visual fixa
+  for (let i=0;i<hexes.length;i++){
+    if (usedIdx.has(i)) continue;
+    if (POS_ORDER[i] === pos) return {el:hexes[i], i};
+  }
+  return {el:null, i:-1};
+}
+
+function safeSetCharacter(el, ch, pos){
+  try {
+    if (typeof setCharacter === 'function') {
+      setCharacter(el, ch, ch.funcao || ch.role || pos);
+      return true;
+      if (typeof emitTeamChanged==='function') emitTeamChanged();
+    }
+  } catch(e){ console.warn('setCharacter falhou', e); }
+  try {
+    el.innerHTML = `<img src="${ch.img}" alt="${ch.nome||ch.name}">`;
+    el.dataset.nome = ch.nome || ch.name || ch.id;
+    return true;
+  } catch(_) {}
+  return false;
+  
+}
+
+const wait = (ms)=>new Promise(r=>setTimeout(r,ms));
+
 
 // tenta achar o elemento .hex do slot que TEM rótulo == pos (S,MB,WS,L,OP)
 function getSlotElByPos(pos){
@@ -2442,68 +2524,59 @@ function getSlotElByPos(pos){
   return hexes[idx] || null;
 }
 
-function safeSetCharacter(el, ch, pos){
-  try {
-    if (typeof setCharacter === 'function') {
-      setCharacter(el, ch, ch.funcao || ch.role || pos);
-      return true;
-    }
-  } catch(e){ console.warn('setCharacter falhou', e); }
-  try {
-    el.innerHTML = `<img src="${ch.img}" alt="${ch.nome || ch.name}">`;
-    el.dataset.nome = ch.nome || ch.name || ch.id;
-    if (typeof updateSynergies === 'function') updateSynergies();
-    return true;
-  } catch(_) {}
-  return false;
-}
+
 
 // ===== import principal =====
-function applyTeamFromServer(team){
-  console.groupCollapsed('[Import] Aplicando time do servidor');
+async function applyTeamFromServer(team){
   const slots = team.slots || [];
   const bench = team.bench || [];
-  let applied = 0;
+  const used  = new Set();
 
-  // titulares
+  clearGrid();
+
+  // titulares, um por vez
   for (const s of slots){
-    const pos  = (s.pos || '').toUpperCase();
-    const name = s.id || s.name || '';
-    const el   = getSlotElByPos(pos);
-    if (!el) { console.warn('slot não encontrado para', pos, name); continue; }
+    const pos = (s.pos||'').toUpperCase();
+    const ch  = findCharByAnyName(s.id);
+    if (!ch){ console.warn('[import] personagem não encontrado:', s.id); continue; }
 
-    const ch = findCharByAnyName(name);
-    if (!ch){ console.warn('personagem não encontrado na sua lista:', name); continue; }
+    const {el, i} = nextFreeSlotForPos(pos, used);
+    if (!el){ console.warn('[import] slot livre não encontrado para', pos); continue; }
 
-    if (safeSetCharacter(el, ch, pos)) applied++;
+    used.add(i);
+    safeSetCharacter(el, ch, pos);
+    onGridChanged();
+    await wait(40);
   }
 
-  // banco (se você usa 3 slots com classe .bench-slot)
+  // banco
   const benchEls = [...document.querySelectorAll('.bench-slot')];
-  bench.forEach((name, i)=>{
-    const el = benchEls[i];
-    if (!el) return;
-    if (!name){ el.innerHTML=''; delete el.dataset.nome; return; }
+  for (let i=0;i<benchEls.length;i++){
+    const name = bench[i] || '';
+    if (!name) continue;
     const ch = findCharByAnyName(name);
-    if (ch) safeSetCharacter(el, ch, 'BENCH');
-  });
+    if (ch){ safeSetCharacter(benchEls[i], ch, 'BENCH'); await wait(20); }
+  }
+
+  if (typeof updateSynergies==='function') updateSynergies();
+  if (typeof emitTeamChanged==='function') emitTeamChanged(); // conta no ranking
+
 
   // itens (opcional)
   try { if (typeof applyTeamItems === 'function') applyTeamItems(team.items||{}); } catch(_){}
-
-  if (typeof updateSynergies==='function') updateSynergies();
 
   console.log(`[Import] Aplicado: ${applied} titulares`);
   console.groupEnd();
 
   // dispara o envio automático para contar no ranking
   emitTeamChanged();
+  onGridChanged();
 }
 
 
 
 document.addEventListener('DOMContentLoaded', loadRankings);
-setInterval(loadRankings, 60000);
+setInterval(loadRankings, 60);
 async function openCommentsUI(team_id){
   const wrap = document.createElement('div');
   wrap.className = 'item-modal-backdrop';
@@ -2559,7 +2632,7 @@ function setupAutoSendObservers(){
   const sendDebounced = debounce(()=>{ try{ sendTeamIfComplete(); }catch(e){ console.warn(e);} }, 300);
 
   // 2a) observar alterações nos slots titulares e bench
-  const mo = new MutationObserver(sendDebounced);
+  const mo = new MutationObserver(() => onGridChanged());
   document.querySelectorAll('.hex, .bench-slot').forEach(el=>{
     mo.observe(el, {
       attributes:true,
@@ -2589,11 +2662,6 @@ function setupAutoSendObservers(){
 }
 
 document.addEventListener('DOMContentLoaded', setupAutoSendObservers);
-function applyTeamFromServer(t){
-  // ... seu código que posiciona titulares/banco ...
-  try { if (typeof applyTeamItems === 'function') applyTeamItems(t.items||{}); } catch(_){}
-  emitTeamChanged(); // <<< dispara envio automático
-}
 
 // se existir função que carrega time salvo ao trocar “Team 1/2/3…”
 const oldLoadSaved = window.loadSavedTeam;
@@ -2890,6 +2958,7 @@ const ids = ring.map(h => getSlotId(h));
     removeItemGear(h);
     ensureItemGear(h);
     updateItemBadge(h);
+    emitTeamChanged();
   });
 }
 
