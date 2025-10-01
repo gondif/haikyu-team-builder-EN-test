@@ -1210,7 +1210,9 @@ body.modal-open{ overflow: hidden; }
 .top-row-li{ display:flex; align-items:center; gap:6px; justify-content:center; }
 .btn-more{ background:#2a2a2a; color:#ddd; border:1px solid #555; border-radius:8px; padding:2px 8px; cursor:pointer; }
 .btn-imp,.btn-cmt{ margin-left:4px; }
-
+.char-row { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.char-row .mini-line { display:flex; align-items:center; gap:.5rem; }
+.char-row .char-name { opacity:.9; }
 </style>
 </head>
 <body>
@@ -1230,23 +1232,7 @@ body.modal-open{ overflow: hidden; }
         <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
         <li><button id="openPlannerBtn" class="menu-link bond-btn">💎 Resource Planner</button></li>
-        <div id="rankingBox" class="panel" style="margin:12px 0; padding:10px;">
-  <div id="rankingBox" style="margin:12px 0; padding:10px; border:1px solid #333; border-radius:10px;">
-  <div style="display:flex; gap:18px; flex-wrap:wrap;">
-    <div style="min-width:220px;">
-      <b>Top Teams (7d)</b>
-      <ol id="topWeek" style="margin:6px 0;"></ol>
-    </div>
-    <div style="min-width:220px;">
-      <b>Top Teams (All)</b>
-      <ol id="topAll" style="margin:6px 0;"></ol>
-    </div>
-    <div style="min-width:220px;">
-      <b>Top Characters</b>
-      <ol id="topChars" style="margin:6px 0;"></ol>
-    </div>
-  </div>
-</div>
+        <li><button id="btnOpenRanking" class="menu-btn" type="button" data-sidebar-safe="true">🏆 Ranking</button></li>
       </ul>
     <div id="sidebar-content">
         <p>Select an option above.</p>
@@ -2317,29 +2303,44 @@ function scheduleSendTeam(delay = 300){
   if (sendTimer) clearTimeout(sendTimer);
   sendTimer = setTimeout(sendTeamIfComplete, delay);
 }
-
 // chame isto sempre que o grid mudar (adicionar/trocar/remover)
 function onGridChanged(){
   scheduleSendTeam(300);
 }
 
 
+// substitua sua sendTeamIfComplete por esta
 async function sendTeamIfComplete(){
   try{
-    const t = getCurrentTeamByName ? getCurrentTeamByName() : null;
-    const main = t?.main || []; // ou t?.slots
-    const bench = t?.bench || [];
-    const complete = main.length >= 7; // ajuste se usar OP/7
-    const payload = { session_id: getSessionId(), team:{ slots: main.map(x=>({id:x.name, pos:x.pos})), bench } };
+    // nomes atuais do grid
+    const mainNames = [...document.querySelectorAll('.hex')].map(s=>s.dataset.nome).filter(Boolean);
+    const benchNames = [...document.querySelectorAll('.bench-slot')].map(s=>s.dataset.nome).filter(Boolean);
 
-    if (complete){
-      await apiPost('action=setteam', payload);
+    const isComplete = mainNames.length === 7; // exatamente 7 titulares
+    // mapeia posição pelo rótulo ao lado/abaixo do slot ou via fallback POS_ORDER
+    const hexes = [...document.querySelectorAll('.hex')];
+    const POS_ORDER = ['S','MB','WS','L','WS','MB','OP']; // já existe no seu arquivo
+
+    const slots = hexes.slice(0, 7).map((el, i) => {
+      const id = el.dataset.nome || '';
+      // tenta ler o rótulo (S/MB/WS/L/OP)
+      const parent = el.closest('.slot, .slot-wrap, .slot-container, .grid-cell, .hex-wrap') || el.parentElement;
+      const label = parent && parent.querySelector('.pos, .role, .slot-role, .slot-label, .position, .label');
+      const txt = (label?.textContent || el.nextElementSibling?.textContent || '').trim().toUpperCase();
+      const pos = /^(S|MB|WS|L|OP)$/.test(txt) ? txt : (POS_ORDER[i] || 'WS');
+      return { id, pos };
+    }).filter(s => s.id); // só slots preenchidos
+
+    if (isComplete && slots.length === 7){
+      await apiPost('setteam', { session_id: SESSION_ID, team: { slots, bench: benchNames } });
     } else {
-      // se ficou incompleto e havia time antes, dispare clear p/ “descontar”
-      await apiPost('action=clearteam', { session_id: getSessionId() });
+      await apiPost('clearteam', { session_id: SESSION_ID });
     }
-  }catch(e){ console.warn('sendTeamIfComplete error', e); }
+  }catch(e){
+    console.warn('sendTeamIfComplete error', e);
+  }
 }
+
 
 
 // pluga nos hooks globais que você já expõe (sem mexer em setCharacter)
@@ -2375,18 +2376,69 @@ function fmtTeamRow(t){
       <button data-comments="${t.team_id}" class="btn-cmt" title="Comments">💬</button>
     </li>`;
 }
+function fmtCharRow(c){
+  // c pode vir como {id,name,count|hits|value|tester,...}
+  const key   = c?.id || c?.name || '';
+  const count = c?.tester ?? c?.value ?? c?.count ?? c?.hits ?? c?.total ?? 0;
 
-function renderTopLists(){
-  const $w = document.getElementById('topWeek');
-  const $a = document.getElementById('topAll');
-  $w.innerHTML = RANK.week.slice(0, SHOWN.week).map(fmtTeamRow).join('') || '<li>—</li>';
-  $a.innerHTML = RANK.all.slice(0, SHOWN.all).map(fmtTeamRow).join('') || '<li>—</li>';
+  // tenta achar os metadados/imagem do personagem por nome
+  // (usa o mesmo helper que você já usa nos times)
+  const meta  = typeof findCharByAnyName === 'function' ? findCharByAnyName(key) : null;
+  const src   = meta?.img || meta?.icon || ''; // fallback se houver outro campo
+  const title = key;
 
-  // botões Ver mais
-  const moreW = (RANK.week.length > SHOWN.week) ? '<button id="wkMore" class="btn-more">Ver mais</button>' : '';
-  const moreA = (RANK.all.length  > SHOWN.all ) ? '<button id="allMore" class="btn-more">Ver mais</button>' : '';
-  if (moreW) $w.insertAdjacentHTML('beforeend', `<li>${moreW}</li>`);
-  if (moreA) $a.insertAdjacentHTML('beforeend', `<li>${moreA}</li>`);
+  return `
+    <li class="top-row-li char-row">
+      <span class="mini-line">
+        <img class="mini-char" src="${src}" alt="${title}" title="${title}">
+        <span class="char-name">${title}</span>
+      </span>
+      <small>x${count}</small>
+    </li>
+  `;
+}
+
+function renderRankTeams7d(){
+  const el = document.getElementById('panelRank7d');
+  if(!el) return;
+  el.innerHTML = `
+    <h3 class="top-title">Top Teams (7d)</h3>
+    <ul class="top-list">${ (RANK.week||[]).slice(0, SHOWN.week).map(fmtTeamRow).join('') || '<li>—</li>' }</ul>
+    <div class="center"><button id="wkMore" class="menu-btn">Ver mais</button></div>
+  `;
+  el.querySelector('#wkMore')?.addEventListener('click', (ev)=>{
+    ev.stopPropagation?.();
+    SHOWN.week += 5;
+    renderRankTeams7d();
+  });
+}
+
+function renderRankTeamsAll(){
+  const el = document.getElementById('panelRankAll');
+  if(!el) return;
+  el.innerHTML = `
+    <h3 class="top-title">Top Teams (All)</h3>
+    <ul class="top-list">${ (RANK.all||[]).slice(0, SHOWN.all).map(fmtTeamRow).join('') || '<li>—</li>' }</ul>
+    <div class="center"><button id="allMore" class="menu-btn">Ver mais</button></div>
+  `;
+  el.querySelector('#allMore')?.addEventListener('click', (ev)=>{
+    ev.stopPropagation?.();
+    SHOWN.all += 5;
+    renderRankTeamsAll();
+  });
+}
+
+function renderRankCharacters(){
+  const el = document.getElementById('panelRankChar');
+  if(!el) return;
+  el.innerHTML = `
+    <h3 class="top-title">Top Characters</h3>
+    <ul class="top-list">${
+  Array.isArray(RANK?.chars) && RANK.chars.length
+    ? RANK.chars.map(fmtCharRow).join('')
+    : '<li>—</li>'
+}</ul>
+  `;
 }
 async function loadRankings(){
   await ensureCharacterList(); // garante lista p/ thumbs
@@ -2397,14 +2449,29 @@ async function loadRankings(){
   RANK.all  = allT?.top || [];
   RANK.chars= topC?.top || [];
   SHOWN.week = 5; SHOWN.all = 5;
-  renderTopLists();
+  renderRankTeams7d();
+renderRankTeamsAll();
+renderRankCharacters();
 }
 
 // eventos dos botões “ver mais”
 document.addEventListener('click', (ev)=>{
-  if (ev.target?.id === 'wkMore'){ SHOWN.week += 5; renderTopLists(); }
-  if (ev.target?.id === 'allMore'){ SHOWN.all  += 5; renderTopLists(); }
+  if (ev.target?.id === 'wkMore'){ 
+    ev.stopPropagation();
+    SHOWN.week += 5; 
+    renderRankTeams7d();
+    renderRankTeamsAll();
+    renderRankCharacters();
+  }
+  if (ev.target?.id === 'allMore'){ 
+    ev.stopPropagation();
+    SHOWN.all  += 5; 
+    renderRankTeams7d();
+    renderRankTeamsAll();
+    renderRankCharacters();
+  }
 });
+
 async function ensureCharacterList(){
   if (getCharList().length) return;
 }
@@ -2483,8 +2550,9 @@ function safeSetCharacter(el, ch, pos){
   try {
     if (typeof setCharacter === 'function') {
       setCharacter(el, ch, ch.funcao || ch.role || pos);
+      emitTeamChanged();
       return true;
-      if (typeof emitTeamChanged==='function') emitTeamChanged();
+      if (typeof emitTeamChanged==='function');
     }
   } catch(e){ console.warn('setCharacter falhou', e); }
   try {
@@ -2575,8 +2643,11 @@ async function applyTeamFromServer(team){
 
 
 
-document.addEventListener('DOMContentLoaded', loadRankings);
-setInterval(loadRankings, 60);
+document.addEventListener('DOMContentLoaded', ()=>{
+  // pré-carrega em background; quando abrir a página, já está pronto
+  loadRankings().catch(()=>{});
+});
+setInterval(loadRankings, 60000);
 async function openCommentsUI(team_id){
   const wrap = document.createElement('div');
   wrap.className = 'item-modal-backdrop';
@@ -2643,7 +2714,7 @@ function setupAutoSendObservers(){
   });
 
   // 2b) escutar um evento global (vamos emitir em vários lugares)
-  window.addEventListener('team:changed', sendDebounced);
+  window.addEventListener('team:changed', () => scheduleSendTeam(300));
 
   // 2c) integrar com hooks já existentes (se existirem)
   const oldAfterAssign = window.afterAssignCharacter;
@@ -4315,7 +4386,15 @@ document.addEventListener("click", (e) => {
     ) {
         return;
     }
-
+    if (
+  e.target.closest('#pageRanking') ||
+  e.target.closest('#btnOpenRanking') ||
+  e.target.closest('#btnRank7d') ||
+  e.target.closest('#btnRankAll') ||
+  e.target.closest('#btnRankChars')
+) {
+  return;
+}
     // Fecha apenas se realmente foi fora
     if (sidebar.classList.contains("open")) {
         sidebar.classList.remove("open");
@@ -6261,9 +6340,44 @@ body.planner-open{ overflow: hidden; }
   #simPane #simInputs label{ display:flex; align-items:center; gap:10px; }
   #simPane #simInputs input{ max-width: 240px; }
 }
+/* 3) (Opcional) CSS leve para os painéis – mantém aparência limpa */
+.rank-panel {
+  background: var(--panel-bg, #1f1f1f);
+  border-radius: 10px;
+  padding: .75rem;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.ranking-panels .top-title { /* caso seu render já crie títulos */
+  margin: 0 0 .5rem;
+}
+.btn-row .menu-btn { /* herda o estilo dos outros botões; ajuste se precisar */
+  flex: 1 0 auto;
+}
 
 
 </style>
+<!-- 2) NOVA PÁGINA: Seção de Ranking (mantém o padrão das outras páginas, ex.: .page) -->
+<section id="pageRanking" class="page">
+
+  <h2 class="page-title">Ranking</h2>
+
+  <!-- Descrição (placeholder): você edita depois -->
+  <p class="muted" id="rankingRules">Regras do Ranking</p>
+
+  <!-- Barra de filtros (3 botões) no MESMO estilo dos botões do menu -->
+  <div class="btn-row" style="display:flex; gap:.5rem; flex-wrap:wrap; margin: .75rem 0 1rem;">
+    <button id="btnRank7d"   class="menu-btn">Ranking (7d)</button>
+    <button id="btnRankAll"  class="menu-btn">Ranking (All)</button>
+    <button id="btnRankChar" class="menu-btn">Ranking Characters</button>
+  </div>
+
+  <!-- Painéis: renderizamos cada lista num painel e alternamos visibilidade -->
+  <div id="rankingPanels" class="ranking-panels" style="display:grid; gap:1rem;">
+    <div id="panelRank7d"   class="rank-panel"></div>
+    <div id="panelRankAll"  class="rank-panel" hidden></div>
+    <div id="panelRankChar" class="rank-panel" hidden></div>
+  </div>
+</section>
 
 <!-- ===================== PLANEJADOR DE RECURSOS (NOVA PÁGINA) ===================== -->
 <section id="pagePlanner" class="page"
@@ -7199,10 +7313,56 @@ const gains = gFree + Math.round(gCash);
   
   // ===== Boot =====
   function boot(){
+    {
+  const btnOpenRanking = document.getElementById('btnOpenRanking');
+  if (btnOpenRanking){
+    btnOpenRanking.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      document.body.classList.remove('show-planner');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const rankPg = document.getElementById('pageRanking');
+      if (rankPg){ rankPg.classList.add('active'); rankPg.style.display='block'; }
+     // 1) abre 7d por padrão (sem borbulhar)
+document.getElementById('btnRank7d')?.dispatchEvent(new Event('click', { bubbles:false }));
+
+// 2) rola suavemente até o bloco dos rankings (logo abaixo das sinergias)
+requestAnimationFrame(()=> {
+  // escolha automática do alvo (ajusta se você tiver um id específico)
+  const target =
+    document.getElementById('pageRanking') ||
+    document.getElementById('rankingPanels') ||
+    document.getElementById('panelRank7d');
+
+  if (!target) return;
+
+  // compensa cabeçalho fixo, se existir
+  const sticky =
+    document.querySelector('.topbar, .header, #stickyHeader, .navbar, .nav-top');
+  const isFixed = sticky && getComputedStyle(sticky).position === 'fixed';
+  const offset = isFixed ? sticky.offsetHeight + 12 : 12;
+
+  const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+  window.scrollTo({ top: y, behavior: 'smooth' });
+});
+    });
+  }
+
+  // botões internos do ranking
+  (function(){
+    const p7 = document.getElementById('panelRank7d');
+    const pA = document.getElementById('panelRankAll');
+    const pC = document.getElementById('panelRankChar');
+    const showOnly = (panel) => [p7,pA,pC].forEach(p => p && (p.hidden = (p!==panel)));
+    document.getElementById('btnRank7d') ?.addEventListener('click', ()=> showOnly(p7));
+    document.getElementById('btnRankAll')?.addEventListener('click', ()=> showOnly(pA));
+    document.getElementById('btnRankChar')?.addEventListener('click', ()=> showOnly(pC));
+  })();
+}
     const btnOpen = document.getElementById('openPlannerBtn'); if(btnOpen) btnOpen.addEventListener('click', showPlanner);
     const btnBack = document.getElementById('btnVoltarBuilder'); if(btnBack) btnBack.addEventListener('click', showBuilder);
     
-    
+
+
     const btnToggle = document.getElementById('toggleSources');
     if(btnToggle){ btnToggle.addEventListener('click', ()=> setCollapsed(!document.body.classList.contains('planner-collapsed'))); }
     const btnReopen = document.getElementById('reopenSources');
