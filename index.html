@@ -2546,18 +2546,36 @@ async function ensureCharacterList(){
 }
 // --------- delegação de eventos (Import / Comments) ----------
 document.addEventListener('click', async (ev)=>{
-  const imp = ev.target.closest('[data-import]');  // <- pega em qualquer lugar da página
-  if (!imp) return;
+  const btn = ev.target.closest('[data-import],[data-comments]');
+  if (!btn) return;
 
-  const teamId = imp.getAttribute('data-import');
-  try {
-    await ensureCharacterList(); // garante a lista carregada
-    const r = await apiGet('action=getteam&team_id='+encodeURIComponent(teamId));
-    if (!r?.ok || !r.team){ console.warn('getteam fail', r); alert('Não foi possível carregar esse time.'); return; }
-    applyTeamFromServer(r.team); // preenche o grid
-  } catch (e) {
-    console.error('import error', e);
-    alert('Erro ao importar time.');
+  // evita fechar a lateral/propagar para listeners globais
+  ev.stopPropagation();
+
+  // IMPORTAR TIME
+  if (btn.hasAttribute('data-import')) {
+    const teamId = btn.getAttribute('data-import');
+    try {
+      await ensureCharacterList(); // garante a lista carregada
+      const r = await apiGet('action=getteam&team_id='+encodeURIComponent(teamId));
+      if (!r?.ok || !r.team){ console.warn('getteam fail', r); alert('Não foi possível carregar esse time.'); return; }
+      applyTeamFromServer(r.team); // preenche o grid
+    } catch (e) {
+      console.error('import error', e);
+      alert('Erro ao importar time.');
+    }
+    return;
+  }
+
+  // COMENTÁRIOS
+  if (btn.hasAttribute('data-comments')) {
+    const teamId = btn.getAttribute('data-comments');
+    try {
+      await openCommentsUI(teamId); // abre o modal e carrega comentários
+    } catch(e){
+      console.error('comments error', e);
+      alert('Não foi possível abrir os comentários.');
+    }
   }
 });
 
@@ -7469,6 +7487,10 @@ requestAnimationFrame(()=> {
     document.getElementById('btnRankChar')?.addEventListener('click', ()=> showOnly(pC));
   })();
 }
+// Detecta pelo <html lang="...">, com override possível por window.SITE_LANG
+const SITE_LANG = (window.SITE_LANG || document.documentElement.lang || 'pt-BR').toLowerCase();
+// Nome da aba no Sheets
+const COMMENTS_SHEET = SITE_LANG.startsWith('pt') ? 'commentsPTBR' : 'commentsEN';
     const btnOpen = document.getElementById('openPlannerBtn'); if(btnOpen) btnOpen.addEventListener('click', showPlanner);
     {
   const srcBtn = document.getElementById('openPlannerBtn')    // use o que já tem estilizado
