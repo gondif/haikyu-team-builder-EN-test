@@ -2322,7 +2322,7 @@ async function sendTeamIfComplete(){
     const POS_ORDER = ['S','MB','WS','L','WS','MB','OP']; // já existe no seu arquivo
 
     const slots = hexes.slice(0, 7).map((el, i) => {
-      const id = el.dataset.nome || '';
+      const id = el.dataset.key || el.dataset.id || el.dataset.nome || '';
       // tenta ler o rótulo (S/MB/WS/L/OP)
       const parent = el.closest('.slot, .slot-wrap, .slot-container, .grid-cell, .hex-wrap') || el.parentElement;
       const label = parent && parent.querySelector('.pos, .role, .slot-role, .slot-label, .position, .label');
@@ -2362,7 +2362,7 @@ let SHOWN = { week:5, all:5 };
 function fmtTeamRow(t){
   // miniaturas no item (ver item 3 abaixo para CSS/lookup)
   const imgs = (t.team?.slots||[]).slice(0,7).map(s=>{
-    const ch = findCharByAnyName(s.id);
+    const ch   = findCharPreferExact(s.id);
     const src = ch?.img || '';
     const title = s.id;
     return `<img class="mini-char" src="${src}" alt="${title}" title="${title}">`;
@@ -2376,6 +2376,17 @@ function fmtTeamRow(t){
       <button data-comments="${t.team_id}" class="btn-cmt" title="Comments">💬</button>
     </li>`;
 }
+window.CHAR_BY_FULL = new Map(
+  (window.CHAR_LIST || []).map(c => [`${c.name} ${c.rarity}`.toUpperCase(), c])
+);
+
+// preferir match EXATO com raridade; se não achar, usa seu fuzzy atual
+function findCharPreferExact(q){
+  const s = String(q || '').trim();
+  if (!s) return null;
+  const exact = window.CHAR_BY_FULL.get(s.toUpperCase());
+  return exact || (typeof findCharByAnyName === 'function' ? findCharByAnyName(s) : null);
+}
 function fmtCharRow(c){
   // c pode vir como {id,name,count|hits|value|tester,...}
   const key   = c?.id || c?.name || '';
@@ -2383,7 +2394,7 @@ function fmtCharRow(c){
 
   // tenta achar os metadados/imagem do personagem por nome
   // (usa o mesmo helper que você já usa nos times)
-  const meta  = typeof findCharByAnyName === 'function' ? findCharByAnyName(key) : null;
+  const meta = findCharPreferExact(key);
   const src   = meta?.img || meta?.icon || ''; // fallback se houver outro campo
   const title = key;
 
@@ -2554,6 +2565,48 @@ document.addEventListener('click', async (ev)=>{
 // ===== helpers =====
 const POS_ORDER = ['S','MB','WS','L','WS','MB','OP'];
 
+// Índice de match exato por nome COMPLETO (preserva UR/SSR/SP)
+(function buildCharFullIndex(){
+  const L = (window.characters || window.charactersEN || window.allCharacters || []);
+  const m = new Map();
+  const put = (k,c)=>{
+    if (!k) return;
+    const key = String(k).trim().toUpperCase().replace(/\s+/g,' ');
+    if (key) m.set(key, c);
+  };
+  for (const c of L){
+    put(c.nome, c);
+    put(c.name, c);
+    put(c.display, c);
+    put(c.id, c);
+  }
+  window.CHAR_FULL = m;
+})();
+
+// Preferir EXATO (sem retirar raridade). Se não achar, cai no fuzzy antigo.
+function findCharPreferExact(q){
+  const s = String(q||'').trim();
+  if (!s) return null;
+
+  // 1) exato (case-insensitive, espaços normalizados)
+  const key = s.toUpperCase().replace(/\s+/g,' ');
+  const hit = window.CHAR_FULL && window.CHAR_FULL.get(key);
+  if (hit) return hit;
+
+  // 2) exato tolerante a acento
+  const norm = (x)=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ');
+  if (window.CHAR_FULL){
+    const target = norm(s);
+    for (const [k,v] of window.CHAR_FULL){
+      if (norm(k) === target) return v;
+    }
+  }
+
+  // 3) fallback: fuzzy existente (pode remover UR/SSR/SP etc.)
+  return (typeof findCharByAnyName==='function') ? findCharByAnyName(s) : null;
+}
+
+
 function getHexList(){ return [...document.querySelectorAll('.hex')]; }
 
 function clearGrid(){
@@ -2663,7 +2716,7 @@ async function applyTeamFromServer(team){
   // titulares, um por vez
   for (const s of slots){
     const pos = (s.pos||'').toUpperCase();
-    const ch  = findCharByAnyName(s.id);
+    const ch  = findCharPreferExact(s.id);
     if (!ch){ console.warn('[import] personagem não encontrado:', s.id); continue; }
 
     const {el, i} = nextFreeSlotForPos(pos, used);
@@ -2680,7 +2733,7 @@ async function applyTeamFromServer(team){
   for (let i=0;i<benchEls.length;i++){
     const name = bench[i] || '';
     if (!name) continue;
-    const ch = findCharByAnyName(name);
+    const ch = findCharPreferExact(name);
     if (ch){ safeSetCharacter(benchEls[i], ch, 'BENCH'); await wait(20); }
   }
 
@@ -6420,7 +6473,7 @@ body.planner-open{ overflow: hidden; }
   <h2 class="page-title">Ranking</h2>
 
   <!-- Descrição (placeholder): você edita depois -->
-  <p class="muted" id="rankingRules">Ranking gathers all info when a team has all court positions filled. This is only for takes this team builder info into account.</p>
+  <p class="muted" id="rankingRules">Ranking gathers all info when a team has all court positions filled</p>
 
   <!-- Barra de filtros (3 botões) no MESMO estilo dos botões do menu -->
   <div class="btn-row" style="display:flex; gap:.5rem; flex-wrap:wrap; margin: .75rem 0 1rem;">
