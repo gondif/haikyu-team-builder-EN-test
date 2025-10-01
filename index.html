@@ -1232,7 +1232,7 @@ body.modal-open{ overflow: hidden; }
         <li><button class="menu-link bond-btn" data-section="schools">🏫 Schools</button></li>
         <li><button class="menu-link bond-btn" data-section="help">ℹ️ Info</button></li>
         <li><button id="openPlannerBtn" class="menu-link bond-btn">💎 Resource Planner</button></li>
-        <li><button id="btnOpenRanking" class="menu-btn" type="button" data-sidebar-safe="true">🏆 Ranking</button></li>
+        <li><button id="btnOpenRanking" type="button" data-sidebar-safe="true">🏆 Ranking</button></li>
       </ul>
     <div id="sidebar-content">
         <p>Select an option above.</p>
@@ -2361,7 +2361,7 @@ let SHOWN = { week:5, all:5 };
 
 function fmtTeamRow(t){
   // miniaturas no item (ver item 3 abaixo para CSS/lookup)
-  const imgs = (t.team?.slots||[]).slice(0,6).map(s=>{
+  const imgs = (t.team?.slots||[]).slice(0,7).map(s=>{
     const ch = findCharByAnyName(s.id);
     const src = ch?.img || '';
     const title = s.id;
@@ -2397,6 +2397,27 @@ function fmtCharRow(c){
     </li>
   `;
 }
+function aggregateCharRankingFromTeams(list){
+  // list: array de objetos de ranking de times (RANK.all ou RANK.week)
+  // soma aparições do personagem em cada envio (ponderado pelo hits/count/tester)
+  const counts = new Map();
+  for (const t of (list || [])){
+    const weight = t?.tester ?? t?.value ?? t?.count ?? t?.hits ?? t?.total ?? 1;
+    const ids = [
+      ...((t?.team?.slots || []).map(s => s?.id).filter(Boolean)),
+      ...((t?.team?.bench || []).filter(Boolean)) // se bench vier como array simples de nomes
+    ];
+    for (const id of ids){
+      // trata nomes de forma estável, sem mesclar UR/SP
+      const key = String(id).trim();
+      counts.set(key, (counts.get(key) || 0) + Number(weight || 1));
+    }
+  }
+  // ordena e retorna no formato esperado pelo render
+  return [...counts.entries()]
+    .sort((a,b)=> b[1]-a[1])
+    .map(([name, tester]) => ({ name, tester }));
+}
 
 function renderRankTeams7d(){
   const el = document.getElementById('panelRank7d');
@@ -2404,7 +2425,7 @@ function renderRankTeams7d(){
   el.innerHTML = `
     <h3 class="top-title">Top Teams (7d)</h3>
     <ul class="top-list">${ (RANK.week||[]).slice(0, SHOWN.week).map(fmtTeamRow).join('') || '<li>—</li>' }</ul>
-    <div class="center"><button id="wkMore" class="menu-btn">Ver mais</button></div>
+    <div class="center"><button id="wkMore" class="menu-btn">Show More</button></div>
   `;
   el.querySelector('#wkMore')?.addEventListener('click', (ev)=>{
     ev.stopPropagation?.();
@@ -2419,7 +2440,7 @@ function renderRankTeamsAll(){
   el.innerHTML = `
     <h3 class="top-title">Top Teams (All)</h3>
     <ul class="top-list">${ (RANK.all||[]).slice(0, SHOWN.all).map(fmtTeamRow).join('') || '<li>—</li>' }</ul>
-    <div class="center"><button id="allMore" class="menu-btn">Ver mais</button></div>
+    <div class="center"><button id="allMore" class="menu-btn">Show More</button></div>
   `;
   el.querySelector('#allMore')?.addEventListener('click', (ev)=>{
     ev.stopPropagation?.();
@@ -2440,6 +2461,37 @@ function renderRankCharacters(){
 }</ul>
   `;
 }
+function buildCharRankingFromTeams(teamRows){
+  const map = new Map();
+  const add = (name, weight) => {
+    if (!name) return;
+    map.set(name, (map.get(name) || 0) + (weight || 1));
+  };
+
+  (teamRows || []).forEach(t => {
+    const weight = t.tester ?? t.value ?? t.count ?? t.hits ?? t.total ?? 1; // vezes que o time apareceu
+    const slots  = t?.team?.slots || [];   // [{id, pos}]
+    const bench  = t?.team?.bench || [];   // ["nome1","nome2",...]
+
+    // titulares
+    for (const s of slots) add(s?.id || s?.name, weight);
+    // banco
+    for (const b of bench) add(b, weight);
+  });
+
+  // transforma em array ordenado
+  const arr = [...map.entries()]
+    .map(([name, tester]) => ({ name, tester }))   // {name, tester} compatível com fmtCharRow
+    .sort((a,b) => b.tester - a.tester);
+
+  return arr;
+}
+// peso (hits/count/tester/total)
+const weightOfTeam = (t)=>(t?.tester ?? t?.value ?? t?.count ?? t?.hits ?? t?.total ?? 0);
+const weightOfChar = (c)=>(c?.tester ?? c?.value ?? c?.count ?? c?.hits ?? c?.total ?? 0);
+
+// totais (serão preenchidos em loadRankings)
+let TOTALS = { week:0, all:0, chars:0 };
 async function loadRankings(){
   await ensureCharacterList(); // garante lista p/ thumbs
   const week = await apiGet('action=top_week&days=7');
@@ -2447,8 +2499,14 @@ async function loadRankings(){
   const topC = await apiGet('action=top_chars&topN=50');
   RANK.week = week?.top || [];
   RANK.all  = allT?.top || [];
-  RANK.chars= topC?.top || [];
+  if (!Array.isArray(RANK.chars) || RANK.chars.length === 0){
+  // usa o ALL por padrão para ranking de personagens (pode trocar para week se quiser)
+  RANK.chars = buildCharRankingFromTeams(RANK.all);
+}
   SHOWN.week = 5; SHOWN.all = 5;
+  TOTALS.week  = (RANK.week  || []).reduce((s,t)=> s + weightOfTeam(t), 0);
+  TOTALS.all   = (RANK.all   || []).reduce((s,t)=> s + weightOfTeam(t), 0);
+TOTALS.chars = (RANK.chars || []).reduce((s,c)=> s + weightOfChar(c), 0);
   renderRankTeams7d();
 renderRankTeamsAll();
 renderRankCharacters();
@@ -6362,7 +6420,7 @@ body.planner-open{ overflow: hidden; }
   <h2 class="page-title">Ranking</h2>
 
   <!-- Descrição (placeholder): você edita depois -->
-  <p class="muted" id="rankingRules">Regras do Ranking</p>
+  <p class="muted" id="rankingRules">Ranking gathers all info when a team has all court positions filled</p>
 
   <!-- Barra de filtros (3 botões) no MESMO estilo dos botões do menu -->
   <div class="btn-row" style="display:flex; gap:.5rem; flex-wrap:wrap; margin: .75rem 0 1rem;">
@@ -7359,6 +7417,17 @@ requestAnimationFrame(()=> {
   })();
 }
     const btnOpen = document.getElementById('openPlannerBtn'); if(btnOpen) btnOpen.addEventListener('click', showPlanner);
+    {
+  const srcBtn = document.getElementById('openPlannerBtn')    // use o que já tem estilizado
+             || document.querySelector('#sidebar button, #sidebar .menu-btn');
+  const dstBtn = document.getElementById('btnOpenRanking');
+  if (srcBtn && dstBtn){
+    dstBtn.className = srcBtn.className;   // 🔁 copia as MESMAS classes
+    // se o src tiver um wrapper específico (ex.: display:block 100%), copie também estilos inline úteis
+    if (srcBtn.style.width)  dstBtn.style.width  = srcBtn.style.width;
+    if (srcBtn.style.display)dstBtn.style.display= srcBtn.style.display;
+  }
+}
     const btnBack = document.getElementById('btnVoltarBuilder'); if(btnBack) btnBack.addEventListener('click', showBuilder);
     
 
